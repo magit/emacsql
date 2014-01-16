@@ -8,6 +8,11 @@ It works by keeping a `sqlite3` inferior process running (a
 are automatically cleaned up if they are garbage collected. All
 requests are synchronous.
 
+Any [readable lisp value][readable] can be stored as values in
+Emacsql, including numbers, strings, symbols, lists, vectors, and
+closures. Emacsql has no concept of "TEXT" values, it's all just lisp
+objects.
+
 Requires Emacs 24 or later.
 
 ```el
@@ -36,3 +41,6 @@ Due to limitations of the SQLite command line program, emacsql is
 database. Text values and blobs are stored encoded as s-expressions in
 order to avoid ambiguities in parsing output from the command line.
 This is a high-performance database specifically for Emacs.
+
+
+[readable]: http://nullprogram.com/blog/2013/12/30/#almost_everything_prints_readably
