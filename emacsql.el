@@ -54,7 +54,7 @@
 
 (require 'cl-lib)
 
-(defvar sqlite-program-name "sqlite3"
+(defvar emacsql-sqlite-executable "sqlite3"
   "Path to the sqlite3 executable.")
 
 (cl-defstruct (emacsql (:constructor emacsql--create))
@@ -85,7 +85,7 @@ If FILE is nil use an in-memory database.
 buffer. This is for debugging purposes."
   (emacsql-start-reap-timer)
   (let* ((buffer (generate-new-buffer "*emacsql-connection*"))
-         (process (start-process "emacsql" buffer sqlite-program-name
+         (process (start-process "emacsql" buffer emacsql-sqlite-executable
                                  (or file ":memory:"))))
     (setf (process-sentinel process) (lambda (_proc _) (kill-buffer buffer)))
     (process-send-string process ".prompt #\n")
