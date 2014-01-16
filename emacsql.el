@@ -154,14 +154,18 @@ buffer. This is for debugging purposes."
                                         (buffer-substring
                                          (- (point-max) 2) (point-max)))))))
 
-(defun emacsql--parse (emacsql)
-  "Parse a query result into an s-expression."
+(defun emacsql--parse (emacsql &rest flatten)
+  "Parse a query result into an s-expression.
+If FLATTEN is non-nil, don't include column names."
   (with-current-buffer (emacsql-buffer emacsql)
     (let ((standard-input (current-buffer)))
       (setf (point) (point-min))
       (cl-loop until (looking-at "#")
-               for (name _= value) = (list (read) (read) (read))
-               collect (cons name value) into row
+               for name = (read)
+               do (forward-char 3)
+               for value = (read)
+               when flatten collect value into row
+               else collect (cons name value) into row
                do (forward-char)
                when (or (looking-at "\n") (looking-at "#"))
                collect row into rows and do (setf row ())
