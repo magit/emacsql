@@ -58,7 +58,7 @@
   "Path to the sqlite3 executable.")
 
 (cl-defstruct (emacsql (:constructor emacsql--create))
-  process file closed-p)
+  process file)
 
 (defvar emacsql-connections ()
   "Collection of all known emacsql connections.
@@ -93,10 +93,7 @@ This collection exists for cleanup purposes.")
   "Close connection to EMACSQL database."
   (let ((process (emacsql-process emacsql)))
     (when (and process (process-live-p process))
-      (if (emacsql-closed-p emacsql)
-          (kill-process process)
-        (setf (emacsql-closed-p emacsql) t)
-        (process-send-string process ".exit\n")))))
+      (process-send-string process ".exit\n"))))
 
 (defun emacsql-buffer (emacsql)
   "Get proccess buffer for EMACSQL."
