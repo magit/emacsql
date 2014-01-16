@@ -171,15 +171,16 @@ If FLATTEN is non-nil, don't include column names."
                collect row into rows and do (setf row ())
                finally (return rows)))))
 
-(defun emacsql-escape (identifier)
-  "Escape an identifier."
+(defun emacsql-escape (identifier &optional force)
+  "Escape an identifier, always with quotes when FORCE is non-nil."
   (let ((string (if (stringp identifier)
                     identifier
-                  (format "%S" identifier))))
+                  (format "%S" identifier)))
+        (forbidden "[]-\000-\040!\"#%&'()*+,./:;<=>?@[\\^`{|}~\177]"))
     (when (string-match-p "\n" string)
       (error "Newlines not permitted in identifiers by emacsql."))
-    (if (or (string-match-p "[]-\000-\040!\"#%&'()*+,./:;<=>?@[\\^`{|}~\177]"
-                            string)
+    (if (or force
+            (string-match-p forbidden string)
             (string-match-p "^[0-9$]" string))
         (format "'%s'" (replace-regexp-in-string "'" "''" string))
       string)))
@@ -232,7 +233,7 @@ If FLATTEN is non-nil, don't include column names."
   (let ((print-escape-newlines t))
     (if (numberp value)
         (prin1-to-string value)
-      (emacsql-escape (prin1-to-string value)))))
+      (emacsql-escape (prin1-to-string value) t))))
 
 (defun emacsql-insert (emacsql table &rest rows)
   "Insert ROWS into TABLE.
