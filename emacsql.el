@@ -58,6 +58,7 @@
   "Path to the sqlite3 executable.")
 
 (cl-defstruct (emacsql (:constructor emacsql--create))
+  "A connection to a SQLite database."
   process file log)
 
 (defvar emacsql-connections ()
