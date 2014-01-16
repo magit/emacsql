@@ -10,7 +10,7 @@
   (should (string= (emacsql-escape "they're") "'they''re'")))
 
 (ert-deftest emacsql-escape-value ()
-  (should (string= (emacsql-escape-value 'foo) "foo"))
+  (should (string= (emacsql-escape-value 'foo) "'foo'"))
   (should (string= (emacsql-escape-value "foo") "'\"foo\"'"))
   (should (string= (emacsql-escape-value :foo) "':foo'"))
   (should (string= (emacsql-escape-value [1 2 3]) "'[1 2 3]'"))
