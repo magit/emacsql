@@ -58,7 +58,7 @@
   "Path to the sqlite3 executable.")
 
 (cl-defstruct (emacsql (:constructor emacsql--create))
-  process file)
+  process file log)
 
 (defvar emacsql-connections ()
   "Collection of all known emacsql connections.
@@ -77,8 +77,11 @@ This collection exists for cleanup purposes.")
   "Retrieve value from REF."
   (gethash t ref))
 
-(defun emacsql-connect (file)
-  "Open a connected to database stored in FILE."
+(cl-defun emacsql-connect (file &key log)
+  "Open a connected to database stored in FILE.
+
+:log LOG -- When non-nil, log all SQLite commands to a log
+buffer. This is for debugging purposes."
   (emacsql-start-reap-timer)
   (let* ((buffer (generate-new-buffer "*emacsql-connection*"))
          (process (start-process "emacsql" buffer sqlite-program-name file)))
@@ -86,6 +89,8 @@ This collection exists for cleanup purposes.")
     (process-send-string process ".prompt #\n")
     (process-send-string process ".mode line\n")
     (let ((emacsql (emacsql--create :process process :file file)))
+      (when log
+        (setf (emacsql-log emacsql) (generate-new-buffer "*emacsql-log*")))
       (prog1 emacsql
         (push (cons (copy-seq emacsql) (emacsql--ref emacsql))
               emacsql-connections)))))
@@ -122,9 +127,17 @@ This collection exists for cleanup purposes.")
     (cancel-timer emacsql-reap-timer)
     (setf emacsql-reap-timer nil)))
 
+(defun emacsql--log (emacsql &rest messages)
+  (let ((log (emacsql-log emacsql)))
+    (when log
+      (with-current-buffer log
+        (setf (point) (point-max))
+        (mapc (lambda (s) (princ s log)) messages)))))
+
 (defun emacsql--send (emacsql string)
   "Send STRING to EMACSQL, automatically appending newline."
   (let ((process (emacsql-process emacsql)))
+    (emacsql--log emacsql string "\n")
     (process-send-string process string)
     (process-send-string process "\n")))
 
