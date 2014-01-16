@@ -23,7 +23,7 @@
 
 ;;     (emacsql-create db :employees '(name id salary))
 
-;; Type information can optionally be provided.
+;; Type constraints can optionally be provided.
 
 ;;     (emacsql-create db :employees '((name text) (id integer) salary))
 
