@@ -104,7 +104,8 @@ This collection exists for cleanup purposes.")
   "Clean up after lost connections."
   (cl-loop for (emacsql-copy . ref) in emacsql-connections
            when (null (emacsql--deref ref))
-           count (prog1 t (emacsql-close emacsql-copy)) into total
+           count (prog1 t (ignore-errors (emacsql-close emacsql-copy)))
+           into total
            else collect (cons emacsql-copy ref) into connections
            finally (progn
                      (setf emacsql-connections connections)
