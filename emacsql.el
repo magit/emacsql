@@ -164,7 +164,7 @@ This collection exists for cleanup purposes.")
     (if (or (string-match-p "[]-\000-\040!\"#%&'()*+,./:;<=>?@[\\^`{|}~\177]"
                             string)
             (string-match-p "^[0-9$]" string))
-        (format "\"%s\"" (replace-regexp-in-string "\"" "\"\"" string))
+        (format "'%s'" (replace-regexp-in-string "'" "''" string))
       string)))
 
 (defun emacsql--check-error (emacsql)
