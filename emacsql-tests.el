@@ -1,0 +1,17 @@
+(require 'ert)
+
+(ert-deftest emacsql-escape ()
+  (should (string= (emacsql-escape "foo") "foo"))
+  (should (string= (emacsql-escape 'foo) "foo"))
+  (should (string= (emacsql-escape :foo) "':foo'"))
+  (should (string= (emacsql-escape "a b") "'a b'"))
+  (should (string= (emacsql-escape '$foo) "'$foo'"))
+  (should (string= (emacsql-escape "foo$") "foo$"))
+  (should (string= (emacsql-escape "they're") "'they''re'")))
+
+(ert-deftest emacsql-escape-value ()
+  (should (string= (emacsql-escape-value 'foo) "foo"))
+  (should (string= (emacsql-escape-value "foo") "'\"foo\"'"))
+  (should (string= (emacsql-escape-value :foo) "':foo'"))
+  (should (string= (emacsql-escape-value [1 2 3]) "'[1 2 3]'"))
+  (should (string= (emacsql-escape-value '(a b c)) "'(a b c)'")))
