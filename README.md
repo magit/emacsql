@@ -18,8 +18,8 @@ requests are synchronous.
 (emacsql-create db :employees '((name text) (id integer) salary))
 
 ;; Insert some data:
-(emacsql-insert db :employees "Jeff"  1000 60000)
-(emacsql-insert db :employees "Susan" 1001 64000)
+(emacsql-insert db :employees ["Jeff"  1000 60000]
+                              ["Susan" 1001 64000])
 
 ;; The high-level SELECT interface is a work in progress.
 (emacsql-select-raw db (concat "SELECT name, id FROM ':employees' "

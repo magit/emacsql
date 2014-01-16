@@ -29,8 +29,8 @@
 
 ;; Insert values into a table with `emacsql-insert'.
 
-;;     (emacsql-insert db :employees "Jeff"  1000 60000)
-;;     (emacsql-insert db :employees "Susan" 1001 64000)
+;;     (emacsql-insert db :employees ["Jeff"  1000 60000]
+;;                                   ["Susan" 1001 64000])
 
 ;; Currently all actions are synchronous and Emacs will block until
 ;; SQLite has indicated it is finished processing the last command.
@@ -230,13 +230,18 @@ buffer. This is for debugging purposes."
         (prin1-to-string value)
       (emacsql-escape (prin1-to-string value)))))
 
-(defun emacsql-insert (emacsql table &rest values)
-  "Insert VALUES into TABLE."
+(defun emacsql-insert (emacsql table &rest rows)
+  "Insert ROWS into TABLE.
+Each row must be a sequence of values to store into TABLE.
+
+  (emacsql-insert db :table '(\"Chris\" 0) [\"Jeff\" 1])"
   (emacsql-with-errors emacsql
-    (emacsql--send emacsql
-                   (format "INSERT INTO %s VALUES(%s);"
-                           (emacsql-escape table)
-                           (mapconcat #'emacsql-escape-value values ", ")))))
+    (emacsql--send
+     emacsql
+     (format "INSERT INTO %s VALUES (%s);" (emacsql-escape table)
+             (mapconcat (lambda (row)
+                          (mapconcat #'emacsql-escape-value row ", "))
+                        rows "), (")))))
 
 (defun emacsql-select-raw (emacsql query)
   "Send a raw QUERY string to EMACSQL."
