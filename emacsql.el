@@ -12,7 +12,7 @@
 ;; file. For each connection a sqlite3 inferior process is kept alive.
 ;; Connections are closed with `elfeed-close'.
 
-;;     (defvar db (emacsql-connect "company.sqlite"))
+;;     (defvar db (emacsql-connect "company.db"))
 
 ;; Database connections are automatically closed when the connection
 ;; object is garbage collected. Though this doesn't excuse poor coding

@@ -16,7 +16,7 @@ objects.
 Requires Emacs 24 or later.
 
 ```el
-(defvar db (emacsql-connect "company.sqlite"))
+(defvar db (emacsql-connect "company.db"))
 
 ;; Create a table. A table identifier can be any kind of lisp value.
 (emacsql-create db :employees '(name id salary))
