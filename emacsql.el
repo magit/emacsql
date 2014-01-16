@@ -88,30 +88,30 @@ buffer. This is for debugging purposes."
     (setf (process-sentinel process) (lambda (_proc _) (kill-buffer buffer)))
     (process-send-string process ".prompt #\n")
     (process-send-string process ".mode line\n")
-    (let ((emacsql (emacsql--create :process process :file file)))
+    (let ((conn (emacsql--create :process process :file file)))
       (when log
-        (setf (emacsql-log emacsql) (generate-new-buffer "*emacsql-log*")))
-      (prog1 emacsql
-        (push (cons (copy-seq emacsql) (emacsql--ref emacsql))
+        (setf (emacsql-log conn) (generate-new-buffer "*emacsql-log*")))
+      (prog1 conn
+        (push (cons (copy-seq conn) (emacsql--ref conn))
               emacsql-connections)))))
 
-(defun emacsql-close (emacsql)
-  "Close connection to EMACSQL database."
-  (let ((process (emacsql-process emacsql)))
+(defun emacsql-close (conn)
+  "Close connection to CONN database."
+  (let ((process (emacsql-process conn)))
     (when (and process (process-live-p process))
       (process-send-string process ".exit\n"))))
 
-(defun emacsql-buffer (emacsql)
-  "Get proccess buffer for EMACSQL."
-  (process-buffer (emacsql-process emacsql)))
+(defun emacsql-buffer (conn)
+  "Get proccess buffer for CONN."
+  (process-buffer (emacsql-process conn)))
 
 (defun emacsql-reap ()
   "Clean up after lost connections."
-  (cl-loop for (emacsql-copy . ref) in emacsql-connections
+  (cl-loop for (conn-copy . ref) in emacsql-connections
            when (null (emacsql--deref ref))
            count (prog1 t (ignore-errors (emacsql-close emacsql-copy)))
            into total
-           else collect (cons emacsql-copy ref) into connections
+           else collect (cons conn-copy ref) into connections
            finally (progn
                      (setf emacsql-connections connections)
                      (return total))))
@@ -127,37 +127,37 @@ buffer. This is for debugging purposes."
     (cancel-timer emacsql-reap-timer)
     (setf emacsql-reap-timer nil)))
 
-(defun emacsql--log (emacsql &rest messages)
-  (let ((log (emacsql-log emacsql)))
+(defun emacsql--log (conn &rest messages)
+  (let ((log (emacsql-log conn)))
     (when log
       (with-current-buffer log
         (setf (point) (point-max))
         (mapc (lambda (s) (princ s log)) messages)))))
 
-(defun emacsql--send (emacsql string)
-  "Send STRING to EMACSQL, automatically appending newline."
-  (let ((process (emacsql-process emacsql)))
-    (emacsql--log emacsql string "\n")
+(defun emacsql--send (conn string)
+  "Send STRING to CONN, automatically appending newline."
+  (let ((process (emacsql-process conn)))
+    (emacsql--log conn string "\n")
     (process-send-string process string)
     (process-send-string process "\n")))
 
-(defun emacsql--clear (emacsql)
-  "Clear the process buffer for EMACSQL."
-  (with-current-buffer (emacsql-buffer emacsql)
+(defun emacsql--clear (conn)
+  "Clear the process buffer for CONN."
+  (with-current-buffer (emacsql-buffer conn)
     (erase-buffer)))
 
-(defun emacsql--complete-p (emacsql)
+(defun emacsql--complete-p (conn)
   "Return non-nil if receive buffer has finished filling."
-  (with-current-buffer (emacsql-buffer emacsql)
+  (with-current-buffer (emacsql-buffer conn)
     (cond ((= (buffer-size) 1) (string= "#" (buffer-string)))
           ((> (buffer-size) 1) (string= "\n#"
                                         (buffer-substring
                                          (- (point-max) 2) (point-max)))))))
 
-(defun emacsql--parse (emacsql &rest named)
+(defun emacsql--parse (conn &rest named)
   "Parse a query result into an s-expression.
 If NAMED is non-nil, don't include column names."
-  (with-current-buffer (emacsql-buffer emacsql)
+  (with-current-buffer (emacsql-buffer conn)
     (let ((standard-input (current-buffer)))
       (setf (point) (point-min))
       (cl-loop until (looking-at "#")
@@ -185,48 +185,48 @@ If NAMED is non-nil, don't include column names."
         (format "'%s'" (replace-regexp-in-string "'" "''" string))
       string)))
 
-(defun emacsql--check-error (emacsql)
+(defun emacsql--check-error (conn)
   "Return non-nil or throw an appropriate error."
-  (with-current-buffer (emacsql-buffer emacsql)
-    (emacsql-wait emacsql)
+  (with-current-buffer (emacsql-buffer conn)
+    (emacsql-wait conn)
     (setf (point) (point-min))
     (prog1 t
       (when (looking-at "Error:")
         (error (buffer-substring (line-beginning-position)
                                  (line-end-position)))))))
 
-(defun emacsql-wait (emacsql &optional timeout)
-  "Block Emacs until EMACSQL has finished sending output."
-  (while (not (emacsql--complete-p emacsql))
-    (accept-process-output (emacsql-process emacsql))))
+(defun emacsql-wait (conn &optional timeout)
+  "Block Emacs until CONN has finished sending output."
+  (while (not (emacsql--complete-p conn))
+    (accept-process-output (emacsql-process conn))))
 
-(defmacro emacsql-with-errors (emacsql &rest body)
+(defmacro emacsql-with-errors (conn &rest body)
   "Run BODY checking for errors from SQLite after completion."
   (declare (indent 1))
   `(progn
-     (emacsql--clear ,emacsql)
+     (emacsql--clear ,conn)
      ,@body
-     (emacsql--check-error ,emacsql)))
+     (emacsql--check-error ,conn)))
 
-(defun emacsql-create (emacsql table spec &optional if-not-exists)
-  "Create TABLE in EMACSQL with SPEC."
-  (emacsql-with-errors emacsql
+(defun emacsql-create (conn table spec &optional if-not-exists)
+  "Create TABLE in CONN with SPEC."
+  (emacsql-with-errors conn
     (cl-loop for column in spec
              when (consp column)
              collect (mapconcat #'emacsql-escape column " ")
              into parts
              else collect (format "%s" column) into parts
              finally (emacsql--send
-                      emacsql
+                      conn
                       (format "CREATE TABLE %s%s(%s);"
                               (if if-not-exists "IF NOT EXISTS " "")
                               (emacsql-escape table)
                               (mapconcat #'identity parts ", "))))))
 
-(defun emacsql-drop (emacsql table)
-  "Drop TABLE from EMACSQL."
-  (emacsql-with-errors emacsql
-    (emacsql--send emacsql (format "DROP TABLE %s;" (emacsql-escape table)))))
+(defun emacsql-drop (conn table)
+  "Drop TABLE from CONN."
+  (emacsql-with-errors conn
+    (emacsql--send conn (format "DROP TABLE %s;" (emacsql-escape table)))))
 
 (defun emacsql-escape-value (value)
   "Escape VALUE for sending to SQLite."
@@ -235,26 +235,26 @@ If NAMED is non-nil, don't include column names."
         (prin1-to-string value)
       (emacsql-escape (prin1-to-string value) t))))
 
-(defun emacsql-insert (emacsql table &rest rows)
+(defun emacsql-insert (conn table &rest rows)
   "Insert ROWS into TABLE.
 Each row must be a sequence of values to store into TABLE.
 
   (emacsql-insert db :table '(\"Chris\" 0) [\"Jeff\" 1])"
-  (emacsql-with-errors emacsql
+  (emacsql-with-errors conn
     (emacsql--send
-     emacsql
+     conn
      (format "INSERT INTO %s VALUES (%s);" (emacsql-escape table)
              (mapconcat (lambda (row)
                           (mapconcat #'emacsql-escape-value row ", "))
                         rows "), (")))))
 
-(defun emacsql-select-raw (emacsql query)
-  "Send a raw QUERY string to EMACSQL."
-  (emacsql--clear emacsql)
-  (emacsql--send emacsql query)
-  (emacsql-wait emacsql)
-  (emacsql--check-error emacsql)
-  (emacsql--parse emacsql))
+(defun emacsql-select-raw (conn query)
+  "Send a raw QUERY string to CONN."
+  (emacsql--clear conn)
+  (emacsql--send conn query)
+  (emacsql-wait conn)
+  (emacsql--check-error conn)
+  (emacsql--parse conn))
 
 (provide 'emacsql)
 
