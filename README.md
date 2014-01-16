@@ -8,6 +8,8 @@ It works by keeping a `sqlite3` inferior process running (a
 are automatically cleaned up if they are garbage collected. All
 requests are synchronous.
 
+Requires Emacs 24 or later.
+
 ```el
 (defvar db (emacsql-connect "company.sqlite"))
 
