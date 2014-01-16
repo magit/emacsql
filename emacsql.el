@@ -79,12 +79,14 @@ This collection exists for cleanup purposes.")
 
 (cl-defun emacsql-connect (file &key log)
   "Open a connected to database stored in FILE.
+If FILE is nil use an in-memory database.
 
 :log LOG -- When non-nil, log all SQLite commands to a log
 buffer. This is for debugging purposes."
   (emacsql-start-reap-timer)
   (let* ((buffer (generate-new-buffer "*emacsql-connection*"))
-         (process (start-process "emacsql" buffer sqlite-program-name file)))
+         (process (start-process "emacsql" buffer sqlite-program-name
+                                 (or file ":memory:"))))
     (setf (process-sentinel process) (lambda (_proc _) (kill-buffer buffer)))
     (process-send-string process ".prompt #\n")
     (process-send-string process ".mode line\n")
