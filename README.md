@@ -26,7 +26,7 @@ Requires Emacs 24 or later.
 ;; The high-level SELECT interface is a work in progress.
 (emacsql-select-raw db (concat "SELECT name, id FROM ':employees' "
                                "WHERE salary > 60000;"))
-;; => (((name . "Susan") (id . 1001)))
+;; => (("Susan" 1001))
 ```
 
 ## Limitations

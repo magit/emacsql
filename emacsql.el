@@ -39,7 +39,7 @@
 
 ;;     (emacsql-select-raw db (concat "SELECT name, id FROM ':employees' "
 ;;                                    "WHERE salary > 60000;"))
-;;     ;; => (((name . "Susan") (id . 1001)))
+;;     ;; => (("Susan" 1001))
 
 ;; Limitations:
 
@@ -154,9 +154,9 @@ buffer. This is for debugging purposes."
                                         (buffer-substring
                                          (- (point-max) 2) (point-max)))))))
 
-(defun emacsql--parse (emacsql &rest flatten)
+(defun emacsql--parse (emacsql &rest named)
   "Parse a query result into an s-expression.
-If FLATTEN is non-nil, don't include column names."
+If NAMED is non-nil, don't include column names."
   (with-current-buffer (emacsql-buffer emacsql)
     (let ((standard-input (current-buffer)))
       (setf (point) (point-min))
@@ -164,8 +164,8 @@ If FLATTEN is non-nil, don't include column names."
                for name = (read)
                do (forward-char 3)
                for value = (read)
-               when flatten collect value into row
-               else collect (cons name value) into row
+               when named collect (cons name value) into row
+                     else collect value into row
                do (forward-char)
                when (or (looking-at "\n") (looking-at "#"))
                collect row into rows and do (setf row ())
