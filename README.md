@@ -21,7 +21,7 @@ Requires Emacs 24 or later.
 ;; Create a table. A table identifier can be any kind of lisp value.
 (emacsql-create db :employees '(name id salary))
 
-;; Or optionally provide type constraints.
+;; Or optionally provide column constraints.
 (emacsql-create db :employees '((name text) (id integer) salary))
 
 ;; Insert some data:
