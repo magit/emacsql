@@ -28,9 +28,8 @@ Requires Emacs 24 or later.
 (emacsql-insert db 'employees ["Jeff"  1000 60000.0]
                               ["Susan" 1001 64000.0])
 
-;; The high-level SELECT interface is a work in progress.
-(emacsql-select-raw db (concat "SELECT name, id FROM employees "
-                               "WHERE salary > 60000;"))
+;; Query the database for results:
+(emacsql db [:select [name id] :from employees :where (> salary 60000)])
 ;; => (("Susan" 1001))
 ```
 

@@ -386,6 +386,21 @@ KIND should be :value or :identifier."
       (list "FROM %s" (cons (emacsql-var table) :identifier))
     (list (concat "FROM " (emacsql-escape-format table :identifier)))))
 
+(emacsql-defexpander :where (expr)
+  (let ((vars ()))
+    (cl-flet* ((collect (thing kind)
+                 (push (cons (emacsql-var thing) kind) vars) "%s")
+               (handle (v)
+                 (cond ((emacsql-var v) (collect v))
+                       ((symbolp v) (emacsql-escape-format v :identifier))
+                       ((emacsql-escape-value v)))))
+      (cl-destructuring-bind (op a b) expr
+        (cons (format "WHERE %s %s %s"
+                      (handle a)
+                      op
+                      (handle b))
+              vars)))))
+
 (provide 'emacsql)
 
 ;;; emacsql.el ends here
