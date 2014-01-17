@@ -36,11 +36,11 @@ Requires Emacs 24 or later.
 
 ## Limitations
 
-Due to limitations of the SQLite command line program, emacsql is
-*not* intended to play well with other programs accessing the SQLite
-database. Text values and blobs are stored encoded as s-expressions in
-order to avoid ambiguities in parsing output from the command line.
-This is a high-performance database specifically for Emacs.
+Emacsql is *not* intended to play well with other programs accessing
+the SQLite database. Non-numeric values are are stored encoded as
+s-expressions TEXT values. This avoids ambiguities in parsing output
+from the command line and allows for storage of Emacs richer data
+types. This is a high-performance database specifically for Emacs.
 
 
 [readable]: http://nullprogram.com/blog/2013/12/30/#almost_everything_prints_readably
