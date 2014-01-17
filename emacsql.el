@@ -24,7 +24,7 @@
 ;; habits! :-)
 
 ;; Table identifiers can be any lisp object: string, symbol, etc. I
-;; suggest using a keyword. Use `emacsql-create' to create a table.
+;; suggest using a symbol. Use `emacsql-create' to create a table.
 
 ;;     (emacsql-create db :employees [name id salary])
 

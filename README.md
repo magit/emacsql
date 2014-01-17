@@ -19,17 +19,17 @@ Requires Emacs 24 or later.
 (defvar db (emacsql-connect "company.db"))
 
 ;; Create a table. A table identifier can be any kind of lisp value.
-(emacsql-create db :employees [name id salary])
+(emacsql-create db 'employees [name id salary])
 
 ;; Or optionally provide column constraints.
-(emacsql-create db :employees [name (id integer :unique) (salary float)])
+(emacsql-create db 'employees [name (id integer :unique) (salary float)])
 
 ;; Insert some data:
-(emacsql-insert db :employees ["Jeff"  1000 60000.0]
+(emacsql-insert db 'employees ["Jeff"  1000 60000.0]
                               ["Susan" 1001 64000.0])
 
 ;; The high-level SELECT interface is a work in progress.
-(emacsql-select-raw db (concat "SELECT name, id FROM ':employees' "
+(emacsql-select-raw db (concat "SELECT name, id FROM employees "
                                "WHERE salary > 60000;"))
 ;; => (("Susan" 1001))
 ```
