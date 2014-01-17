@@ -250,10 +250,12 @@ If NAMED is non-nil, don't include column names."
 
 (defun emacsql-create (conn table schema &optional if-not-exists)
   "Create TABLE in CONN with SCHEMA."
+  (when (= 0 (length schema))
+    (error "Schema must not be empty."))
   (emacsql-with-errors conn
     (emacsql--send
      conn
-     (format "CREATE TABLE %s%s(%s);"
+     (format "CREATE TABLE %s%s (%s);"
              (if if-not-exists "IF NOT EXISTS " "")
              (emacsql-escape table)
              (emacsql--schema-to-string schema)))))
