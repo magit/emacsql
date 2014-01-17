@@ -290,13 +290,6 @@ Each row must be a sequence of values to store into TABLE.
                           (mapconcat #'emacsql-escape-value row ", "))
                         rows "), (")))))
 
-(defun emacsql-select-raw (conn query)
-  "Send a raw QUERY string to CONN."
-  (emacsql--clear conn)
-  (emacsql--send conn query)
-  (emacsql--check-error conn)
-  (emacsql--parse conn))
-
 ;; SQL Expansion:
 
 (defvar emacsql-expanders ()
