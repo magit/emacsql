@@ -215,7 +215,7 @@ If NAMED is non-nil, don't include column names."
 (defun emacsql-create (conn table spec &optional if-not-exists)
   "Create TABLE in CONN with SPEC."
   (emacsql-with-errors conn
-    (cl-loop for column in spec
+    (cl-loop for column being the elements of spec
              when (consp column)
              collect (mapconcat #'emacsql-escape column " ")
              into parts
