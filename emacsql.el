@@ -306,8 +306,8 @@ Each row must be a sequence of values to store into TABLE.
   "Register FUNCTION for KEYWORD as a SQL expander.
 FUNCTION should accept a single argument, the keyword's argument,
 and should return a list of (<string> [arg-pos] ...)."
-  (push (cons keyword function) emacsql-expanders)
-  :keyword)
+  (prog1 keyword
+    (push (cons keyword function) emacsql-expanders)))
 
 (defmacro emacsql-defexpander (keyword args &rest body)
   "Define an expander for KEYWORD."
