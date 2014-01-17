@@ -243,7 +243,7 @@ If NAMED is non-nil, don't include column names."
   (let ((print-escape-newlines t))
     (cond ((null value) "NULL")
           ((numberp value) (prin1-to-string value))
-          (:else (emacsql-escape (prin1-to-string value) t)))))
+          ((emacsql-escape (prin1-to-string value) t)))))
 
 (defun emacsql-insert (conn table &rest rows)
   "Insert ROWS into TABLE.
