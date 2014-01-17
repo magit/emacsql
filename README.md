@@ -22,7 +22,7 @@ Requires Emacs 24 or later.
 (emacsql-create db :employees [name id salary])
 
 ;; Or optionally provide column constraints.
-(emacsql-create db :employees [(name text) (id integer) (salary real)])
+(emacsql-create db :employees [name (id integer :unique) (salary float)])
 
 ;; Insert some data:
 (emacsql-insert db :employees ["Jeff"  1000 60000.0]
