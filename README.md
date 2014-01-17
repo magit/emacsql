@@ -29,8 +29,14 @@ Requires Emacs 24 or later.
                               ["Susan" 1001 64000.0])
 
 ;; Query the database for results:
-(emacsql db [:select [name id] :from employees :where (> salary 60000)])
+(emacsql db [:select [name id] :from employees :where (> salary 62000)])
 ;; => (("Susan" 1001))
+
+;; Queries can be templates using $1, $2, etc.:
+(emacsql db
+         [:select [name id] :from employees :where (> salary $1)]
+         50000)
+;; => (("Jeff" 1000) ("Susan" 1001))
 ```
 
 ## Limitations

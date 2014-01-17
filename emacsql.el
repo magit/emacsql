@@ -26,25 +26,30 @@
 ;; Table identifiers can be any lisp object: string, symbol, etc. I
 ;; suggest using a symbol. Use `emacsql-create' to create a table.
 
-;;     (emacsql-create db :employees [name id salary])
+;;     (emacsql-create db 'employees [name id salary])
 
 ;; Column constraints can optionally be provided.
 
-;;     (emacsql-create db :employees [(name text) (id integer) (salary real)])
+;;     (emacsql-create db 'employees [name (id integer) (salary real)])
 
 ;; Insert values into a table with `emacsql-insert'.
 
-;;     (emacsql-insert db :employees ["Jeff"  1000 60000.0]
+;;     (emacsql-insert db 'employees ["Jeff"  1000 60000.0]
 ;;                                   ["Susan" 1001 64000.0])
 
 ;; Currently all actions are synchronous and Emacs will block until
 ;; SQLite has indicated it is finished processing the last command.
 
-;; High-level query construction is still a work-in-progress:
+;; Query the database for results:
 
-;;     (emacsql-select-raw db (concat "SELECT name, id FROM ':employees' "
-;;                                    "WHERE salary > 60000;"))
+;;     (emacsql db [:select [name id] :from employees :where (> salary 60000)])
 ;;     ;; => (("Susan" 1001))
+
+;; Queries can be templates using $1, $2, etc.:
+;;     (emacsql db
+;;              [:select [name id] :from employees :where (> salary $1)]
+;;              50000)
+;;     ;; => (("Jeff" 1000) ("Susan" 1001))
 
 ;; Limitations:
 
