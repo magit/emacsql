@@ -218,20 +218,45 @@ If NAMED is non-nil, don't include column names."
      ,@body
      (emacsql--check-error ,conn)))
 
+(defun emacsql--column-to-string (column)
+  "Convert COLUMN schema into a SQL string."
+  (let ((name (emacsql-escape (pop column)))
+        (output ())
+        (type nil))
+    (while column
+      (let ((next (pop column)))
+        (case next
+          (:primary (push "PRIMARY KEY" output))
+          (:non-nil (push "NOT NULL" output))
+          (:unique  (push "UNIQUE" output))
+          (integer  (setf type "INTEGER"))
+          (float    (setf type "REAL"))
+          (object   (setf type "TEXT"))
+          (otherwise
+           (if (keywordp next)
+               (error "Unknown schema contraint %s" next)
+             (error "Invalid type %s: %s" next
+                    "must be 'integer', 'float', or 'object'"))))))
+    (mapconcat #'identity
+               (nconc (if type (list name type) (list name)) (nreverse output))
+               " ")))
+
+(defun emacsql--schema-to-string (schema)
+  "Convert SCHEMA into a SQL-consumable string."
+  (cl-loop for column being the elements of schema
+           when (symbolp column) collect (emacsql-escape column) into parts
+           else collect (emacsql--column-to-string column) into parts
+           finally (return (mapconcat #'identity parts ", "))))
+
 (defun emacsql-create (conn table schema &optional if-not-exists)
   "Create TABLE in CONN with SCHEMA."
   (emacsql-with-errors conn
-    (cl-loop for column being the elements of schema
-             when (consp column)
-             collect (mapconcat #'emacsql-escape column " ")
-             into parts
-             else collect (format "%s" column) into parts
-             finally (emacsql--send
-                      conn
-                      (format "CREATE TABLE %s%s(%s);"
-                              (if if-not-exists "IF NOT EXISTS " "")
-                              (emacsql-escape table)
-                              (mapconcat #'identity parts ", "))))))
+    (emacsql--send
+     conn
+     (format "CREATE TABLE %s%s(%s);"
+             (if if-not-exists "IF NOT EXISTS " "")
+             (emacsql-escape table)
+             (emacsql--schema-to-string schema)))))
 
 (defun emacsql-drop (conn table)
   "Drop TABLE from CONN."
