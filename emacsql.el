@@ -328,11 +328,15 @@ and should return a list of (<string> [arg-pos] ...)."
   (cl-destructuring-bind (format . vars) expansion
     (apply #'format format
            (cl-loop for (i . kind) in vars collect
-                    (cl-ecase kind
-                      (:identifier (emacsql-escape (nth i args)))
-                      (:value (emacsql-escape-value (nth i args))))))))
+                    (let ((thing (nth i args)))
+                      (cl-ecase kind
+                        (:identifier (emacsql-escape thing))
+                        (:value (emacsql-escape-value thing))
+                        (:auto (if (symbolp thing)
+                                   (emacsql-escape thing)
+                                 (emacsql-escape-value thing)))))))))
 
-(defun emacsql (conn sql &optional args)
+(defun emacsql (conn sql &rest args)
   "Send structured SQL expression to CONN with ARGS."
   (emacsql--clear conn)
   (emacsql--send conn (apply #'emacsql-format (emacsql-expand sql) args))
@@ -393,18 +397,18 @@ KIND should be :value or :identifier."
 
 (emacsql-defexpander :where (expr)
   (let ((vars ()))
-    (cl-flet* ((collect (thing kind)
-                 (push (cons (emacsql-var thing) kind) vars) "%s")
+    (cl-flet* ((collect (thing)
+                 (push (cons (emacsql-var thing) :auto) vars) "%s")
                (handle (v)
                  (cond ((emacsql-var v) (collect v))
                        ((symbolp v) (emacsql-escape-format v :identifier))
-                       ((emacsql-escape-value v)))))
+                       ((emacsql-escape-format v :value)))))
       (cl-destructuring-bind (op a b) expr
         (cons (format "WHERE %s %s %s"
                       (handle a)
                       op
                       (handle b))
-              vars)))))
+              (nreverse vars))))))
 
 (provide 'emacsql)
 
