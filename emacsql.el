@@ -289,7 +289,6 @@ Each row must be a sequence of values to store into TABLE.
   "Send a raw QUERY string to CONN."
   (emacsql--clear conn)
   (emacsql--send conn query)
-  (emacsql-wait conn)
   (emacsql--check-error conn)
   (emacsql--parse conn))
 
