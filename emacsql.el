@@ -292,7 +292,7 @@ Each row must be a sequence of values to store into TABLE.
   (emacsql--check-error conn)
   (emacsql--parse conn))
 
-;; SQL Expansion Functions
+;; SQL Expansion:
 
 (defvar emacsql-expanders ()
   "Alist of all expansion functions.")
@@ -327,6 +327,13 @@ and should return a list of (<string> [arg-pos] ...)."
                       (:identifier (emacsql-escape (nth i args)))
                       (:value (emacsql-escape-value (nth i args))))))))
 
+(defun emacsql (conn sql &optional args)
+  "Send structured SQL expression to CONN with ARGS."
+  (emacsql--clear conn)
+  (emacsql--send conn (apply #'emacsql-format (emacsql-expand sql) args))
+  (emacsql--check-error conn)
+  (emacsql--parse conn))
+
 (defun emacsql-var (var)
   "Return the index number of VAR, or nil if VAR is not a variable.
 A variable is a symbol that looks like $1, $2, $3, etc. A $ means $1."
@@ -345,6 +352,8 @@ KIND should be :value or :identifier."
               (:value (emacsql-escape-value thing))
               (:identifier (emacsql-escape thing))
               (otherwise thing))))
+
+;; SQL Expansion Functions:
 
 (emacsql-defexpander :select (arg)
   "Expands to the SELECT keyword."
