@@ -14,4 +14,5 @@
   (should (string= (emacsql-escape-value "foo") "'\"foo\"'"))
   (should (string= (emacsql-escape-value :foo) "':foo'"))
   (should (string= (emacsql-escape-value [1 2 3]) "'[1 2 3]'"))
-  (should (string= (emacsql-escape-value '(a b c)) "'(a b c)'")))
+  (should (string= (emacsql-escape-value '(a b c)) "'(a b c)'"))
+  (should (string= (emacsql-escape-value nil) "NULL")))

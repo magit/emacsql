@@ -91,6 +91,7 @@ buffer. This is for debugging purposes."
     (setf (process-sentinel process) (lambda (_proc _) (kill-buffer buffer)))
     (process-send-string process ".prompt #\n")
     (process-send-string process ".mode line\n")
+    (process-send-string process ".nullvalue nil\n")
     (let ((conn (emacsql--create :process process :file file)))
       (when log
         (setf (emacsql-log conn) (generate-new-buffer "*emacsql-log*")))
@@ -234,9 +235,9 @@ If NAMED is non-nil, don't include column names."
 (defun emacsql-escape-value (value)
   "Escape VALUE for sending to SQLite."
   (let ((print-escape-newlines t))
-    (if (numberp value)
-        (prin1-to-string value)
-      (emacsql-escape (prin1-to-string value) t))))
+    (cond ((null value) "NULL")
+          ((numberp value) (prin1-to-string value))
+          (:else (emacsql-escape (prin1-to-string value) t)))))
 
 (defun emacsql-insert (conn table &rest rows)
   "Insert ROWS into TABLE.
