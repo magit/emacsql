@@ -27,3 +27,22 @@
                    "a, b REAL PRIMARY KEY UNIQUE"))
   (should (string= (emacsql--schema-to-string [(a integer) (b float)])
                    "a INTEGER, b REAL")))
+
+(ert-deftest emacsql-var ()
+  (should (eq (emacsql-var 'a) nil))
+  (should (eq (emacsql-var 0) nil))
+  (should (eq (emacsql-var "") nil))
+  (should (eq (emacsql-var '$) 0))
+  (should (eq (emacsql-var '$1) 0))
+  (should (eq (emacsql-var '$5) 4))
+  (should (eq (emacsql-var '$10) 9)))
+
+(defun emacsql-tests-query (query args result)
+  "Check that QUERY outputs RESULT for ARGS."
+  (should (string= (apply #'emacsql-format (emacsql-expand query) args) result)))
+
+(ert-deftest emacsql-expand ()
+  (emacsql-tests-query [:select [$1 name] :from $2] '(id people)
+                       "SELECT id, name FROM people;")
+  (emacsql-tests-query [:select * :from employees] ()
+                       "SELECT * FROM employees;"))
