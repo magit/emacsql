@@ -292,6 +292,91 @@ Each row must be a sequence of values to store into TABLE.
   (emacsql--check-error conn)
   (emacsql--parse conn))
 
+;; SQL Expansion Functions
+
+(defvar emacsql-expanders ()
+  "Alist of all expansion functions.")
+
+(defun emacsql-add-expander (keyword function)
+  "Register FUNCTION for KEYWORD as a SQL expander.
+FUNCTION should accept a single argument, the keyword's argument,
+and should return a list of (<string> [arg-pos] ...)."
+  (push (cons keyword function) emacsql-expanders)
+  :keyword)
+
+(defmacro emacsql-defexpander (keyword args &rest body)
+  "Define an expander for KEYWORD."
+  (declare (indent 2))
+  `(emacsql-add-expander ,keyword (lambda ,args ,@body)))
+
+(defun emacsql-expand (sql)
+  "Expand SQL into a SQL-consumable string, with variables."
+  (loop for (keyword argument) on (cl-coerce sql 'list) by #'cddr
+        for expander = (cdr (assoc keyword emacsql-expanders))
+        when expander collect (funcall expander argument) into parts
+        else do (error "Unrecognized keyword %s" keyword)
+        finally (return (cons (concat (mapconcat #'car parts " ") ";")
+                              (apply #'nconc (mapcar #'cdr parts))))))
+
+(defun emacsql-format (expansion &rest args)
+  "Fill in the variables EXPANSION with ARGS."
+  (cl-destructuring-bind (format . vars) expansion
+    (apply #'format format
+           (cl-loop for (i . kind) in vars collect
+                    (cl-ecase kind
+                      (:identifier (emacsql-escape (nth i args)))
+                      (:value (emacsql-escape-value (nth i args))))))))
+
+(defun emacsql-var (var)
+  "Return the index number of VAR, or nil if VAR is not a variable.
+A variable is a symbol that looks like $1, $2, $3, etc. A $ means $1."
+  (when (symbolp var)
+    (let ((name (symbol-name var)))
+      (when (eql (aref name 0) ?$)
+        (if (> (length name) 1)
+            (1- (read (substring name 1)))
+          0)))))
+
+(defun emacsql-escape-format (thing &optional kind)
+  "Escape THING for use as a `format' spec, pre-escaping for KIND.
+KIND should be :value or :identifier."
+  (replace-regexp-in-string
+   "%" "%%" (case kind
+              (:value (emacsql-escape-value thing))
+              (:identifier (emacsql-escape thing))
+              (otherwise thing))))
+
+(emacsql-defexpander :select (arg)
+  "Expands to the SELECT keyword."
+  (let ((vars ()))
+    (cons
+     (concat
+      "SELECT "
+      (cond
+       ((eq '* arg) "*")
+       ((emacsql-var arg)
+        (push (cons (emacsql-var arg) :identifier) vars)
+        "%s")
+       ((symbolp arg)
+        (emacsql-escape-format arg :identifier))
+       ((vectorp arg)
+        (mapconcat
+         #'identity
+         (cl-loop for name elements of arg
+                  when (emacsql-var name)
+                  collect (prog1 "%s" (push (cons it :identifier) vars))
+                  else when (symbolp name)
+                  collect (emacsql-escape-format name :identifier)
+                  else do (error "Unknown format %S" name))
+         ", "))))
+     (nreverse vars))))
+
+(emacsql-defexpander :from (table)
+  "Expands to the FROM keyword."
+  (if (emacsql-var table)
+      (list "FROM %s" (cons (emacsql-var table) :identifier))
+    (list (concat "FROM " (emacsql-escape-format table :identifier)))))
+
 (provide 'emacsql)
 
 ;;; emacsql.el ends here
