@@ -1,5 +1,10 @@
 ;;; emacsql.el --- SQL database built on SQLite -*- lexical-binding: t; -*-
 
+;; This is free and unencumbered software released into the public domain.
+
+;; Author: Christopher Wellons <wellons@nullprogram.com>
+;; URL: https://github.com/skeeto/emacsql
+
 ;;; Commentary:
 
 ;; The purpose of this package is to provide a high-level Elisp
