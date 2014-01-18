@@ -398,6 +398,7 @@ definitions for return from a `emacsql-defexpander'."
       (cl-destructuring-bind (op . args) expr
         (cl-flet ((recur (n) (combine (emacsql--expr (nth n args)))))
           (cl-ecase op
+            ;; Trinary/binary
             ((<= >=)
              (cl-ecase (length args)
                (2 (format "%s %s %s" (recur 0) op (recur 1)))
@@ -405,13 +406,24 @@ definitions for return from a `emacsql-defexpander'."
                           (recur 1)
                           (recur (if (eq op '>=) 2 0))
                           (recur (if (eq op '>=) 0 2))))))
-            ((< > = != like glob is and or * / % << >> + - & |)
+            ;; Binary
+            ((< > = != like glob is and or * / % << >> + & |)
              (if (= 2 (length args))
                  (format "%s %s %s"
                          (recur 0)
                          (if (eq op '%) '%% (upcase (symbol-name op)))
                          (recur 1))
-               (error "Wrong number of operands for %s" op)))))))))
+               (error "Wrong number of operands for %s" op)))
+            ;; Unary
+            ((not)
+             (if (= 1 (length args))
+                 (format "%s %s" (upcase (symbol-name op)) (recur 0))
+               (error "Wrong number of operands for %s" op)))
+            ;; Unary/Binary
+            ((-)
+             (cl-ecase (length args)
+               (1 (format "-(%s)" (recur 0)))
+               (2 (format "%s - %s" (recur 0) (recur 1)))))))))))
 
 ;; SQL Expansion Functions:
 
