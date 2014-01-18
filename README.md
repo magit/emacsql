@@ -15,31 +15,47 @@ objects.
 
 Requires Emacs 24 or later.
 
-## Usage
+## Example Usage
 
 ```el
-(defvar db (emacsql-connect "company.db"))
+(defvar db (emacsql-connect "/var/lib/company.db"))
 
 ;; Create a table. A table identifier can be any kind of lisp value.
-(emacsql-create db 'employees [name id salary])
+(emacsql db [:create-table people [name id salary]])
 
 ;; Or optionally provide column constraints.
-(emacsql-create db 'employees [name (id integer :unique) (salary float)])
+(emacsql db [:create-table people [name (id integer :unique) (salary float)]])
 
 ;; Insert some data:
-(emacsql-insert db 'employees ["Jeff"  1000 60000.0]
-                              ["Susan" 1001 64000.0])
+(emacsql-insert db 'people ["Jeff"  1000 60000.0]
+                           ["Susan" 1001 64000.0])
 
 ;; Query the database for results:
-(emacsql db [:select [name id] :from employees :where (> salary 62000)])
+(emacsql db [:select [name id] :from people :where (> salary 62000)])
 ;; => (("Susan" 1001))
 
 ;; Queries can be templates, using $1, $2, etc.:
-(emacsql db
-         [:select [name id] :from employees :where (> salary $1)]
-         50000)
+(emacsql db [:select [name id] :from people :where (> salary $1)] 50000)
 ;; => (("Jeff" 1000) ("Susan" 1001))
 ```
+
+## Schema
+
+A table schema is a vector of column specification. A column
+identifier is a symbol and a specification can either be just this
+symbol or it can include constraints, such as type and uniqueness.
+Because Emacsql stores entire lisp objects as values, the only
+relevant types are `integer`, `float`, and `object` (default).
+
+Additional contraints include `:primary` (aka `PRIMARY KEY`),
+`:unique` (aka `UNIQUE`), `:non-nil` (aka `NOT NULL`).
+
+```el
+;; Example schema:
+[name (badge-no integer :primary :unique) address]
+```
+
+The lisp object `nil` corresponds 1:1 with `NULL` in the database.
 
 ## Operators
 
@@ -83,30 +99,38 @@ When multiple keywords appear in sequence, Emacsql will generally
 concatenate them with a dash, e.g. `CREATE TABLE` becomes
 `:create-table`.
 
- * `:create-table <ident> <schema>`
+#### :create-table `<ident>` `<schema>`
 
 Provides `CREATE TABLE`.
 
-    ex. [:create-table employees [name (id integer :primary) (salary float)]]
+```el
+[:create-table employees [name (id integer :primary) (salary float)]]
+```
 
- * `:drop-table <ident>`
+#### :drop-table `<ident>`
 
 Provides `DROP TABLE`.
 
-    ex. [:drop-table employees]
+```el
+[:drop-table employees]
+```
 
- * `:select <column-spec>`
+#### :select `<column-spec>`
 
 Provides `SELECT`. `column-spec` can be a `*` symbol or a vector of
 column identifiers, optionally as expressions.
 
-    ex. [:select [name (/ salary 52)] ...]
+```el
+[:select [name (/ salary 52)] ...]
+```
 
- * `:from <ident>`
+#### :from `<ident>`
 
 Provides `FROM`.
 
-    ex. [... :from employees]
+```el
+[... :from employees]
+```
 
 ### Templates
 
