@@ -50,4 +50,6 @@
   (emacsql-tests-query [:select * :from employees :where (< salary 50000)] ()
                        "SELECT * FROM employees WHERE salary < 50000;")
   (emacsql-tests-query [:create-table foo [a b c]] ()
-                       "CREATE TABLE foo (a, b, c);"))
+                       "CREATE TABLE foo (a, b, c);")
+  (emacsql-tests-query [:drop-table $1] '(foo)
+                       "DROP TABLE foo;"))

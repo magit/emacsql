@@ -265,11 +265,6 @@ If NAMED is non-nil, don't include column names."
              (emacsql-escape table)
              (emacsql--schema-to-string schema)))))
 
-(defun emacsql-drop (conn table)
-  "Drop TABLE from CONN."
-  (emacsql-with-errors conn
-    (emacsql--send conn (format "DROP TABLE %s;" (emacsql-escape table)))))
-
 (defun emacsql-escape-value (value)
   "Escape VALUE for sending to SQLite."
   (let ((print-escape-newlines t))
@@ -415,6 +410,10 @@ definitions for return from a `emacsql-defexpander'."
   (emacsql-with-vars "CREATE TABLE "
     (format "%s (%s)" (var table :identifier)
             (emacsql--schema-to-string schema))))
+
+(emacsql-defexpander :drop-table (table)
+  (emacsql-with-vars "DROP TABLE "
+    (var table :identifier)))
 
 (provide 'emacsql)
 
