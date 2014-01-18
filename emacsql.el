@@ -209,8 +209,10 @@ buffer. This is for debugging purposes."
 
 (defun emacsql-wait (conn &optional timeout)
   "Block Emacs until CONN has finished sending output."
-  (while (not (emacsql--complete-p conn))
-    (accept-process-output (emacsql-process conn))))
+  (let ((end (when timeout (+ (float-time) timeout))))
+    (while (and (or (null timeout) (< (float-time) end))
+                (not (emacsql--complete-p conn)))
+      (accept-process-output (emacsql-process conn) timeout))))
 
 (defmacro emacsql-with-errors (conn &rest body)
   "Run BODY checking for errors from SQLite after completion."
