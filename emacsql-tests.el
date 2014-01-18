@@ -1,4 +1,9 @@
+;;; emacsql-tests.el --- tests for emacsql
+
+;;; Code:
+
 (require 'ert)
+(require 'emacsql)
 
 (ert-deftest emacsql-escape ()
   (should (string= (emacsql-escape "foo") "foo"))
@@ -53,3 +58,7 @@
                        "CREATE TABLE foo (a, b, c);")
   (emacsql-tests-query [:drop-table $1] '(foo)
                        "DROP TABLE foo;"))
+
+(provide 'emacsql-tests)
+
+;;; emacsql-tests.el ends here
