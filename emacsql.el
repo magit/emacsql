@@ -402,7 +402,9 @@ definitions for return from a `emacsql-defexpander'."
              (cl-ecase (length args)
                (2 (format "%s %s %s" (recur 0) op (recur 1)))
                (3 (format "%s BETWEEN %s AND %s"
-                          (recur 1) (recur 0) (recur 2)))))
+                          (recur 1)
+                          (recur (if (eq op '>=) 2 0))
+                          (recur (if (eq op '>=) 0 2))))))
             ((< > = != like glob is and or * / % << >> + - & |)
              (if (= 2 (length args))
                  (format "%s %s %s"
