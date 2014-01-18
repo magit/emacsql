@@ -411,6 +411,11 @@ definitions for return from a `emacsql-defexpander'."
     (cl-destructuring-bind (op a b) expr
       (format "%s %s %s" (var a :auto) op (var b :auto)))))
 
+(emacsql-defexpander :create-table (table schema)
+  (emacsql-with-vars "CREATE TABLE "
+    (format "%s (%s)" (var table :identifier)
+            (emacsql--schema-to-string schema))))
+
 (provide 'emacsql)
 
 ;;; emacsql.el ends here
