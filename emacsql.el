@@ -432,8 +432,7 @@ definitions for return from a `emacsql-defexpander'."
 
 (emacsql-defexpander :where (expr)
   (emacsql-with-vars "WHERE "
-    (cl-destructuring-bind (op a b) expr
-      (format "%s %s %s" (var a :auto) op (var b :auto)))))
+    (combine (emacsql--expr expr))))
 
 (emacsql-defexpander :create-table (table schema)
   (emacsql-with-vars "CREATE TABLE "
