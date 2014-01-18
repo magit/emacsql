@@ -85,20 +85,26 @@ concatenate them with a dash, e.g. `CREATE TABLE` becomes
 
  * `:create-table <ident> <schema>`
 
+Provides `CREATE TABLE`.
+
     ex. [:create-table employees [name (id integer :primary) (salary float)]]
 
  * `:drop-table <ident>`
+
+Provides `DROP TABLE`.
 
     ex. [:drop-table employees]
 
  * `:select <column-spec>`
 
+Provides `SELECT`. `column-spec` can be a `*` symbol or a vector of
+column identifiers, optionally as expressions.
+
     ex. [:select [name (/ salary 52)] ...]
 
-`column-spec` can be a `*` symbol or a vector of column identifiers,
-optionally as expressions.
-
  * `:from <ident>`
+
+Provides `FROM`.
 
     ex. [... :from employees]
 
