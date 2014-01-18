@@ -295,24 +295,30 @@ Each row must be a sequence of values to store into TABLE.
 (defvar emacsql-expanders ()
   "Alist of all expansion functions.")
 
-(defun emacsql-add-expander (keyword function)
+(defun emacsql-add-expander (keyword arity function)
   "Register FUNCTION for KEYWORD as a SQL expander.
-FUNCTION should accept a single argument, the keyword's argument,
-and should return a list of (<string> [arg-pos] ...)."
+FUNCTION should accept the keyword's arguments and should return
+a list of (<string> [arg-pos] ...).
+
+See also `emacsql-with-errors'."
   (prog1 keyword
-    (push (cons keyword function) emacsql-expanders)))
+    (push (list keyword arity function) emacsql-expanders)))
 
 (defmacro emacsql-defexpander (keyword args &rest body)
   "Define an expander for KEYWORD."
   (declare (indent 2))
-  `(emacsql-add-expander ,keyword (lambda ,args ,@body)))
+  `(emacsql-add-expander ,keyword ,(length args) (lambda ,args ,@body)))
 
 (defun emacsql-expand (sql)
   "Expand SQL into a SQL-consumable string, with variables."
-  (loop for (keyword argument) on (cl-coerce sql 'list) by #'cddr
-        for expander = (cdr (assoc keyword emacsql-expanders))
-        when expander collect (funcall expander argument) into parts
+  (loop with items = (cl-coerce sql 'list)
+        while (not (null items))
+        for keyword = (pop items)
+        for (arity expander) = (cdr (assoc keyword emacsql-expanders))
+        when expander
+        collect (apply expander (subseq items 0 arity)) into parts
         else do (error "Unrecognized keyword %s" keyword)
+        do (setf items (subseq items arity))
         finally (return (cons (concat (mapconcat #'car parts " ") ";")
                               (apply #'nconc (mapcar #'cdr parts))))))
 
