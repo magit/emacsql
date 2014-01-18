@@ -175,7 +175,7 @@ buffer. This is for debugging purposes."
     (let ((standard-input (current-buffer)))
       (setf (point) (point-min))
       (cl-loop until (looking-at "#")
-               do (search-forward "=")
+               do (search-forward " = ")
                for value = (read)
                collect value into row
                do (forward-char)
