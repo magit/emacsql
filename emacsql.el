@@ -169,18 +169,15 @@ buffer. This is for debugging purposes."
                                         (buffer-substring
                                          (- (point-max) 2) (point-max)))))))
 
-(defun emacsql--parse (conn &rest named)
-  "Parse a query result into an s-expression.
-If NAMED is non-nil, don't include column names."
+(defun emacsql--parse (conn)
+  "Parse a query result into an s-expression."
   (with-current-buffer (emacsql-buffer conn)
     (let ((standard-input (current-buffer)))
       (setf (point) (point-min))
       (cl-loop until (looking-at "#")
-               for name = (read)
-               do (forward-char 3)
+               do (search-forward "=")
                for value = (read)
-               when named collect (cons name value) into row
-                     else collect value into row
+               collect value into row
                do (forward-char)
                when (or (looking-at "\n") (looking-at "#"))
                collect row into rows and do (setf row ())
