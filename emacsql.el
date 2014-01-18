@@ -107,7 +107,7 @@ buffer. This is for debugging purposes."
       (when log
         (setf (emacsql-log conn) (generate-new-buffer "*emacsql-log*")))
       (prog1 conn
-        (push (cons (copy-seq conn) (emacsql--ref conn))
+        (push (cons (copy-sequence conn) (emacsql--ref conn))
               emacsql-connections)))))
 
 (defun emacsql-close (conn)
@@ -124,12 +124,12 @@ buffer. This is for debugging purposes."
   "Clean up after lost connections."
   (cl-loop for (conn-copy . ref) in emacsql-connections
            when (null (emacsql--deref ref))
-           count (prog1 t (ignore-errors (emacsql-close emacsql-copy)))
+           count (prog1 t (ignore-errors (emacsql-close conn-copy)))
            into total
            else collect (cons conn-copy ref) into connections
            finally (progn
                      (setf emacsql-connections connections)
-                     (return total))))
+                     (cl-return total))))
 
 (cl-defun emacsql-start-reap-timer (&optional (interval 60))
   "Start the automatic `emacql-reap' timer."
@@ -181,7 +181,7 @@ buffer. This is for debugging purposes."
                do (forward-char)
                when (or (looking-at "\n") (looking-at "#"))
                collect row into rows and do (setf row ())
-               finally (return rows)))))
+               finally (cl-return rows)))))
 
 (defun emacsql-escape (identifier &optional force)
   "Escape an identifier, always with quotes when FORCE is non-nil."
@@ -227,7 +227,7 @@ buffer. This is for debugging purposes."
         (type nil))
     (while column
       (let ((next (pop column)))
-        (case next
+        (cl-case next
           (:primary (push "PRIMARY KEY" output))
           (:non-nil (push "NOT NULL" output))
           (:unique  (push "UNIQUE" output))
@@ -248,7 +248,7 @@ buffer. This is for debugging purposes."
   (cl-loop for column being the elements of schema
            when (symbolp column) collect (emacsql-escape column) into parts
            else collect (emacsql--column-to-string column) into parts
-           finally (return (mapconcat #'identity parts ", "))))
+           finally (cl-return (mapconcat #'identity parts ", "))))
 
 (defun emacsql-create (conn table schema &optional if-not-exists)
   "Create TABLE in CONN with SCHEMA."
@@ -303,16 +303,16 @@ See also `emacsql-with-errors'."
 
 (defun emacsql-expand (sql)
   "Expand SQL into a SQL-consumable string, with variables."
-  (loop with items = (cl-coerce sql 'list)
-        while (not (null items))
-        for keyword = (pop items)
-        for (arity expander) = (cdr (assoc keyword emacsql-expanders))
-        when expander
-        collect (apply expander (subseq items 0 arity)) into parts
-        else do (error "Unrecognized keyword %s" keyword)
-        do (setf items (subseq items arity))
-        finally (return (cons (concat (mapconcat #'car parts " ") ";")
-                              (apply #'nconc (mapcar #'cdr parts))))))
+  (cl-loop with items = (cl-coerce sql 'list)
+           while (not (null items))
+           for keyword = (pop items)
+           for (arity expander) = (cdr (assoc keyword emacsql-expanders))
+           when expander
+           collect (apply expander (cl-subseq items 0 arity)) into parts
+           else do (error "Unrecognized keyword %s" keyword)
+           do (setf items (cl-subseq items arity))
+           finally (cl-return (cons (concat (mapconcat #'car parts " ") ";")
+                                 (apply #'nconc (mapcar #'cdr parts))))))
 
 (defun emacsql-format (expansion &rest args)
   "Fill in the variables EXPANSION with ARGS."
@@ -348,7 +348,7 @@ A variable is a symbol that looks like $1, $2, $3, etc. A $ means $1."
   "Escape THING for use as a `format' spec, pre-escaping for KIND.
 KIND should be :value or :identifier."
   (replace-regexp-in-string
-   "%" "%%" (case kind
+   "%" "%%" (cl-case kind
               (:value (emacsql-escape-value thing))
               (:identifier (emacsql-escape thing))
               (otherwise thing))))
@@ -367,7 +367,7 @@ KIND should be :value or :identifier."
   "Only use within `emacsql-with-vars'!"
   (if (emacsql-var thing)
       (prog1 "%s" (push (cons (emacsql-var thing) kind) emacsql--vars))
-    (ecase kind
+    (cl-ecase kind
       ((:identifier :value) (emacsql-escape-format thing kind))
       (:auto (emacsql-escape-format
               thing (if (symbolp thing) :identifier :value))))))
@@ -389,6 +389,9 @@ definitions for return from a `emacsql-defexpander'."
                ((emacsql-symbol-function 'combine)
                 (symbol-function 'emacsql--vars-combine)))
        (cons (concat ,prefix (progn ,@body)) emacsql--vars))))
+
+(declare-function combine nil (expanded))
+(declare-function var nil (thing kind))
 
 (defun emacsql--expr (expr)
   "Expand EXPR recursively."
