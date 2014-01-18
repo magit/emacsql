@@ -419,7 +419,7 @@ definitions for return from a `emacsql-defexpander'."
     (cond
      ((eq '* arg) "*")
      ((vectorp arg)
-      (mapconcat (lambda (s) (var s :identifier)) arg ", "))
+      (mapconcat (lambda (s) (combine (emacsql--expr s))) arg ", "))
      ((var arg :identifier)))))
 
 (emacsql-defexpander :from (table)
