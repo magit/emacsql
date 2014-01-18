@@ -355,53 +355,55 @@ KIND should be :value or :identifier."
               (:identifier (emacsql-escape thing))
               (otherwise thing))))
 
+(defvar emacsql--vars ()
+  "For use with `emacsql-with-vars'.")
+
+(defun emacsql-symbol-function (symbol)
+  "Like `symbol-function' but don't return an error."
+  (ignore-errors (symbol-function symbol)))
+
+(gv-define-setter emacsql-symbol-function (store symbol)
+  `(if ,store (fset ,symbol ,store) (fmakunbound ,symbol)))
+
+(defun emacsql--vars-collect (thing kind)
+  "Only use within `emacsql-with-vars'!"
+  (if (emacsql-var thing)
+      (prog1 "%s" (push (cons (emacsql-var thing) kind) emacsql--vars))
+    (ecase kind
+      ((:identifier :value) (emacsql-escape-format thing kind))
+      (:auto (emacsql-escape-format
+              thing (if (symbolp thing) :identifier :value))))))
+
+(defmacro emacsql-with-vars (prefix &rest body)
+  "Evaluate BODY, collecting variables with `var'.
+BODY should return a string, which will be combined with variable
+definitions for return from a `emacsql-defexpander'."
+  (declare (indent 1))
+  `(let ((emacsql--vars ()))
+     (cl-letf (((emacsql-symbol-function 'var)
+                (symbol-function 'emacsql--vars-collect)))
+       (cons (concat ,prefix (progn ,@body)) emacsql--vars))))
+
 ;; SQL Expansion Functions:
 
 (emacsql-defexpander :select (arg)
   "Expands to the SELECT keyword."
-  (let ((vars ()))
-    (cons
-     (concat
-      "SELECT "
-      (cond
-       ((eq '* arg) "*")
-       ((emacsql-var arg)
-        (push (cons (emacsql-var arg) :identifier) vars)
-        "%s")
-       ((symbolp arg)
-        (emacsql-escape-format arg :identifier))
-       ((vectorp arg)
-        (mapconcat
-         #'identity
-         (cl-loop for name elements of arg
-                  when (emacsql-var name)
-                  collect (prog1 "%s" (push (cons it :identifier) vars))
-                  else when (symbolp name)
-                  collect (emacsql-escape-format name :identifier)
-                  else do (error "Unknown format %S" name))
-         ", "))))
-     (nreverse vars))))
+  (emacsql-with-vars "SELECT "
+    (cond
+     ((eq '* arg) "*")
+     ((vectorp arg)
+      (mapconcat (lambda (s) (var s :identifier)) arg ", "))
+     ((var arg :identifier)))))
 
 (emacsql-defexpander :from (table)
   "Expands to the FROM keyword."
-  (if (emacsql-var table)
-      (list "FROM %s" (cons (emacsql-var table) :identifier))
-    (list (concat "FROM " (emacsql-escape-format table :identifier)))))
+  (emacsql-with-vars "FROM "
+    (var table :identifier)))
 
 (emacsql-defexpander :where (expr)
-  (let ((vars ()))
-    (cl-flet* ((collect (thing)
-                 (push (cons (emacsql-var thing) :auto) vars) "%s")
-               (handle (v)
-                 (cond ((emacsql-var v) (collect v))
-                       ((symbolp v) (emacsql-escape-format v :identifier))
-                       ((emacsql-escape-format v :value)))))
-      (cl-destructuring-bind (op a b) expr
-        (cons (format "WHERE %s %s %s"
-                      (handle a)
-                      op
-                      (handle b))
-              (nreverse vars))))))
+  (emacsql-with-vars "WHERE "
+    (cl-destructuring-bind (op a b) expr
+      (format "%s %s %s" (var a :auto) op (var b :auto)))))
 
 (provide 'emacsql)
 
