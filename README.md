@@ -149,5 +149,9 @@ s-expressions TEXT values. This avoids ambiguities in parsing output
 from the command line and allows for storage of Emacs richer data
 types. This is a high-performance database specifically for Emacs.
 
+## See Also
+
+ * [SQLite Documentation](https://www.sqlite.org/docs.html)
+
 
 [readable]: http://nullprogram.com/blog/2013/12/30/#almost_everything_prints_readably
