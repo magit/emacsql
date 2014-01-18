@@ -393,6 +393,27 @@ definitions for return from a `emacsql-defexpander'."
                 (symbol-function 'emacsql--vars-combine)))
        (cons (concat ,prefix (progn ,@body)) emacsql--vars))))
 
+(defun emacsql--expr (expr)
+  "Expand EXPR recursively."
+  (emacsql-with-vars ""
+    (if (atom expr)
+        (var expr :auto)
+      (cl-destructuring-bind (op . args) expr
+        (cl-flet ((recur (n) (combine (emacsql--expr (nth n args)))))
+          (cl-ecase op
+            ((<= >=)
+             (cl-ecase (length args)
+               (2 (format "%s %s %s" (recur 0) op (recur 1)))
+               (3 (format "%s BETWEEN %s AND %s"
+                          (recur 1)
+                          (recur (if (eq op '<=) 2 0))
+                          (recur (if (eq op '<=) 0 2))))))
+            ((< > = != like glob is and or * / % << >> + - & |)
+             (format "%s %s %s"
+                     (recur 0)
+                     (upcase (symbol-name op))
+                     (recur 1)))))))))
+
 ;; SQL Expansion Functions:
 
 (emacsql-defexpander :select (arg)
