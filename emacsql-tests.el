@@ -39,10 +39,13 @@
 
 (defun emacsql-tests-query (query args result)
   "Check that QUERY outputs RESULT for ARGS."
-  (should (string= (apply #'emacsql-format (emacsql-expand query) args) result)))
+  (should (string= (apply #'emacsql-format (emacsql-expand query) args)
+                   result)))
 
 (ert-deftest emacsql-expand ()
   (emacsql-tests-query [:select [$1 name] :from $2] '(id people)
                        "SELECT id, name FROM people;")
   (emacsql-tests-query [:select * :from employees] ()
-                       "SELECT * FROM employees;"))
+                       "SELECT * FROM employees;")
+  (emacsql-tests-query [:select * :from employees :where (< salary 50000)] ()
+                       "SELECT * FROM employees WHERE salary < 50000;"))
