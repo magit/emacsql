@@ -408,7 +408,7 @@ definitions for return from a `emacsql-defexpander'."
             ((< > = != like glob is and or * / % << >> + - & |)
              (format "%s %s %s"
                      (recur 0)
-                     (upcase (symbol-name op))
+                     (if (eq op '%) '%% (upcase (symbol-name op)))
                      (recur 1)))))))))
 
 ;; SQL Expansion Functions:
