@@ -375,14 +375,22 @@ KIND should be :value or :identifier."
       (:auto (emacsql-escape-format
               thing (if (symbolp thing) :identifier :value))))))
 
+(defun emacsql--vars-combine (expanded)
+  "Only use within `emacsql-with-vars'!"
+  (cl-destructuring-bind (string . vars) expanded
+    (setf emacsql--vars (nconc emacsql--vars vars))
+    string))
+
 (defmacro emacsql-with-vars (prefix &rest body)
-  "Evaluate BODY, collecting variables with `var'.
+  "Evaluate BODY, collecting variables with `var' and `combine'.
 BODY should return a string, which will be combined with variable
 definitions for return from a `emacsql-defexpander'."
   (declare (indent 1))
   `(let ((emacsql--vars ()))
      (cl-letf (((emacsql-symbol-function 'var)
-                (symbol-function 'emacsql--vars-collect)))
+                (symbol-function 'emacsql--vars-collect))
+               ((emacsql-symbol-function 'combine)
+                (symbol-function 'emacsql--vars-combine)))
        (cons (concat ,prefix (progn ,@body)) emacsql--vars))))
 
 ;; SQL Expansion Functions:
