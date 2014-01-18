@@ -8,12 +8,14 @@ It works by keeping a `sqlite3` inferior process running (a
 are automatically cleaned up if they are garbage collected. All
 requests are synchronous.
 
-Any [readable lisp value][readable] can be stored as values in
+Any [readable lisp value][readable] can be stored as a value in
 Emacsql, including numbers, strings, symbols, lists, vectors, and
-closures. Emacsql has no concept of "TEXT" values, it's all just lisp
+closures. Emacsql has no concept of "TEXT" values; it's all just lisp
 objects.
 
 Requires Emacs 24 or later.
+
+## Usage
 
 ```el
 (defvar db (emacsql-connect "company.db"))
@@ -32,12 +34,82 @@ Requires Emacs 24 or later.
 (emacsql db [:select [name id] :from employees :where (> salary 62000)])
 ;; => (("Susan" 1001))
 
-;; Queries can be templates using $1, $2, etc.:
+;; Queries can be templates, using $1, $2, etc.:
 (emacsql db
          [:select [name id] :from employees :where (> salary $1)]
          50000)
 ;; => (("Jeff" 1000) ("Susan" 1001))
 ```
+
+## Operators
+
+Emacsql currently supports the following expression operators, named
+exactly like so in a structured Emacsql statement.
+
+    *     /     %     +     -     <<    >>    &
+    |     <     <=    >     >=    =     !=
+    is    like  glob  and   or
+
+The `<=` and `>=` operators accept 2 or 3 operands, transforming into
+a SQL `_ BETWEEN _ AND _` operator as appropriate.
+
+With `glob` and `like` keep in mind that they're matching the
+*printed* representations of these values, even if the value is a
+string.
+
+The `||` concatenation operator is unsupported because concatenating
+printed represenations breaks an important constraint: all values must
+remain readable within SQLite.
+
+## Structured Statements
+
+The database is interacted with via structured s-expression
+statements. You won't be concatenating strings on your own. (And it
+leaves out any possibility of a SQL injection!) See the "Usage"
+section above for examples. A statement is a vector of keywords and
+other lisp object.
+
+Structured Emacsql statements are compiled into SQL statements. The
+statement compiler is memoized so that using the same statement
+multiple times is fast. To assist in this, the statement can act as a
+template -- using `$1`, `$2`, etc. -- working like the Elisp `format`
+function.
+
+### Keywords
+
+Rather than the typical uppercase SQL keywords, keywords in a
+structured Emacsql statement are literally just that: lisp keywords.
+When multiple keywords appear in sequence, Emacsql will generally
+concatenate them with a dash, e.g. `CREATE TABLE` becomes
+`:create-table`.
+
+ * `:create-table <ident> <schema>`
+
+    ex. [:create-table employees [name (id integer :primary) (salary float)]]
+
+ * `:drop-table <ident>`
+
+    ex. [:drop-table employees]
+
+ * `:select <column-spec>`
+
+    ex. [:select [name (/ salary 52)] ...]
+
+`column-spec` can be a `*` symbol or a vector of column identifiers,
+optionally as expressions.
+
+ * `:from <ident>`
+
+    ex. [... :from employees]
+
+### Templates
+
+To make statement compilation faster, and to avoid making you build up
+statements dynamically, you can insert `$n` "variables" in place of
+identifiers and values. These refer to argument positions after the
+statement in the `emacsql` function, 1-indexed.
+
+    (emacsql db [:select * :from $1 :where (> salary $2)] 'employees 50000)
 
 ## Limitations
 
