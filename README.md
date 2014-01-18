@@ -58,7 +58,7 @@ With `glob` and `like` keep in mind that they're matching the
 string.
 
 The `||` concatenation operator is unsupported because concatenating
-printed represenations breaks an important constraint: all values must
+printed representations breaks an important constraint: all values must
 remain readable within SQLite.
 
 ## Structured Statements
