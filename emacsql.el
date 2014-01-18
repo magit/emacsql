@@ -473,6 +473,9 @@ definitions for return from a `emacsql-defexpander'."
   (emacsql-with-vars "DROP TABLE "
     (var table :identifier)))
 
+(emacsql-defexpander :delete ()
+  (list "DELETE"))
+
 (provide 'emacsql)
 
 ;;; emacsql.el ends here

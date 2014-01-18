@@ -132,6 +132,14 @@ Provides `FROM`.
 [... :from employees]
 ```
 
+#### :delete
+
+Provides `DELETE`.
+
+```el
+[:delete :from employees :where ...]
+```
+
 ### Templates
 
 To make statement compilation faster, and to avoid making you build up
