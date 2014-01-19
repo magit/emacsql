@@ -124,6 +124,13 @@ buffer. This is for debugging purposes."
     (when (and process (process-live-p process))
       (process-send-string process ".exit\n"))))
 
+(defmacro emacsql-with-connection (conn-spec &rest body)
+  (declare (indent 1))
+  `(let ((,(car conn-spec) (emacsql-connect ,@(cdr conn-spec))))
+     (unwind-protect
+         (progn ,@body)
+       (emacsql-close ,(car conn-spec)))))
+
 (defun emacsql-buffer (conn)
   "Get proccess buffer for CONN."
   (process-buffer (emacsql-process conn)))
@@ -222,14 +229,6 @@ buffer. This is for debugging purposes."
                 (not (emacsql--complete-p conn)))
       (accept-process-output (emacsql-process conn) timeout))))
 
-(defmacro emacsql-with-errors (conn &rest body)
-  "Run BODY checking for errors from SQLite after completion."
-  (declare (indent 1))
-  `(progn
-     (emacsql--clear ,conn)
-     ,@body
-     (emacsql--check-error ,conn)))
-
 (defun emacsql--column-to-string (column)
   "Convert COLUMN schema into a SQL string."
   (let ((name (emacsql-escape (pop column)))
@@ -284,9 +283,7 @@ buffer. This is for debugging purposes."
 (defun emacsql-add-expander (keyword arity function)
   "Register FUNCTION for KEYWORD as a SQL expander.
 FUNCTION should accept the keyword's arguments and should return
-a list of (<string> [arg-pos] ...).
-
-See also `emacsql-with-errors'."
+a list of (<string> [arg-pos] ...)."
   (prog1 keyword
     (clrhash emacsql-expander-cache)
     (push (list keyword arity function) emacsql-expanders)))
