@@ -14,6 +14,10 @@ objects.
 
 Requires Emacs 24 or later.
 
+Due to bad behavior from SQLite on Windows (not flushing stderr when
+`-interactive` is set) Emacsql will *not* signal error messages for
+invalid statements on this platform.
+
 ## Example Usage
 
 ```el
