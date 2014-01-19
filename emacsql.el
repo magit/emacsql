@@ -485,6 +485,18 @@ definitions for return from a `emacsql-defexpander'."
       (vector (mapconcat (lambda (s) (combine (emacsql--expr s))) set ", "))
       (list (combine (emacsql--expr set))))))
 
+(emacsql-defexpander :union ()
+  (list "UNION"))
+
+(emacsql-defexpander :union-all ()
+  (list "UNION ALL"))
+
+(emacsql-defexpander :intersect ()
+  (list "INTERSECT"))
+
+(emacsql-defexpander :except ()
+  (list "EXCEPT"))
+
 (provide 'emacsql)
 
 ;;; emacsql.el ends here

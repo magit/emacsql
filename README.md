@@ -193,6 +193,14 @@ Provides `SET`.
 [:update people :set [(= name "Ricky") (= salary 300000)] :where ...]
 ```
 
+#### :union, :union-all, :difference, :except
+
+Provides `UNION`, `UNION ALL`, `DIFFERENCE`, and `EXCEPT`.
+
+```el
+[:select * :from sales :union :select * :from accounting]
+```
+
 ### Templates
 
 To make statement compilation faster, and to avoid making you build up
