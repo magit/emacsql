@@ -99,7 +99,7 @@ When multiple keywords appear in sequence, Emacsql will generally
 concatenate them with a dash, e.g. `CREATE TABLE` becomes
 `:create-table`.
 
-#### :create-table `<ident>` `<schema>`
+#### :create-table `<table>` `<schema>`
 
 Provides `CREATE TABLE`.
 
@@ -107,7 +107,7 @@ Provides `CREATE TABLE`.
 [:create-table employees [name (id integer :primary) (salary float)]]
 ```
 
-#### :drop-table `<ident>`
+#### :drop-table `<table>`
 
 Provides `DROP TABLE`.
 
@@ -124,7 +124,7 @@ column identifiers, optionally as expressions.
 [:select [name (/ salary 52)] ...]
 ```
 
-#### :from `<ident>`
+#### :from `<table>`
 
 Provides `FROM`.
 
