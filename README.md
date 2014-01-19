@@ -190,7 +190,7 @@ Provides `SET`.
 
 ```el
 [:update people :set (= name "Richy") :where ...]
-[:update people :set [(= name "Ricky") (= salary 300000)] :where ...]
+[:update people :set [(= name "Richy") (= salary 300000)] :where ...]
 ```
 
 #### :union, :union-all, :difference, :except
