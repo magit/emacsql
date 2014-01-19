@@ -255,18 +255,6 @@ buffer. This is for debugging purposes."
            else collect (emacsql--column-to-string column) into parts
            finally (cl-return (mapconcat #'identity parts ", "))))
 
-(defun emacsql-create (conn table schema &optional if-not-exists)
-  "Create TABLE in CONN with SCHEMA."
-  (when (= 0 (length schema))
-    (error "Schema must not be empty."))
-  (emacsql-with-errors conn
-    (emacsql--send
-     conn
-     (format "CREATE TABLE %s%s (%s);"
-             (if if-not-exists "IF NOT EXISTS " "")
-             (emacsql-escape table)
-             (emacsql--schema-to-string schema)))))
-
 (defun emacsql-escape-value (value)
   "Escape VALUE for sending to SQLite."
   (let ((print-escape-newlines t))
