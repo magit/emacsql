@@ -69,7 +69,7 @@ exactly like so in a structured Emacsql statement.
 
     *     /     %     +     -     <<    >>    &
     |     <     <=    >     >=    =     !=
-    is    like  glob  and   or
+    is    like  glob  and   or    in
 
 The `<=` and `>=` operators accept 2 or 3 operands, transforming into
 a SQL `_ BETWEEN _ AND _` operator as appropriate.

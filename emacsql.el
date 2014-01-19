@@ -426,7 +426,12 @@ definitions for return from a `emacsql-defexpander'."
             ((-)
              (cl-ecase (length args)
                (1 (format "-(%s)" (recur 0)))
-               (2 (format "%s - %s" (recur 0) (recur 1)))))))))))
+               (2 (format "%s - %s" (recur 0) (recur 1)))))
+            ;; IN special case
+            ((in)
+             (if (= 2 (length args))
+                 (format "%s IN %s" (recur 0)
+                         (var (nth 1 args) :vector))))))))))
 
 ;; SQL Expansion Functions:
 

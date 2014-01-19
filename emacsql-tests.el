@@ -65,7 +65,9 @@
   (emacsql-tests-query [:drop-table $1] '(foo)
                        "DROP TABLE foo;")
   (emacsql-tests-query [:update people :set (= id $1)] '(10)
-                       "UPDATE people SET id = 10;"))
+                       "UPDATE people SET id = 10;")
+  (emacsql-tests-query [:select * :from people :where (in name $1)] '([FOO BAR])
+                       "SELECT * FROM people WHERE name IN ('FOO', 'BAR');"))
 
 (provide 'emacsql-tests)
 
