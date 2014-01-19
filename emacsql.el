@@ -273,18 +273,11 @@ buffer. This is for debugging purposes."
           ((numberp value) (prin1-to-string value))
           ((emacsql-escape (prin1-to-string value) t)))))
 
-(defun emacsql-insert (conn table &rest rows)
-  "Insert ROWS into TABLE.
-Each row must be a sequence of values to store into TABLE.
-
-  (emacsql-insert db :table '(\"Chris\" 0) [\"Jeff\" 1])"
-  (emacsql-with-errors conn
-    (emacsql--send
-     conn
-     (format "INSERT INTO %s VALUES (%s);" (emacsql-escape table)
-             (mapconcat (lambda (row)
-                          (mapconcat #'emacsql-escape-value row ", "))
-                        rows "), (")))))
+(defun emacsql-escape-vector (vector)
+  "Encode VECTOR into a SQL vector scalar."
+  (cl-etypecase vector
+    (list   (mapconcat #'emacsql-escape-vector vector ", "))
+    (vector (concat "(" (mapconcat #'emacsql-escape-value vector ", ") ")"))))
 
 ;; SQL Expansion:
 
@@ -339,6 +332,7 @@ See also `emacsql-with-errors'."
                       (cl-ecase kind
                         (:identifier (emacsql-escape thing))
                         (:value (emacsql-escape-value thing))
+                        (:vector (emacsql-escape-vector thing))
                         (:auto (if (symbolp thing)
                                    (emacsql-escape thing)
                                  (emacsql-escape-value thing)))))))))
@@ -367,6 +361,7 @@ KIND should be :value or :identifier."
    "%" "%%" (cl-case kind
               (:value (emacsql-escape-value thing))
               (:identifier (emacsql-escape thing))
+              (:vector (emacsql-escape-vector thing))
               (otherwise thing))))
 
 (defvar emacsql--vars ()
@@ -384,7 +379,7 @@ KIND should be :value or :identifier."
   (if (emacsql-var thing)
       (prog1 "%s" (push (cons (emacsql-var thing) kind) emacsql--vars))
     (cl-ecase kind
-      ((:identifier :value) (emacsql-escape-format thing kind))
+      ((:identifier :value :vector) (emacsql-escape-format thing kind))
       (:auto (emacsql-escape-format
               thing (if (symbolp thing) :identifier :value))))))
 
