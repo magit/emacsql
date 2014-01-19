@@ -468,6 +468,9 @@ definitions for return from a `emacsql-defexpander'."
 (emacsql-defexpander :insert ()
   (list "INSERT"))
 
+(emacsql-defexpander :replace ()
+  (list "REPLACE"))
+
 (emacsql-defexpander :values (values)
   (emacsql-with-vars "VALUES "
     (var values :vector)))

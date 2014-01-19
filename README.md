@@ -161,6 +161,14 @@ Provides `INSERT`.
 [:insert :into employees ...]
 ```
 
+#### :replace
+
+Provides `REPLACE`.
+
+```el
+[:replace :into employees ...]
+```
+
 #### :values `<vector>|(<vector> ...)`
 
 ```el
