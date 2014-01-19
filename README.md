@@ -12,7 +12,9 @@ Emacsql, including numbers, strings, symbols, lists, vectors, and
 closures. Emacsql has no concept of "TEXT" values; it's all just lisp
 objects.
 
-Requires Emacs 24 or later.
+Requires Emacs 24 or later. Currently Windows is unsupported due to a
+mysterious process communication issue, a bug either in Emacs or
+SQLite. Can you help solve this issue (#1)?
 
 ## Example Usage
 
