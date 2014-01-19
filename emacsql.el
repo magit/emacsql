@@ -476,6 +476,13 @@ definitions for return from a `emacsql-defexpander'."
 (emacsql-defexpander :delete ()
   (list "DELETE"))
 
+(emacsql-defexpander :insert ()
+  (list "INSERT"))
+
+(emacsql-defexpander :values (values)
+  (emacsql-with-vars "VALUES "
+    (var values :vector)))
+
 (provide 'emacsql)
 
 ;;; emacsql.el ends here
