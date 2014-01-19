@@ -63,7 +63,9 @@
   (emacsql-tests-query [:create-table foo [a b c]] ()
                        "CREATE TABLE foo (a, b, c);")
   (emacsql-tests-query [:drop-table $1] '(foo)
-                       "DROP TABLE foo;"))
+                       "DROP TABLE foo;")
+  (emacsql-tests-query [:update people :set (= id $1)] '(10)
+                       "UPDATE people SET id = 10;"))
 
 (provide 'emacsql-tests)
 

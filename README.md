@@ -168,6 +168,23 @@ Provides `INSERT`.
 [:insert :into employees :values (["Jeff" 0] ["Susan" 0])]
 ```
 
+#### :update `<table>`
+
+Provides `UPDATE`.
+
+```el
+[:update people :set ...]
+```
+
+#### :set `<assignment>|[<assignment> ...]`
+
+Provides `SET`.
+
+```el
+[:update people :set (= name "Richy") :where ...]
+[:update people :set [(= name "Ricky") (= salary 300000)] :where ...]
+```
+
 ### Templates
 
 To make statement compilation faster, and to avoid making you build up

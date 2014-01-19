@@ -472,6 +472,16 @@ definitions for return from a `emacsql-defexpander'."
   (emacsql-with-vars "VALUES "
     (var values :vector)))
 
+(emacsql-defexpander :update (table)
+  (emacsql-with-vars "UPDATE "
+    (var table :identifier)))
+
+(emacsql-defexpander :set (set)
+  (emacsql-with-vars "SET "
+    (cl-etypecase set
+      (vector (mapconcat (lambda (s) (combine (emacsql--expr s))) set ", "))
+      (list (combine (emacsql--expr set))))))
+
 (provide 'emacsql)
 
 ;;; emacsql.el ends here
