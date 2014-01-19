@@ -27,15 +27,20 @@ Requires Emacs 24 or later.
 (emacsql db [:create-table people [name (id integer :unique) (salary float)]])
 
 ;; Insert some data:
-(emacsql-insert db 'people ["Jeff"  1000 60000.0]
-                           ["Susan" 1001 64000.0])
+(emacsql db [:insert :into people
+             :values (["Jeff"  1000 60000.0] ["Susan" 1001 64000.0])])
 
 ;; Query the database for results:
-(emacsql db [:select [name id] :from people :where (> salary 62000)])
+(emacsql db [:select [name id]
+             :from people
+             :where (> salary 62000)])
 ;; => (("Susan" 1001))
 
 ;; Queries can be templates, using $1, $2, etc.:
-(emacsql db [:select [name id] :from people :where (> salary $1)] 50000)
+(emacsql db [:select [name id]
+             :from people
+             :where (> salary $1)]
+         50000)
 ;; => (("Jeff" 1000) ("Susan" 1001))
 ```
 

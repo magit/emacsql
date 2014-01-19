@@ -28,16 +28,16 @@
 ;; Table identifiers can be any lisp object: string, symbol, etc. I
 ;; suggest using a symbol. Use `emacsql-create' to create a table.
 
-;;     (emacsql-create db 'employees [name id salary])
+;;     (emacsql db [:create-table people [name id salary]])
 
 ;; Column constraints can optionally be provided.
 
-;;     (emacsql-create db 'employees [name (id integer) (salary real)])
+;;     (emacsql db [:create-table people [name (id integer :unique) salary]])
 
 ;; Insert values into a table with `emacsql-insert'.
 
-;;     (emacsql-insert db 'employees ["Jeff"  1000 60000.0]
-;;                                   ["Susan" 1001 64000.0])
+;;     (emacsql db [:insert :into people
+;;                  :values (["Jeff"  1000 60000.0] ["Susan" 1001 64000.0])])
 
 ;; Currently all actions are synchronous and Emacs will block until
 ;; SQLite has indicated it is finished processing the last command.
@@ -48,6 +48,7 @@
 ;;     ;; => (("Susan" 1001))
 
 ;; Queries can be templates using $1, $2, etc.:
+
 ;;     (emacsql db
 ;;              [:select [name id] :from employees :where (> salary $1)]
 ;;              50000)
