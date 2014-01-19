@@ -14,7 +14,7 @@ objects.
 
 Requires Emacs 24 or later. Currently Windows is unsupported due to a
 mysterious process communication issue, a bug either in Emacs or
-SQLite. Can you help solve this issue (#1)?
+SQLite. Can you help solve this issue ([#1][issue-1])?
 
 ## Example Usage
 
@@ -225,3 +225,4 @@ types. This is a high-performance database specifically for Emacs.
 
 
 [readable]: http://nullprogram.com/blog/2013/12/30/#almost_everything_prints_readably
+[issue-1]: https://github.com/skeeto/emacsql/issues/1
