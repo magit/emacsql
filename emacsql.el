@@ -70,9 +70,6 @@
 (defvar emacsql-sqlite3-executable "sqlite3"
   "Path to the sqlite3 executable.")
 
-(defvar emacsql-sqlite3-args '("-interactive")
-  "Additional arguments to pass to sqlite3.")
-
 (cl-defstruct (emacsql (:constructor emacsql--create))
   "A connection to a SQLite database."
   process file log)
@@ -103,10 +100,8 @@ buffer. This is for debugging purposes."
   (emacsql-start-reap-timer)
   (let* ((buffer (generate-new-buffer "*emacsql-connection*"))
          (fullfile (if file (expand-file-name file) ":memory:"))
-         (args emacsql-sqlite3-args)
-         (sqlite3 emacsql-sqlite3-executable)
-         (process (apply #'start-process "emacsql" buffer sqlite3
-                         (append args (list fullfile)))))
+         (process (start-process "emacsql" buffer emacsql-sqlite3-executable
+                                 "-interactive" fullfile)))
     (setf (process-sentinel process) (lambda (_proc _) (kill-buffer buffer)))
     (process-send-string process ".prompt #\n")
     (process-send-string process ".mode line\n")
