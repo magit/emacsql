@@ -460,6 +460,11 @@ definitions for return from a `emacsql-defexpander'."
   (emacsql-with-vars "FROM "
     (var table :identifier)))
 
+(emacsql-defexpander :into (table)
+  "Expands to the INTO keyword."
+  (emacsql-with-vars "INTO "
+    (var table :identifier)))
+
 (emacsql-defexpander :where (expr)
   (emacsql-with-vars "WHERE "
     (combine (emacsql--expr expr))))

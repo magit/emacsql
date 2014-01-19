@@ -132,6 +132,14 @@ Provides `FROM`.
 [... :from employees]
 ```
 
+#### :into `<table>`
+
+Provides `INTO`.
+
+```el
+[... :into employees]
+```
+
 #### :delete
 
 Provides `DELETE`.
