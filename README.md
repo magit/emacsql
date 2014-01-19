@@ -153,6 +153,21 @@ Provides `DELETE`.
 [:delete :from employees :where ...]
 ```
 
+#### :insert
+
+Provides `INSERT`.
+
+```el
+[:insert :into employees ...]
+```
+
+#### :values `<vector>|(<vector> ...)`
+
+```el
+[:insert :into employees :values ["Jeff" 0]]
+[:insert :into employees :values (["Jeff" 0] ["Susan" 0])]
+```
+
 ### Templates
 
 To make statement compilation faster, and to avoid making you build up
