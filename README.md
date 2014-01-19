@@ -1,7 +1,6 @@
 # Emacsql
 
-Emacsql is a high-level Emacs Lisp front-end for SQLite. It's
-currently a work in progress.
+Emacsql is a high-level Emacs Lisp front-end for SQLite.
 
 It works by keeping a `sqlite3` inferior process running (a
 "connection") for interacting with the back-end database. Connections
