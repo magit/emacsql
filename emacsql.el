@@ -108,7 +108,6 @@ buffer. This is for debugging purposes."
          (process (apply #'start-process "emacsql" buffer sqlite3
                          (append args (list fullfile)))))
     (setf (process-sentinel process) (lambda (_proc _) (kill-buffer buffer)))
-    (set-process-coding-system process 'utf-8-unix 'utf-8-unix)
     (process-send-string process ".prompt #\n")
     (process-send-string process ".mode line\n")
     (process-send-string process ".nullvalue nil\n")
