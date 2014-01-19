@@ -67,8 +67,11 @@
 
 (require 'cl-lib)
 
-(defvar emacsql-sqlite-executable "sqlite3"
+(defvar emacsql-sqlite3-executable "sqlite3"
   "Path to the sqlite3 executable.")
+
+(defvar emacsql-sqlite3-args '("-interactive")
+  "Additional arguments to pass to sqlite3.")
 
 (cl-defstruct (emacsql (:constructor emacsql--create))
   "A connection to a SQLite database."
@@ -99,14 +102,17 @@ If FILE is nil use an in-memory database.
 buffer. This is for debugging purposes."
   (emacsql-start-reap-timer)
   (let* ((buffer (generate-new-buffer "*emacsql-connection*"))
-         (process (start-process "emacsql" buffer emacsql-sqlite-executable
-                                 (or file ":memory:"))))
+         (fullfile (if file (expand-file-name file) ":memory:"))
+         (args emacsql-sqlite3-args)
+         (sqlite3 emacsql-sqlite3-executable)
+         (process (apply #'start-process "emacsql" buffer sqlite3
+                         (append args (list fullfile)))))
     (setf (process-sentinel process) (lambda (_proc _) (kill-buffer buffer)))
     (set-process-coding-system process 'utf-8-unix 'utf-8-unix)
     (process-send-string process ".prompt #\n")
     (process-send-string process ".mode line\n")
     (process-send-string process ".nullvalue nil\n")
-    (let ((conn (emacsql--create :process process :file file)))
+    (let ((conn (emacsql--create :process process :file (when file fullfile))))
       (when log
         (setf (emacsql-log conn) (generate-new-buffer "*emacsql-log*")))
       (prog1 conn
