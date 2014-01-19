@@ -22,6 +22,12 @@
   (should (string= (emacsql-escape-value '(a b c)) "'(a b c)'"))
   (should (string= (emacsql-escape-value nil) "NULL")))
 
+(ert-deftest emacsql-escape-vector ()
+  (should (string= (emacsql-escape-vector [1 2 3]) "(1, 2, 3)"))
+  (should (string= (emacsql-escape-vector '([1 2 3])) "(1, 2, 3)"))
+  (should (string= (emacsql-escape-vector '([1 2 3] [4 5 6]))
+                   "(1, 2, 3), (4, 5, 6)")))
+
 (ert-deftest emacsql-schema ()
   (should (string= (emacsql--schema-to-string [a]) "a"))
   (should (string= (emacsql--schema-to-string [a b c]) "a, b, c"))
