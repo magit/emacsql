@@ -119,13 +119,6 @@ buffer. This is for debugging purposes."
     (when (and process (process-live-p process))
       (process-send-string process ".exit\n"))))
 
-(defmacro emacsql-with-connection (conn-spec &rest body)
-  (declare (indent 1))
-  `(let ((,(car conn-spec) (emacsql-connect ,@(cdr conn-spec))))
-     (unwind-protect
-         (progn ,@body)
-       (emacsql-close ,(car conn-spec)))))
-
 (defun emacsql-buffer (conn)
   "Get proccess buffer for CONN."
   (process-buffer (emacsql-process conn)))
