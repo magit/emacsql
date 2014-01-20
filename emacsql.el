@@ -413,6 +413,17 @@ definitions for return from a `emacsql-defexpander'."
 (declare-function combine nil (expanded))
 (declare-function var nil (thing kind))
 
+(defun emacsql--vector (vector)
+  "Expand VECTOR, making variables as needed."
+  (emacsql-with-vars ""
+    (cl-etypecase vector
+      (symbol
+       (var vector :vector))
+      (list
+       (mapconcat (lambda (v) (combine (emacsql--vector v))) vector ", "))
+      (vector
+       (format "(%s)" (mapconcat (lambda (x) (var x :value)) vector ", "))))))
+
 (defun emacsql--expr (expr)
   "Expand EXPR recursively."
   (emacsql-with-vars ""
@@ -498,7 +509,7 @@ definitions for return from a `emacsql-defexpander'."
 
 (emacsql-defexpander :values (values)
   (emacsql-with-vars "VALUES "
-    (var values :vector)))
+    (combine (emacsql--vector values))))
 
 (emacsql-defexpander :update (table)
   (emacsql-with-vars "UPDATE "
