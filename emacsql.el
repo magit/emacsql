@@ -379,7 +379,7 @@ KIND should be :value or :identifier."
 (gv-define-setter emacsql-symbol-function (store symbol)
   `(if ,store (fset ,symbol ,store) (fmakunbound ,symbol)))
 
-(defun emacsql--vars-collect (thing kind)
+(defun emacsql--vars-var (thing kind)
   "Only use within `emacsql-with-vars'!"
   (if (emacsql-var thing)
       (prog1 "%s" (push (cons (emacsql-var thing) kind) emacsql--vars))
@@ -401,7 +401,7 @@ definitions for return from a `emacsql-defexpander'."
   (declare (indent 1))
   `(let ((emacsql--vars ()))
      (cl-letf (((emacsql-symbol-function 'var)
-                (symbol-function 'emacsql--vars-collect))
+                (symbol-function 'emacsql--vars-var))
                ((emacsql-symbol-function 'combine)
                 (symbol-function 'emacsql--vars-combine)))
        (cons (concat ,prefix (progn ,@body)) emacsql--vars))))
