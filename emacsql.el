@@ -170,6 +170,7 @@ CONN-SPEC is a connection specification like the call to
     (setf emacsql-reap-timer nil)))
 
 (defun emacsql--log (conn &rest messages)
+  "Log MESSAGES into CONN's log."
   (let ((log (emacsql-log conn)))
     (when log
       (with-current-buffer log
