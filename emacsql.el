@@ -211,18 +211,22 @@ CONN-SPEC is a connection specification like the call to
                collect row into rows and do (setf row ())
                finally (cl-return rows)))))
 
-(defun emacsql-escape-identifier (identifier &optional force)
+(defun emacsql-quote (string)
+  "Quote STRING for use in a SQL expression."
+  (format "'%s'" (replace-regexp-in-string "'" "''" string)))
+
+(defun emacsql-escape-identifier (identifier)
   "Escape an identifier, always with quotes when FORCE is non-nil."
-  (let ((string (if (stringp identifier)
-                    identifier
-                  (format "%S" identifier)))
-        (forbidden "[]-\000-\040!\"#%&'()*+,./:;<=>?@[\\^`{|}~\177]"))
-    (when (string-match-p "\n" string)
-      (error "Newlines not permitted in identifiers by emacsql."))
-    (if (or force
-            (string-match-p forbidden string)
-            (string-match-p "^[0-9$]" string))
-        (format "'%s'" (replace-regexp-in-string "'" "''" string))
+  (let ((string (cl-typecase identifier
+                  (string identifier)
+                  (keyword (substring (symbol-name identifier) 1))
+                  (otherwise (format "%S" identifier))))
+        (forbidden "[]-\000-\040!\"#%&'()*+,./;<=>?@[\\^`{|}~\177]"))
+    (when (or (string-match-p forbidden string)
+              (string-match-p "^[0-9$]" string))
+      (error "Invalid Emacsql identifier."))
+    (if (string-match-p ":" string)
+        (replace-regexp-in-string ":" "." string)
       string)))
 
 (defun emacsql--check-error (conn)
@@ -278,7 +282,7 @@ CONN-SPEC is a connection specification like the call to
   (let ((print-escape-newlines t))
     (cond ((null value) "NULL")
           ((numberp value) (prin1-to-string value))
-          ((emacsql-escape-identifier (prin1-to-string value) t)))))
+          ((emacsql-quote (prin1-to-string value))))))
 
 (defun emacsql-escape-vector (vector)
   "Encode VECTOR into a SQL vector scalar."
