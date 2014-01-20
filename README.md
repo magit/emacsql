@@ -14,9 +14,10 @@ objects.
 
 Requires Emacs 24 or later.
 
-Due to bad behavior from SQLite on Windows (not flushing stderr when
-`-interactive` is set) Emacsql will *not* signal error messages for
-invalid statements on this platform.
+Due to [bad behavior from SQLite on Windows][stderr] Emacsql will
+*not* signal error messages for invalid statements on this platform.
+Fortunately this would only be an issue during package development and
+shouldn't impact normal use of the database.
 
 ## Example Usage
 
@@ -227,4 +228,4 @@ types. This is a high-performance database specifically for Emacs.
 
 
 [readable]: http://nullprogram.com/blog/2013/12/30/#almost_everything_prints_readably
-[issue-1]: https://github.com/skeeto/emacsql/issues/1
+[stderr]: http://thread.gmane.org/gmane.comp.db.sqlite.general/85824
