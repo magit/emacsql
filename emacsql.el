@@ -342,6 +342,10 @@ a list of (<string> [arg-pos] ...)."
                                    (emacsql-escape-identifier thing)
                                  (emacsql-escape-value thing)))))))))
 
+(defun emacsql-compile (sql &rest args)
+  "Compile structured SQL expression into a string."
+  (apply #'emacsql-format (emacsql-expand sql) args))
+
 (defun emacsql (conn sql &rest args)
   "Send structured SQL expression to CONN with ARGS."
   (emacsql--clear conn)
