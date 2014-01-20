@@ -186,7 +186,7 @@ buffer. This is for debugging purposes."
                collect row into rows and do (setf row ())
                finally (cl-return rows)))))
 
-(defun emacsql-escape (identifier &optional force)
+(defun emacsql-escape-identifier (identifier &optional force)
   "Escape an identifier, always with quotes when FORCE is non-nil."
   (let ((string (if (stringp identifier)
                     identifier
@@ -219,7 +219,7 @@ buffer. This is for debugging purposes."
 
 (defun emacsql--column-to-string (column)
   "Convert COLUMN schema into a SQL string."
-  (let ((name (emacsql-escape (pop column)))
+  (let ((name (emacsql-escape-identifier (pop column)))
         (output ())
         (type nil))
     (while column
@@ -243,7 +243,8 @@ buffer. This is for debugging purposes."
 (defun emacsql--schema-to-string (schema)
   "Convert SCHEMA into a SQL-consumable string."
   (cl-loop for column being the elements of schema
-           when (symbolp column) collect (emacsql-escape column) into parts
+           when (symbolp column)
+           collect (emacsql-escape-identifier column) into parts
            else collect (emacsql--column-to-string column) into parts
            finally (cl-return (mapconcat #'identity parts ", "))))
 
@@ -252,7 +253,7 @@ buffer. This is for debugging purposes."
   (let ((print-escape-newlines t))
     (cond ((null value) "NULL")
           ((numberp value) (prin1-to-string value))
-          ((emacsql-escape (prin1-to-string value) t)))))
+          ((emacsql-escape-identifier (prin1-to-string value) t)))))
 
 (defun emacsql-escape-vector (vector)
   "Encode VECTOR into a SQL vector scalar."
@@ -309,11 +310,11 @@ a list of (<string> [arg-pos] ...)."
            (cl-loop for (i . kind) in vars collect
                     (let ((thing (nth i args)))
                       (cl-ecase kind
-                        (:identifier (emacsql-escape thing))
+                        (:identifier (emacsql-escape-identifier thing))
                         (:value (emacsql-escape-value thing))
                         (:vector (emacsql-escape-vector thing))
                         (:auto (if (symbolp thing)
-                                   (emacsql-escape thing)
+                                   (emacsql-escape-identifier thing)
                                  (emacsql-escape-value thing)))))))))
 
 (defun emacsql (conn sql &rest args)
@@ -339,7 +340,7 @@ KIND should be :value or :identifier."
   (replace-regexp-in-string
    "%" "%%" (cl-case kind
               (:value (emacsql-escape-value thing))
-              (:identifier (emacsql-escape thing))
+              (:identifier (emacsql-escape-identifier thing))
               (:vector (emacsql-escape-vector thing))
               (otherwise thing))))
 
