@@ -67,7 +67,9 @@
   (emacsql-tests-query [:update people :set (= id $1)] '(10)
                        "UPDATE people SET id = 10;")
   (emacsql-tests-query [:select * :from people :where (in name $1)] '([FOO BAR])
-                       "SELECT * FROM people WHERE name IN ('FOO', 'BAR');"))
+                       "SELECT * FROM people WHERE name IN ('FOO', 'BAR');")
+  (emacsql-tests-query [:insert :into foo :values [nil $1]] '(10.1)
+                       "INSERT INTO foo VALUES (NULL, 10.1);"))
 
 (ert-deftest emacsql-system ()
   (emacsql-with-connection (db nil)
