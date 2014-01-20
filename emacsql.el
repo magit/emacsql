@@ -91,6 +91,14 @@ This collection exists for cleanup purposes.")
   "Retrieve value from REF."
   (gethash t ref))
 
+(defun emacsql--flush (conn)
+  "Flush (and toss) any waiting output from CONN."
+  (emacsql--send conn ";\n.print EMACSQL")
+  (with-current-buffer (emacsql-buffer conn)
+    (cl-loop until (string-match-p "EMACSQL\n#" (buffer-string))
+             do (accept-process-output)))
+  (emacsql--clear conn))
+
 (cl-defun emacsql-connect (file &key log)
   "Open a connected to database stored in FILE.
 If FILE is nil use an in-memory database.
@@ -110,6 +118,7 @@ buffer. This is for debugging purposes."
       (when log
         (setf (emacsql-log conn) (generate-new-buffer "*emacsql-log*")))
       (prog1 conn
+        (emacsql--flush conn)
         (push (cons (copy-sequence conn) (emacsql--ref conn))
               emacsql-connections)))))
 
