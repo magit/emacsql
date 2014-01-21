@@ -70,7 +70,9 @@
   (emacsql-tests-query [:select * :from people :where (in name $1)] '([FOO BAR])
                        "SELECT * FROM people WHERE name IN ('FOO', 'BAR');")
   (emacsql-tests-query [:insert-into foo :values [nil $1]] '(10.1)
-                       "INSERT INTO foo VALUES (NULL, 10.1);"))
+                       "INSERT INTO foo VALUES (NULL, 10.1);")
+  (emacsql-tests-query [:create-table (:temporary :if-not-exists x) [y]] '()
+                       "CREATE TEMPORARY TABLE IF NOT EXISTS x (y);"))
 
 (ert-deftest emacsql-system ()
   (emacsql-with-connection (db nil)
