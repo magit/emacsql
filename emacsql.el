@@ -264,39 +264,6 @@ CONN-SPEC is a connection specification like the call to
                 (not (emacsql--complete-p conn)))
       (accept-process-output (emacsql-process conn) timeout))))
 
-(defun emacsql--column-to-string (column)
-  "Convert COLUMN schema into a SQL string."
-  (let ((name (emacsql-escape-identifier (pop column)))
-        (output ())
-        (type nil))
-    (while column
-      (let ((next (pop column)))
-        (cl-case next
-          (:primary (push "PRIMARY KEY" output))
-          (:non-nil (push "NOT NULL" output))
-          (:unique  (push "UNIQUE" output))
-          (:default (push "DEFAULT" output)
-                    (push (emacsql-escape-value (pop column)) output))
-          (integer  (setf type "INTEGER"))
-          (float    (setf type "REAL"))
-          (object   (setf type "TEXT"))
-          (otherwise
-           (if (keywordp next)
-               (error "Unknown schema contraint %s" next)
-             (error "Invalid type %s: %s" next
-                    "must be 'integer', 'float', or 'object'"))))))
-    (mapconcat #'identity
-               (nconc (if type (list name type) (list name)) (nreverse output))
-               " ")))
-
-(defun emacsql--schema-to-string (schema)
-  "Convert SCHEMA into a SQL-consumable string."
-  (cl-loop for column being the elements of schema
-           when (symbolp column)
-           collect (emacsql-escape-identifier column) into parts
-           else collect (emacsql--column-to-string column) into parts
-           finally (cl-return (mapconcat #'identity parts ", "))))
-
 (defun emacsql-escape-value (value)
   "Escape VALUE for sending to SQLite."
   (let ((print-escape-newlines t))
@@ -365,6 +332,7 @@ a list of (<string> [arg-pos] ...)."
                         (:identifier (emacsql-escape-identifier thing))
                         (:value (emacsql-escape-value thing))
                         (:vector (emacsql-escape-vector thing))
+                        (:schema (car (emacsql--schema-to-string thing)))
                         (:auto (if (symbolp thing)
                                    (emacsql-escape-identifier thing)
                                  (emacsql-escape-value thing)))))))))
@@ -429,6 +397,45 @@ definitions for return from a `emacsql-defexpander'."
                 (expr (thing) (combine (emacsql--expr thing)))
                 (idents (thing) (combine (emacsql--idents thing))))
        (cons (concat ,prefix (progn ,@body)) emacsql--vars))))
+
+(defun emacsql--column-to-string (column)
+  "Convert COLUMN schema into a SQL string."
+  (emacsql-with-vars ""
+    (let ((name (var (pop column) :identifier))
+          (output ())
+          (type nil))
+      (while column
+        (let ((next (pop column)))
+          (cl-case next
+            (:primary (push "PRIMARY KEY" output))
+            (:non-nil (push "NOT NULL" output))
+            (:unique  (push "UNIQUE" output))
+            (:default (push "DEFAULT" output)
+                      (push (var (pop column) :value) output))
+            (:check   (push "CHECK" output)
+                      (push (format "(%s)" (expr (pop column))) output))
+            (integer  (setf type "INTEGER"))
+            (float    (setf type "REAL"))
+            (object   (setf type "TEXT"))
+            (otherwise
+             (if (keywordp next)
+                 (error "Unknown schema contraint %s" next)
+               (error "Invalid type %s: %s" next
+                      "must be 'integer', 'float', or 'object'"))))))
+      (setf output (nreverse output))
+      (when type (push type output))
+      (push name output)
+      (mapconcat #'identity output " "))))
+
+(defun emacsql--schema-to-string (schema)
+  "Convert SCHEMA into a SQL-consumable string."
+  (emacsql-with-vars ""
+    (cl-loop for column across schema
+             when (symbolp column)
+             collect (var column :identifier) into parts
+             else
+             collect (combine (emacsql--column-to-string column)) into parts
+             finally (cl-return (mapconcat #'identity parts ", ")))))
 
 (defun emacsql--vector (vector)
   "Expand VECTOR, making variables as needed."
@@ -570,7 +577,9 @@ definitions for return from a `emacsql-defexpander'."
       (let* ((items (list temporary "TABLE" if-not-exists name))
              (spec (cl-remove-if-not #'identity items)))
         (format "%s (%s)" (mapconcat #'identity spec " ")
-                (emacsql--schema-to-string schema))))))
+                (if (symbolp schema)
+                    (var schema :schema)
+                  (combine (emacsql--schema-to-string schema))))))))
 
 (emacsql-defexpander :drop-table (table)
   (emacsql-with-vars "DROP TABLE "

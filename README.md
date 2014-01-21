@@ -59,8 +59,7 @@ Because Emacsql stores entire lisp objects as values, the only
 relevant types are `integer`, `float`, and `object` (default).
 
 Additional columns constraints include `:primary` (aka `PRIMARY KEY`),
-`:unique` (aka `UNIQUE`), `:non-nil` (aka `NOT NULL`), `:default` (aka
-`DEFAULT`).
+`:unique`, `:non-nil` (aka `NOT NULL`), `:default`, and `:check`.
 
 ```el
 ;; Example schema:
