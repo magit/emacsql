@@ -311,7 +311,7 @@ a list of (<string> [arg-pos] ...)."
   (declare (indent 2))
   `(emacsql-add-expander ,keyword ,(length args) (lambda ,args ,@body)))
 
-(defun emacsql-expand (sql)
+(defun emacsql-expand (sql &optional subsql-p)
   "Expand SQL into a SQL-consumable string, with variables."
   (let* ((cache emacsql-expander-cache)
          (cached (and cache (gethash sql cache))))
@@ -325,7 +325,9 @@ a list of (<string> [arg-pos] ...)."
                  else do (error "Unrecognized keyword %s" keyword)
                  do (setf items (cl-subseq items arity))
                  finally
-                 (let ((string (concat (mapconcat #'car parts " ") ";"))
+                 (let ((string (concat (if subsql-p "(" "")
+                                       (mapconcat #'car parts " ")
+                                       (if subsql-p ")" ";")))
                        (vars (apply #'nconc (mapcar #'cdr parts))))
                    (cl-return (setf (gethash sql cache)
                                     (cons string vars))))))))
