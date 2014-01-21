@@ -116,6 +116,7 @@ Provides `CREATE TABLE`.
 
 ```el
 [:create-table employees [name (id integer :primary) (salary float)]]
+[:create-table (:temporary :if-not-exists employees) ...]
 ```
 
 #### :drop-table `<table>`

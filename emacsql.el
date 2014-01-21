@@ -501,9 +501,17 @@ definitions for return from a `emacsql-defexpander'."
     (combine (emacsql--expr expr))))
 
 (emacsql-defexpander :create-table (table schema)
-  (emacsql-with-vars "CREATE TABLE "
-    (format "%s (%s)" (var table :identifier)
-            (emacsql--schema-to-string schema))))
+  (emacsql-with-vars "CREATE "
+    (let (temporary if-not-exists name)
+      (dolist (item (if (listp table) table (list table)))
+        (cl-case item
+          (:if-not-exists (setf if-not-exists "IF NOT EXISTS"))
+          (:temporary (setf temporary "TEMPORARY"))
+          (otherwise (setf name (var item :identifier)))))
+      (let* ((items (list temporary "TABLE" if-not-exists name))
+             (spec (remove-if-not #'identity items)))
+        (format "%s (%s)" (mapconcat #'identity spec " ")
+                (emacsql--schema-to-string schema))))))
 
 (emacsql-defexpander :drop-table (table)
   (emacsql-with-vars "DROP TABLE "
