@@ -395,7 +395,8 @@ definitions for return from a `emacsql-defexpander'."
      (cl-flet* ((var (thing kind) (emacsql--vars-var thing kind))
                 (combine (expanded) (emacsql--vars-combine expanded))
                 (expr (thing) (combine (emacsql--expr thing)))
-                (idents (thing) (combine (emacsql--idents thing))))
+                (idents (thing) (combine (emacsql--idents thing)))
+                (subsql (thing) (combine (emacsql-expand thing t))))
        (cons (concat ,prefix (progn ,@body)) emacsql--vars))))
 
 (defun emacsql--column-to-string (column)
@@ -504,10 +505,7 @@ definitions for return from a `emacsql-defexpander'."
                (1 (error "Wrong number of operands for %s" op))
                (2 (format "%s IN %s" (recur 0) (var (nth 1 args) :vector)))
                (otherwise
-                (let ((subsql (cl-coerce (cdr args) 'vector)))
-                  (format "%s IN %s"
-                          (recur 0)
-                          (combine (emacsql-expand subsql :sub)))))))))))))
+                (format "%s IN %s" (recur 0) (subsql (cdr args))))))))))))
 
 (defun emacsql--idents (idents)
   "Read in a vector of IDENTS identifiers, or just an single identifier."
@@ -532,13 +530,25 @@ definitions for return from a `emacsql-defexpander'."
         "*"
       (idents arg))))
 
-(emacsql-defexpander :from (table)
+(emacsql-defexpander :from (sources)
   "Expands to the FROM keyword."
   (emacsql-with-vars "FROM "
-    (cl-etypecase table
-      (vector (idents table))
-      (symbol (var table :identifier))
-      (list (combine (emacsql-expand table :subsql-p))))))
+    (cl-etypecase sources
+      (symbol (var sources :identifier))
+      (list (if (eq :select (car sources))
+                (subsql sources)
+              (cl-destructuring-bind (table alias) sources
+                (concat (var table :identifier) " " (var alias :identifier)))))
+      (vector (mapconcat (lambda (source)
+                           (cl-etypecase source
+                             (symbol (var source :identifier))
+                             (list
+                              (cl-destructuring-bind (table alias) source
+                                (concat (if (symbolp table)
+                                            (var table :identifier)
+                                          (subsql table))
+                                        " " (var alias :identifier))))))
+                         sources ", ")))))
 
 (emacsql-defexpander :replace ()
   (list "REPLACE"))

@@ -69,7 +69,14 @@
     ([:select * :from employees :where (< salary 50000)] '()
      "SELECT * FROM employees WHERE salary < 50000;")
     ([:select * :from people :where (in name $1)] '([FOO BAR])
-     "SELECT * FROM people WHERE name IN ('FOO', 'BAR');")))
+     "SELECT * FROM people WHERE name IN ('FOO', 'BAR');")
+    ;; Sub queries
+    ([:select name :from (:select * :from $1)] '(people)
+     "SELECT name FROM (SELECT * FROM people);")
+    ([:select name :from [people (accounts a)]] '()
+     "SELECT name FROM people, accounts a;")
+    ([:select p:name :from [((:select * :from people) p)]] '()
+     "SELECT p.name FROM (SELECT * FROM people) p;")))
 
 (ert-deftest emacsql-create-table ()
   (emacsql-tests-with-queries
@@ -94,7 +101,6 @@
      "CREATE TABLE foo (a, b, c, UNIQUE (a, b, c));")
     ([:create-table foo ([a b] :check (< a b)) ] '()
      "CREATE TABLE foo (a, b, CHECK (a < b));")
-
     ([:drop-table $1] '(foo)
      "DROP TABLE foo;")))
 
