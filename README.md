@@ -144,6 +144,22 @@ Provides `FROM`.
 [... :from employees]
 ```
 
+#### :where `<expr>`
+
+Provides `WHERE`.
+
+```el
+[... :where (< count 10)]
+```
+
+#### :group-by `<expr>`
+
+Provides `GROUP BY`.
+
+```el
+[... :group-by name]
+```
+
 #### :insert-into `<table>`
 
 Provides `INSERT INTO`.
