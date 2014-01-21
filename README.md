@@ -58,8 +58,9 @@ symbol or it can include constraints, such as type and uniqueness.
 Because Emacsql stores entire lisp objects as values, the only
 relevant types are `integer`, `float`, and `object` (default).
 
-Additional constraints include `:primary` (aka `PRIMARY KEY`),
-`:unique` (aka `UNIQUE`), `:non-nil` (aka `NOT NULL`).
+Additional columns constraints include `:primary` (aka `PRIMARY KEY`),
+`:unique` (aka `UNIQUE`), `:non-nil` (aka `NOT NULL`), `:default` (aka
+`DEFAULT`).
 
 ```el
 ;; Example schema:

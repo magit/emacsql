@@ -275,6 +275,8 @@ CONN-SPEC is a connection specification like the call to
           (:primary (push "PRIMARY KEY" output))
           (:non-nil (push "NOT NULL" output))
           (:unique  (push "UNIQUE" output))
+          (:default (push "DEFAULT" output)
+                    (push (emacsql-escape-value (pop column)) output))
           (integer  (setf type "INTEGER"))
           (float    (setf type "REAL"))
           (object   (setf type "TEXT"))

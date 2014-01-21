@@ -76,6 +76,10 @@
      "CREATE TABLE foo (a, b, c);")
     ([:create-table (:temporary :if-not-exists x) [y]] '()
      "CREATE TEMPORARY TABLE IF NOT EXISTS x (y);")
+    ([:create-table foo [(a :default 10)]] '()
+     "CREATE TABLE foo (a DEFAULT 10);")
+    ([:create-table foo [(a :primary :non-nil) b]] '()
+     "CREATE TABLE foo (a PRIMARY KEY NOT NULL, b);")
     ([:drop-table $1] '(foo)
      "DROP TABLE foo;")))
 
