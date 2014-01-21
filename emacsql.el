@@ -476,6 +476,14 @@ definitions for return from a `emacsql-defexpander'."
                           (recur 0)
                           (combine (emacsql-expand subsql :sub)))))))))))))
 
+(defun emacsql--idents (idents)
+  "Read in a vector of IDENTS identifiers, or just an single identifier."
+  (emacsql-with-vars ""
+    (cl-etypecase idents
+      (symbol (var idents :identifier))
+      (vector (mapconcat (lambda (e) (combine (emacsql--expr e)))
+                         idents ", ")))))
+
 (defun emacsql-init-font-lock ()
   "Add font-lock highlighting for `emacsql-defexpander'."
   (font-lock-add-keywords
@@ -488,11 +496,9 @@ definitions for return from a `emacsql-defexpander'."
 (emacsql-defexpander :select (arg)
   "Expands to the SELECT keyword."
   (emacsql-with-vars "SELECT "
-    (cond
-     ((eq '* arg) "*")
-     ((vectorp arg)
-      (mapconcat (lambda (s) (combine (emacsql--expr s))) arg ", "))
-     ((var arg :identifier)))))
+    (if (eq '* arg)
+        "*"
+      (combine (emacsql--idents arg)))))
 
 (emacsql-defexpander :from (table)
   "Expands to the FROM keyword."
@@ -512,8 +518,7 @@ definitions for return from a `emacsql-defexpander'."
       (symbol (var table :identifier))
       (list (cl-destructuring-bind (name columns) table
               (format "%s (%s)" (var name :identifier)
-                      (mapconcat (lambda (c) (var c :identifier))
-                                 columns ", ")))))))
+                      (combine (emacsql--idents columns))))))))
 
 (emacsql-defexpander :where (expr)
   (emacsql-with-vars "WHERE "
@@ -554,7 +559,7 @@ definitions for return from a `emacsql-defexpander'."
 (emacsql-defexpander :set (set)
   (emacsql-with-vars "SET "
     (cl-etypecase set
-      (vector (mapconcat (lambda (s) (combine (emacsql--expr s))) set ", "))
+      (vector (combine (emacsql--idents set)))
       (list (combine (emacsql--expr set))))))
 
 (emacsql-defexpander :union ()
