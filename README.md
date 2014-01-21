@@ -160,7 +160,7 @@ Provides `GROUP BY`.
 [... :group-by name]
 ```
 
-#### :ascending-by <expr>, :descending-by <expr>
+#### :ascending-by `<expr>`, :descending-by `<expr>`
 
 Provides `ORDER BY`.
 
