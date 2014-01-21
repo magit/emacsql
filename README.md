@@ -193,8 +193,8 @@ Provides `INSERT`, `REPLACE`.
 Provides `INTO`.
 
 ```el
-[:insert-into employees ...]
-[:insert-into (employees [id name]) ...]
+[:into employees ...]
+[:into (employees [id name]) ...]
 ```
 
 #### :delete
@@ -203,14 +203,6 @@ Provides `DELETE`.
 
 ```el
 [:delete :from employees :where ...]
-```
-
-#### :replace
-
-Provides `REPLACE`.
-
-```el
-[:replace :into employees ...]
 ```
 
 #### :values `<vector>|(<vector> ...)`
