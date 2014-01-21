@@ -102,6 +102,19 @@
     ([:order-by [(a :asc) ((/ b 2) :desc)]] '()
      "ORDER BY a ASC, b / 2 DESC;")))
 
+(ert-deftest emacsql-limit ()
+  (emacsql-tests-with-queries
+    ([:limit 10] '()
+     "LIMIT 10;")
+    ([:limit $1] '(11)
+     "LIMIT 11;")
+    ([:limit [12]] '()
+     "LIMIT 12;")
+    ([:limit [2 10]] '()
+     "LIMIT 2, 10;")
+    ([:limit [$1 $2]] '(4 30)
+     "LIMIT 4, 30;")))
+
 (ert-deftest emacsql-system ()
   (should-not (emacsql-sqlite3-unavailable-p))
   (emacsql-with-connection (db nil)

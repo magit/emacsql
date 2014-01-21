@@ -170,6 +170,15 @@ Provides `ORDER BY`.
 [... :order-by [(width :asc) (- height)]]
 ```
 
+#### :limit `<limit>|[<offset> <limit>]`
+
+Provides `LIMIT` and `OFFSET`.
+
+```el
+[... :limit 50]
+[... :limit [150 50]]
+```
+
 #### :insert, :replace
 
 Provides `INSERT`, `REPLACE`.

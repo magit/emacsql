@@ -551,6 +551,12 @@ definitions for return from a `emacsql-defexpander'."
                  into parts
                  finally (cl-return (mapconcat #'identity parts ", ")))))))
 
+(emacsql-defexpander :limit (limits)
+  (emacsql-with-vars "LIMIT "
+    (if (vectorp limits)
+        (mapconcat #'expr limits ", ")
+      (expr limits))))
+
 (emacsql-defexpander :create-table (table schema)
   (emacsql-with-vars "CREATE "
     (let (temporary if-not-exists name)
