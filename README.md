@@ -160,13 +160,14 @@ Provides `GROUP BY`.
 [... :group-by name]
 ```
 
-#### :ascending-by `<expr>`, :descending-by `<expr>`
+#### :order-by `<expr>|(<expr> <:asc|:desc>)|[<expr> ...]`
 
 Provides `ORDER BY`.
 
 ```el
-[... :ascending-by date]
-[... :descending-by [width height]]
+[... :order-by date]
+[... :order-by [(width :asc) (height :desc)]]
+[... :order-by [(width :asc) (- height)]]
 ```
 
 #### :insert, :replace

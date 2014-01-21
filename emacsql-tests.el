@@ -74,6 +74,13 @@
   (emacsql-tests-query [:create-table (:temporary :if-not-exists x) [y]] '()
                        "CREATE TEMPORARY TABLE IF NOT EXISTS x (y);"))
 
+(ert-deftest emacsql-order-by ()
+  (emacsql-tests-query [:order-by foo] '() "ORDER BY foo;")
+  (emacsql-tests-query [:order-by [$1]] '(bar) "ORDER BY bar;")
+  (emacsql-tests-query [:order-by (- foo)] '() "ORDER BY -(foo);")
+  (emacsql-tests-query [:order-by [(a :asc) ((/ b 2) :desc)]] '()
+                       "ORDER BY a ASC, b / 2 DESC;"))
+
 (ert-deftest emacsql-system ()
   (should-not (emacsql-sqlite3-unavailable-p))
   (emacsql-with-connection (db nil)

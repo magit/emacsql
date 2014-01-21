@@ -535,13 +535,21 @@ definitions for return from a `emacsql-defexpander'."
   (emacsql-with-vars "GROUP BY "
     (expr expr)))
 
-(emacsql-defexpander :ascending-by (columns)
+(emacsql-defexpander :order-by (columns)
   (emacsql-with-vars "ORDER BY "
-    (concat (combine (emacsql--idents columns)) " ASC")))
-
-(emacsql-defexpander :descending-by (columns)
-  (emacsql-with-vars "ORDER BY "
-    (concat (combine (emacsql--idents columns)) " DESC")))
+    (cl-flet ((order (k) (cl-ecase k (:asc " ASC") (:desc " DESC"))))
+      (if (not (vectorp columns))
+          (expr columns)
+        (cl-loop for column across columns collect
+                 (cl-etypecase column
+                   (list (let ((kpos (cl-position-if #'keywordp column)))
+                           (if kpos
+                               (concat (expr (nth (- 1 kpos) column))
+                                       (order (nth kpos column)))
+                             (expr column))))
+                   (symbol (var column :identifier)))
+                 into parts
+                 finally (cl-return (mapconcat #'identity parts ", ")))))))
 
 (emacsql-defexpander :create-table (table schema)
   (emacsql-with-vars "CREATE "
