@@ -75,6 +75,7 @@
                        "CREATE TEMPORARY TABLE IF NOT EXISTS x (y);"))
 
 (ert-deftest emacsql-system ()
+  (should-not (emacsql-sqlite3-unavailable-p))
   (emacsql-with-connection (db nil)
     (emacsql db [:create-table foo [x]])
     (should-error (emacsql db [:create-table foo [x]]))

@@ -14,7 +14,7 @@ Emacsql, including numbers, strings, symbols, lists, vectors, and
 closures. Emacsql has no concept of "TEXT" values; it's all just lisp
 objects.
 
-Requires Emacs 24 or later.
+Requires Emacs 24 or later and SQLite 3.7.15 or later.
 
 Due to [bad behavior from SQLite on Windows][stderr] Emacsql will
 *not* signal error messages for invalid statements on this platform.

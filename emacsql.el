@@ -99,6 +99,24 @@ This collection exists for cleanup purposes.")
              do (accept-process-output)))
   (emacsql--clear conn))
 
+(defun emacsql-sqlite3-unavailable-p ()
+  "Return a reason if the sqlite3 executable is not available.
+
+:no-executable -- cannot find the executable
+:cannot-execute -- cannot run the executable
+:old-version -- sqlite3 version is too old"
+  (let ((sqlite3 emacsql-sqlite3-executable))
+    (if (null (executable-find sqlite3))
+        :no-executable
+      (condition-case _
+          (with-temp-buffer
+            (call-process sqlite3 nil (current-buffer) nil "--version")
+            (let ((version (car (split-string (buffer-string)))))
+              (if (version< version "3.7.15")
+                  :old-version
+                nil)))
+        (error :cannot-execute)))))
+
 (cl-defun emacsql-connect (file &key log)
   "Open a connected to database stored in FILE.
 If FILE is nil use an in-memory database.
