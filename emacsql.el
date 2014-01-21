@@ -303,7 +303,7 @@ CONN-SPEC is a connection specification like the call to
 FUNCTION should accept the keyword's arguments and should return
 a list of (<string> [arg-pos] ...)."
   (prog1 keyword
-    (clrhash emacsql-expander-cache)
+    (when emacsql-expander-cache (clrhash emacsql-expander-cache))
     (push (list keyword arity function) emacsql-expanders)))
 
 (defmacro emacsql-defexpander (keyword args &rest body)
@@ -329,8 +329,9 @@ a list of (<string> [arg-pos] ...)."
                                        (mapconcat #'car parts " ")
                                        (if subsql-p ")" ";")))
                        (vars (apply #'nconc (mapcar #'cdr parts))))
-                   (cl-return (setf (gethash sql cache)
-                                    (cons string vars))))))))
+                   (cl-return (if cache
+                                  (setf (gethash sql cache) (cons string vars))
+                                (cons string vars))))))))
 
 (defun emacsql-format (expansion &rest args)
   "Fill in the variables EXPANSION with ARGS."
