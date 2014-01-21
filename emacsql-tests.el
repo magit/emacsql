@@ -69,7 +69,7 @@
                        "UPDATE people SET id = 10;")
   (emacsql-tests-query [:select * :from people :where (in name $1)] '([FOO BAR])
                        "SELECT * FROM people WHERE name IN ('FOO', 'BAR');")
-  (emacsql-tests-query [:insert-into foo :values [nil $1]] '(10.1)
+  (emacsql-tests-query [:insert :into foo :values [nil $1]] '(10.1)
                        "INSERT INTO foo VALUES (NULL, 10.1);")
   (emacsql-tests-query [:create-table (:temporary :if-not-exists x) [y]] '()
                        "CREATE TEMPORARY TABLE IF NOT EXISTS x (y);"))
@@ -78,7 +78,7 @@
   (emacsql-with-connection (db nil)
     (emacsql db [:create-table foo [x]])
     (should-error (emacsql db [:create-table foo [x]]))
-    (emacsql db [:insert-into foo :values ([1] [2] [3])])
+    (emacsql db [:insert :into foo :values ([1] [2] [3])])
     (should (equal (emacsql db [:select * :from foo])
                    '((1) (2) (3))))))
 
