@@ -33,7 +33,7 @@ shouldn't impact normal use of the database.
 (emacsql db [:create-table people [name (id integer :unique) (salary float)]])
 
 ;; Insert some data:
-(emacsql db [:insert :into people
+(emacsql db [:insert-into people
              :values (["Jeff"  1000 60000.0] ["Susan" 1001 64000.0])])
 
 ;; Query the database for results:
@@ -143,12 +143,12 @@ Provides `FROM`.
 [... :from employees]
 ```
 
-#### :into `<table>`
+#### :insert-into `<table>`
 
-Provides `INTO`.
+Provides `INSERT INTO`.
 
 ```el
-[... :into employees]
+[:insert-into employees ...]
 ```
 
 #### :delete
@@ -157,14 +157,6 @@ Provides `DELETE`.
 
 ```el
 [:delete :from employees :where ...]
-```
-
-#### :insert
-
-Provides `INSERT`.
-
-```el
-[:insert :into employees ...]
 ```
 
 #### :replace

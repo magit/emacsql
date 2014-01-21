@@ -36,7 +36,7 @@
 
 ;; Insert values into a table with `emacsql-insert'.
 
-;;     (emacsql db [:insert :into people
+;;     (emacsql db [:insert-into people
 ;;                  :values (["Jeff"  1000 60000.0] ["Susan" 1001 64000.0])])
 
 ;; Currently all actions are synchronous and Emacs will block until
@@ -135,7 +135,7 @@ CONN-SPEC is a connection specification like the call to
 
   (emacsql-with-connection (db \"company.db\")
     (emacsql db [:create-table foo [x]])
-    (emacsql db [:insert :into foo :values ([1] [2] [3])])
+    (emacsql db [:insert-into foo :values ([1] [2] [3])])
     (emacsql db [:select * :from foo]))"
   (declare (indent 1))
   `(let ((,(car conn-spec) (emacsql-connect ,@(cdr conn-spec))))
@@ -484,9 +484,9 @@ definitions for return from a `emacsql-defexpander'."
   (emacsql-with-vars "FROM "
     (var table :identifier)))
 
-(emacsql-defexpander :into (table)
-  "Expands to the INTO keyword."
-  (emacsql-with-vars "INTO "
+(emacsql-defexpander :insert-into (table)
+  "Expands to the INSERT INTO keywords."
+  (emacsql-with-vars "INSERT INTO "
     (var table :identifier)))
 
 (emacsql-defexpander :where (expr)
@@ -504,9 +504,6 @@ definitions for return from a `emacsql-defexpander'."
 
 (emacsql-defexpander :delete ()
   (list "DELETE"))
-
-(emacsql-defexpander :insert ()
-  (list "INSERT"))
 
 (emacsql-defexpander :replace ()
   (list "REPLACE"))
