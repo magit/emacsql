@@ -466,9 +466,14 @@ definitions for return from a `emacsql-defexpander'."
                (2 (format "%s - %s" (recur 0) (recur 1)))))
             ;; IN special case
             ((in)
-             (if (= 2 (length args))
-                 (format "%s IN %s" (recur 0)
-                         (var (nth 1 args) :vector))))))))))
+             (cl-case (length args)
+               (1 (error "Wrong number of operands for %s" op))
+               (2 (format "%s IN %s" (recur 0) (var (nth 1 args) :vector)))
+               (otherwise
+                (let ((subsql (cl-coerce (cdr args) 'vector)))
+                  (format "%s IN %s"
+                          (recur 0)
+                          (combine (emacsql-expand subsql :sub)))))))))))))
 
 ;; SQL Expansion Functions:
 
