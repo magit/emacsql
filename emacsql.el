@@ -508,6 +508,10 @@ definitions for return from a `emacsql-defexpander'."
   (emacsql-with-vars "WHERE "
     (combine (emacsql--expr expr))))
 
+(emacsql-defexpander :group-by (expr)
+  (emacsql-with-vars "GROUP BY "
+    (combine (emacsql--expr expr))))
+
 (emacsql-defexpander :create-table (table schema)
   (emacsql-with-vars "CREATE "
     (let (temporary if-not-exists name)
