@@ -401,13 +401,6 @@ KIND should be :value or :identifier."
 (defvar emacsql--vars ()
   "For use with `emacsql-with-vars'.")
 
-(defun emacsql-symbol-function (symbol)
-  "Like `symbol-function' but don't return an error."
-  (ignore-errors (symbol-function symbol)))
-
-(gv-define-setter emacsql-symbol-function (store symbol)
-  `(if ,store (fset ,symbol ,store) (fmakunbound ,symbol)))
-
 (defun emacsql--vars-var (thing kind)
   "Only use within `emacsql-with-vars'!"
   (if (emacsql-var thing)
@@ -424,19 +417,16 @@ KIND should be :value or :identifier."
     string))
 
 (defmacro emacsql-with-vars (prefix &rest body)
-  "Evaluate BODY, collecting variables with `var' and `combine'.
+  "Evaluate BODY, collecting variables with `var', `combine', `expr', `idents'.
 BODY should return a string, which will be combined with variable
 definitions for return from a `emacsql-defexpander'."
   (declare (indent 1))
   `(let ((emacsql--vars ()))
-     (cl-letf (((emacsql-symbol-function 'var)
-                (symbol-function 'emacsql--vars-var))
-               ((emacsql-symbol-function 'combine)
-                (symbol-function 'emacsql--vars-combine)))
+     (cl-flet* ((var (thing kind) (emacsql--vars-var thing kind))
+                (combine (expanded) (emacsql--vars-combine expanded))
+                (expr (thing) (combine (emacsql--expr thing)))
+                (idents (thing) (combine (emacsql--idents thing))))
        (cons (concat ,prefix (progn ,@body)) emacsql--vars))))
-
-(declare-function combine nil (expanded))
-(declare-function var nil (thing kind))
 
 (defun emacsql--vector (vector)
   "Expand VECTOR, making variables as needed."
@@ -499,8 +489,7 @@ definitions for return from a `emacsql-defexpander'."
   (emacsql-with-vars ""
     (cl-etypecase idents
       (symbol (var idents :identifier))
-      (vector (mapconcat (lambda (e) (combine (emacsql--expr e)))
-                         idents ", ")))))
+      (vector (mapconcat (lambda (e) (expr e)) idents ", ")))))
 
 (defun emacsql-init-font-lock ()
   "Add font-lock highlighting for `emacsql-defexpander'."
@@ -516,7 +505,7 @@ definitions for return from a `emacsql-defexpander'."
   (emacsql-with-vars "SELECT "
     (if (eq '* arg)
         "*"
-      (combine (emacsql--idents arg)))))
+      (idents arg))))
 
 (emacsql-defexpander :from (table)
   "Expands to the FROM keyword."
@@ -536,15 +525,15 @@ definitions for return from a `emacsql-defexpander'."
       (symbol (var table :identifier))
       (list (cl-destructuring-bind (name columns) table
               (format "%s (%s)" (var name :identifier)
-                      (combine (emacsql--idents columns))))))))
+                      (idents columns)))))))
 
 (emacsql-defexpander :where (expr)
   (emacsql-with-vars "WHERE "
-    (combine (emacsql--expr expr))))
+    (expr expr)))
 
 (emacsql-defexpander :group-by (expr)
   (emacsql-with-vars "GROUP BY "
-    (combine (emacsql--expr expr))))
+    (expr expr)))
 
 (emacsql-defexpander :ascending-by (columns)
   (emacsql-with-vars "ORDER BY "
@@ -585,8 +574,8 @@ definitions for return from a `emacsql-defexpander'."
 (emacsql-defexpander :set (set)
   (emacsql-with-vars "SET "
     (cl-etypecase set
-      (vector (combine (emacsql--idents set)))
-      (list (combine (emacsql--expr set))))))
+      (vector (idents set))
+      (list (expr set)))))
 
 (emacsql-defexpander :union ()
   (list "UNION"))
