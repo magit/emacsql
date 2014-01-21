@@ -427,15 +427,31 @@ definitions for return from a `emacsql-defexpander'."
       (push name output)
       (mapconcat #'identity output " "))))
 
-(defun emacsql--schema-to-string (schema)
-  "Convert SCHEMA into a SQL-consumable string."
+(defun emacsql--columns-to-string (columns)
+  "Convert COLUMNS into a SQL-consumable string."
   (emacsql-with-vars ""
-    (cl-loop for column across schema
+    (cl-loop for column across columns
              when (symbolp column)
              collect (var column :identifier) into parts
              else
              collect (combine (emacsql--column-to-string column)) into parts
              finally (cl-return (mapconcat #'identity parts ", ")))))
+
+(defun emacsql--schema-to-string (schema)
+  (cl-etypecase schema
+    (vector (emacsql--columns-to-string schema))
+    (list
+     (emacsql-with-vars ""
+       (mapconcat
+        #'identity
+        (cons
+         (combine (emacsql--columns-to-string (pop schema)))
+         (cl-loop for (key value) on schema by #'cddr collect
+                  (cl-ecase key
+                    (:primary (format "PRIMARY KEY (%s)" (idents value)))
+                    (:unique (format "UNIQUE (%s)" (idents value)))
+                    (:check (format "CHECK (%s)" (expr value))))))
+        ", ")))))
 
 (defun emacsql--vector (vector)
   "Expand VECTOR, making variables as needed."
