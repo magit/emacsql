@@ -151,6 +151,8 @@ Provides `FROM`.
 
 ```el
 [... :from employees]
+[... :from [employees accounts]]
+[... :from (:select ...)]
 ```
 
 #### :where `<expr>`

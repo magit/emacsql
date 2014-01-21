@@ -535,7 +535,10 @@ definitions for return from a `emacsql-defexpander'."
 (emacsql-defexpander :from (table)
   "Expands to the FROM keyword."
   (emacsql-with-vars "FROM "
-    (var table :identifier)))
+    (cl-etypecase table
+      (vector (idents table))
+      (symbol (var table :identifier))
+      (list (combine (emacsql-expand table :subsql-p))))))
 
 (emacsql-defexpander :replace ()
   (list "REPLACE"))
