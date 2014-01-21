@@ -528,6 +528,14 @@ definitions for return from a `emacsql-defexpander'."
   (emacsql-with-vars "GROUP BY "
     (combine (emacsql--expr expr))))
 
+(emacsql-defexpander :ascending-by (columns)
+  (emacsql-with-vars "ORDER BY "
+    (concat (combine (emacsql--idents columns)) " ASC")))
+
+(emacsql-defexpander :descending-by (columns)
+  (emacsql-with-vars "ORDER BY "
+    (concat (combine (emacsql--idents columns)) " DESC")))
+
 (emacsql-defexpander :create-table (table schema)
   (emacsql-with-vars "CREATE "
     (let (temporary if-not-exists name)
