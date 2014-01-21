@@ -517,7 +517,7 @@ definitions for return from a `emacsql-defexpander'."
           (:temporary (setf temporary "TEMPORARY"))
           (otherwise (setf name (var item :identifier)))))
       (let* ((items (list temporary "TABLE" if-not-exists name))
-             (spec (remove-if-not #'identity items)))
+             (spec (cl-remove-if-not #'identity items)))
         (format "%s (%s)" (mapconcat #'identity spec " ")
                 (emacsql--schema-to-string schema))))))
 
