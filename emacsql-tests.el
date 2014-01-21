@@ -88,6 +88,8 @@
   (emacsql-tests-with-queries
     ([:insert :into foo :values [nil $1]] '(10.1)
      "INSERT INTO foo VALUES (NULL, 10.1);")
+    ([:insert :into (foo [a b]) :values $1] '([1 2])
+     "INSERT INTO foo (a, b) VALUES (1, 2);")
     ([:replace :into $1 :values $2] '(bar ([1 2] [3 4]))
      "REPLACE INTO bar VALUES (1, 2), (3, 4);")))
 
