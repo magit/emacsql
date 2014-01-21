@@ -166,6 +166,7 @@ Provides `INSERT INTO`.
 
 ```el
 [:insert-into employees ...]
+[:insert-into (employees [id name]) ...]
 ```
 
 #### :delete

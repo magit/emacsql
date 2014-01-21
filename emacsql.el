@@ -502,7 +502,12 @@ definitions for return from a `emacsql-defexpander'."
 (emacsql-defexpander :insert-into (table)
   "Expands to the INSERT INTO keywords."
   (emacsql-with-vars "INSERT INTO "
-    (var table :identifier)))
+    (cl-typecase table
+      (symbol (var table :identifier))
+      (list (cl-destructuring-bind (name columns) table
+              (format "%s (%s)" (var name :identifier)
+                      (mapconcat (lambda (c) (var c :identifier))
+                                 columns ", ")))))))
 
 (emacsql-defexpander :where (expr)
   (emacsql-with-vars "WHERE "
