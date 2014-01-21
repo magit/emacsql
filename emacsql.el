@@ -224,7 +224,7 @@ CONN-SPEC is a connection specification like the call to
         (forbidden "[]-\000-\040!\"#%&'()*+,./;<=>?@[\\^`{|}~\177]"))
     (when (or (string-match-p forbidden string)
               (string-match-p "^[0-9$]" string))
-      (error "Invalid Emacsql identifier."))
+      (error "Invalid Emacsql identifier: %S" identifier))
     (if (string-match-p ":" string)
         (replace-regexp-in-string ":" "." string)
       string)))
