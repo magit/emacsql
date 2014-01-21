@@ -12,7 +12,8 @@ requests are synchronous.
 Any [readable lisp value][readable] can be stored as a value in
 Emacsql, including numbers, strings, symbols, lists, vectors, and
 closures. Emacsql has no concept of "TEXT" values; it's all just lisp
-objects.
+objects. The lisp object `nil` corresponds 1:1 with `NULL` in the
+database.
 
 Requires Emacs 24 or later and SQLite 3.7.15 or later.
 
@@ -52,21 +53,29 @@ shouldn't impact normal use of the database.
 
 ## Schema
 
-A table schema is a vector of column specification. A column
-identifier is a symbol and a specification can either be just this
-symbol or it can include constraints, such as type and uniqueness.
-Because Emacsql stores entire lisp objects as values, the only
-relevant types are `integer`, `float`, and `object` (default).
+A table schema is a vector of column specifications, or a list
+containing a vector of column specifications followed by table
+specifications. A column identifier is a symbol and a specification
+can either be just this symbol or it can include constraints. Because
+Emacsql stores entire lisp objects as values, the only relevant (and
+allowed) types are `integer`, `float`, and `object` (default).
 
-Additional columns constraints include `:primary` (aka `PRIMARY KEY`),
-`:unique`, `:non-nil` (aka `NOT NULL`), `:default`, and `:check`.
+Columns constraints include `:primary` (aka `PRIMARY KEY`), `:unique`,
+`:non-nil` (aka `NOT NULL`), `:default`, and `:check`.
+
+Table constraints can be `:primary`, `:unique`, and `:check`.
 
 ```el
-;; Example schema:
-[name (badge-no integer :primary :unique) address]
-```
+;; No constraints schema with four columns:
+[name id building room]
 
-The lisp object `nil` corresponds 1:1 with `NULL` in the database.
+;; Add some column constraints:
+[(name :unique) (id integer :primary) building room]
+
+;; Add some table constraints:
+([(name :unique) (id integer :primary) building room]
+ :unique [building room] :check ())
+```
 
 ## Operators
 
