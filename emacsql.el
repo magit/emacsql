@@ -476,6 +476,13 @@ definitions for return from a `emacsql-defexpander'."
                           (recur 0)
                           (combine (emacsql-expand subsql :sub)))))))))))))
 
+(defun emacsql-init-font-lock ()
+  "Add font-lock highlighting for `emacsql-defexpander'."
+  (font-lock-add-keywords
+   'emacs-lisp-mode
+   '(("(\\(emacsql-defexpander\\)\\_>"
+      (1 'font-lock-keyword-face)))))
+
 ;; SQL Expansion Functions:
 
 (emacsql-defexpander :select (arg)
