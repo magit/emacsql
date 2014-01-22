@@ -63,7 +63,7 @@ allowed) types are `integer`, `float`, and `object` (default).
 Columns constraints include `:primary` (aka `PRIMARY KEY`), `:unique`,
 `:non-nil` (aka `NOT NULL`), `:default`, and `:check`.
 
-Table constraints can be `:primary`, `:unique`, and `:check`.
+Table constraints can be `:primary`, `:unique`, `:check`, and `:foreign`.
 
 ```el
 ;; No constraints schema with four columns:
@@ -76,6 +76,25 @@ Table constraints can be `:primary`, `:unique`, and `:check`.
 ([(name :unique) (id integer :primary) building room]
  :unique [building room] :check ())
 ```
+
+Foreign keys are the most complex. Action triggers are `:on-delete`
+or `:on-update` and possible actions are `:set-nil`, `:set-default`,
+`:restrict`, `:cascade`. See [the SQLite documentation][foreign] for
+the details on what each of these means.
+
+`:foreign (<child-keys> <parent-table> <parent-keys> [<actions>])`.
+
+```el
+;; "subject" table
+[(id integer :primary) subject]
+
+;; "tag" table references subjects
+([(subjectid integer) tag]
+ :foreign (subjectid subject id :on-delete :cascade))
+```
+
+Put the keys in a vector if the reference is composite, but remember
+that the cardinality must match.
 
 ## Operators
 
@@ -276,3 +295,4 @@ types. This is a high-performance database specifically for Emacs.
 
 [readable]: http://nullprogram.com/blog/2013/12/30/#almost_everything_prints_readably
 [stderr]: http://thread.gmane.org/gmane.comp.db.sqlite.general/85824
+[foreign]: http://www.sqlite.org/foreignkeys.html
