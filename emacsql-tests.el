@@ -150,6 +150,13 @@
     ([:limit [$1 $2]] '(4 30)
      "LIMIT 4, 30;")))
 
+(ert-deftest emacsql-expr ()
+  (emacsql-tests-with-queries
+    ([:where (= name 'foo)] '()
+     "WHERE name = 'foo';")
+    ([:where (= name '$1)] '(qux)
+     "WHERE name = 'qux';")))
+
 (ert-deftest emacsql-system ()
   "A short test that fully interacts with SQLite."
   (should-not (emacsql-sqlite3-unavailable-p))
