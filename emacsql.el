@@ -438,6 +438,26 @@ definitions for return from a `emacsql-defexpander'."
              collect (combine (emacsql--column-to-string column)) into parts
              finally (cl-return (mapconcat #'identity parts ", ")))))
 
+(defun emacsql--foreign-key (spec)
+  (emacsql-with-vars "FOREIGN KEY "
+    (cl-destructuring-bind (child table parent . actions) (cl-coerce spec 'list)
+      (mapconcat
+       #'identity
+       (cons
+        (format "(%s) REFERENCES %s (%s)" (idents child) (var table :identifier)
+                (idents parent))
+        (cl-loop for (key value) on actions by #'cddr collect
+                 (cl-ecase key
+                   (:on-update "ON UPDATE")
+                   (:on-delete "ON DELETE"))
+                 collect
+                 (cl-ecase value
+                   (:restrict "RESTRICT")
+                   (:set-nil "SET NULL")
+                   (:set-default "SET DEFAULT")
+                   (:cascade "CASCADE"))))
+       " "))))
+
 (defun emacsql--schema-to-string (schema)
   (cl-etypecase schema
     (vector (emacsql--columns-to-string schema))
@@ -451,7 +471,8 @@ definitions for return from a `emacsql-defexpander'."
                   (cl-ecase key
                     (:primary (format "PRIMARY KEY (%s)" (idents value)))
                     (:unique (format "UNIQUE (%s)" (idents value)))
-                    (:check (format "CHECK (%s)" (expr value))))))
+                    (:check (format "CHECK (%s)" (expr value)))
+                    (:foreign (combine (emacsql--foreign-key value))))))
         ", ")))))
 
 (defun emacsql--vector (vector)

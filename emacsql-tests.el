@@ -104,6 +104,10 @@
      "CREATE TABLE foo (a, b, c, UNIQUE (a, b, c));")
     ([:create-table foo ([a b] :check (< a b)) ] '()
      "CREATE TABLE foo (a, b, CHECK (a < b));")
+    ([:create-table foo
+      ([a b c] :foreign ([a b] bar [aa bb] :on-delete :cascade))] '()
+      (concat "CREATE TABLE foo (a, b, c, FOREIGN KEY (a, b) "
+              "REFERENCES bar (aa, bb) ON DELETE CASCADE);"))
     ;; Drop table
     ([:drop-table $1] '(foo)
      "DROP TABLE foo;")))
