@@ -61,9 +61,33 @@
 (defvar emacsql-sqlite3-executable "sqlite3"
   "Path to the sqlite3 executable.")
 
+(defun emacsql-sqlite3-unavailable-p ()
+  "Return a reason if the sqlite3 executable is not available.
+
+:no-executable -- cannot find the executable
+:cannot-execute -- cannot run the executable
+:old-version -- sqlite3 version is too old"
+  (let ((sqlite3 emacsql-sqlite3-executable))
+    (if (null (executable-find sqlite3))
+        :no-executable
+      (condition-case _
+          (with-temp-buffer
+            (call-process sqlite3 nil (current-buffer) nil "--version")
+            (let ((version (car (split-string (buffer-string)))))
+              (if (version< version "3.7.15")
+                  :old-version
+                nil)))
+        (error :cannot-execute)))))
+
+;;; Connection handling:
+
 (cl-defstruct (emacsql (:constructor emacsql--create))
   "A connection to a SQLite database."
   process file log)
+
+(defun emacsql-buffer (conn)
+  "Get proccess buffer for CONN."
+  (process-buffer (emacsql-process conn)))
 
 (defvar emacsql-connections ()
   "Collection of all known emacsql connections.
@@ -89,24 +113,6 @@ This collection exists for cleanup purposes.")
     (cl-loop until (string-match-p "EMACSQL\n#" (buffer-string))
              do (accept-process-output)))
   (emacsql--clear conn))
-
-(defun emacsql-sqlite3-unavailable-p ()
-  "Return a reason if the sqlite3 executable is not available.
-
-:no-executable -- cannot find the executable
-:cannot-execute -- cannot run the executable
-:old-version -- sqlite3 version is too old"
-  (let ((sqlite3 emacsql-sqlite3-executable))
-    (if (null (executable-find sqlite3))
-        :no-executable
-      (condition-case _
-          (with-temp-buffer
-            (call-process sqlite3 nil (current-buffer) nil "--version")
-            (let ((version (car (split-string (buffer-string)))))
-              (if (version< version "3.7.15")
-                  :old-version
-                nil)))
-        (error :cannot-execute)))))
 
 (cl-defun emacsql-connect (file &key log)
   "Open a connected to database stored in FILE.
@@ -163,10 +169,6 @@ A statement can be a list, containing a statement with its arguments."
                else
                collect (append (list 'emacsql 'emacsql--conn) statement))))
 
-(defun emacsql-buffer (conn)
-  "Get proccess buffer for CONN."
-  (process-buffer (emacsql-process conn)))
-
 (defun emacsql-reap ()
   "Clean up after lost connections."
   (cl-loop for (conn-copy . ref) in emacsql-connections
@@ -188,6 +190,8 @@ A statement can be a list, containing a statement with its arguments."
   (when (timerp emacsql-reap-timer)
     (cancel-timer emacsql-reap-timer)
     (setf emacsql-reap-timer nil)))
+
+;;; Sending and receiving:
 
 (defun emacsql--log (conn &rest messages)
   "Log MESSAGES into CONN's log."
@@ -231,6 +235,18 @@ A statement can be a list, containing a statement with its arguments."
                collect row into rows and do (setf row ())
                finally (cl-return rows)))))
 
+(defun emacsql--check-error (conn)
+  "Return non-nil or throw an appropriate error."
+  (with-current-buffer (emacsql-buffer conn)
+    (emacsql-wait conn)
+    (setf (point) (point-min))
+    (prog1 t
+      (when (looking-at "Error:")
+        (error (buffer-substring (line-beginning-position)
+                                 (line-end-position)))))))
+
+;;; Escaping:
+
 (defun emacsql-quote (string)
   "Quote STRING for use in a SQL expression."
   (format "'%s'" (replace-regexp-in-string "'" "''" string)))
@@ -248,16 +264,6 @@ A statement can be a list, containing a statement with its arguments."
     (if (string-match-p ":" string)
         (replace-regexp-in-string ":" "." string)
       string)))
-
-(defun emacsql--check-error (conn)
-  "Return non-nil or throw an appropriate error."
-  (with-current-buffer (emacsql-buffer conn)
-    (emacsql-wait conn)
-    (setf (point) (point-min))
-    (prog1 t
-      (when (looking-at "Error:")
-        (error (buffer-substring (line-beginning-position)
-                                 (line-end-position)))))))
 
 (defun emacsql-wait (conn &optional timeout)
   "Block Emacs until CONN has finished sending output."
@@ -279,7 +285,7 @@ A statement can be a list, containing a statement with its arguments."
     (list   (mapconcat #'emacsql-escape-vector vector ", "))
     (vector (concat "(" (mapconcat #'emacsql-escape-value vector ", ") ")"))))
 
-;; SQL Expansion:
+;; Structured SQL compilation:
 
 (defvar emacsql-expanders ()
   "Alist of all expansion functions.")
