@@ -93,8 +93,13 @@ the details on what each of these means.
  :foreign (subjectid subject id :on-delete :cascade))
 ```
 
-Put the keys in a vector if the reference is composite, but remember
-that the cardinality must match.
+Put the keys in a vector if the reference is composite. Also remember
+that foreign key checks are currently disabled by default in SQLite,
+so you'll need to enable it for each connection.
+
+```el
+(emacsql db [:pragma (= foreign_keys on)])
+```
 
 ## Operators
 
@@ -269,6 +274,14 @@ Provides `UNION`, `UNION ALL`, `DIFFERENCE`, and `EXCEPT`.
 
 ```el
 [:select * :from sales :union :select * :from accounting]
+```
+
+#### :pragma `<expr>`
+
+Provides `PRAGMA`.
+
+```el
+(emacsql db [:pragma (= foreign_keys on)])
 ```
 
 ### Templates

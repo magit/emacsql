@@ -678,6 +678,10 @@ definitions for return from a `emacsql-defexpander'."
 (emacsql-defexpander :except ()
   (list "EXCEPT"))
 
+(emacsql-defexpander :pragma (expr)
+  (emacsql-with-vars "PRAGMA "
+    (expr expr)))
+
 (provide 'emacsql)
 
 ;;; emacsql.el ends here
