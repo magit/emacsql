@@ -609,6 +609,10 @@ definitions for return from a `emacsql-defexpander'."
   (emacsql-with-vars "WHERE "
     (expr expr)))
 
+(emacsql-defexpander :having (expr)
+  (emacsql-with-vars "HAVING "
+    (expr expr)))
+
 (emacsql-defexpander :group-by (expr)
   (emacsql-with-vars "GROUP BY "
     (expr expr)))

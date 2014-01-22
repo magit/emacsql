@@ -200,12 +200,13 @@ Provides `FROM`.
 [... :from [(as (:select ...) s1) (as (:select ...) s2)]]
 ```
 
-#### :where `<expr>`
+#### :where `<expr>`, :having `<expr>`
 
-Provides `WHERE`.
+Provides `WHERE` and `HAVING`.
 
 ```el
 [... :where (< count 10)]
+[... :having (= size 10)]
 ```
 
 #### :group-by `<expr>`
