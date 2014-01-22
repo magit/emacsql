@@ -35,7 +35,7 @@ shouldn't impact normal use of the database.
 
 ;; Insert some data:
 (emacsql db [:insert :into people
-             :values (["Jeff"  1000 60000.0] ["Susan" 1001 64000.0])])
+             :values (["Jeff" 1000 60000.0] ["Susan" 1001 64000.0])])
 
 ;; Query the database for results:
 (emacsql db [:select [name id]
