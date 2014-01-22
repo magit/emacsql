@@ -119,13 +119,15 @@ When multiple keywords appear in sequence, Emacsql will generally
 concatenate them with a dash, e.g. `CREATE TABLE` becomes
 `:create-table`.
 
-#### :create-table `<table>` `<schema>`
+#### :create-table `<table>` `<schema|select>`
 
-Provides `CREATE TABLE`.
+Provides `CREATE TABLE`. A selection can be used in place of a schema,
+which will create a `CREATE TABLE ... AS` statement.
 
 ```el
 [:create-table employees [name (id integer :primary) (salary float)]]
 [:create-table (:temporary :if-not-exists employees) ...]
+[:create-table names [:select name :from employees]]
 ```
 
 #### :drop-table `<table>`

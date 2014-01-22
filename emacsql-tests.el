@@ -94,6 +94,9 @@
      "CREATE TABLE foo (a, b, c PRIMARY KEY);")
     ([:create-table foo [a b (c :default $1)]] '("FOO")
      "CREATE TABLE foo (a, b, c DEFAULT '\"FOO\"');")
+    ;; From select
+    ([:create-table $1 [:select name :from $2]] '(names people)
+     "CREATE TABLE names AS (SELECT name FROM people);")
     ;; Table constraints
     ([:create-table foo ([a b c] :primary [a c])] '()
      "CREATE TABLE foo (a, b, c, PRIMARY KEY (a, c));")
@@ -101,6 +104,7 @@
      "CREATE TABLE foo (a, b, c, UNIQUE (a, b, c));")
     ([:create-table foo ([a b] :check (< a b)) ] '()
      "CREATE TABLE foo (a, b, CHECK (a < b));")
+    ;; Drop table
     ([:drop-table $1] '(foo)
      "DROP TABLE foo;")))
 

@@ -605,10 +605,13 @@ definitions for return from a `emacsql-defexpander'."
           (otherwise (setf name (var item :identifier)))))
       (let* ((items (list temporary "TABLE" if-not-exists name))
              (spec (cl-remove-if-not #'identity items)))
-        (format "%s (%s)" (mapconcat #'identity spec " ")
-                (if (symbolp schema)
-                    (var schema :schema)
-                  (combine (emacsql--schema-to-string schema))))))))
+        (format "%s %s" (mapconcat #'identity spec " ")
+                (cond ((symbolp schema)
+                       (format "(%s)" (var schema :schema)))
+                      ((eq :select (elt schema 0))
+                       (concat "AS " (subsql schema)))
+                      ((let ((compiled (emacsql--schema-to-string schema)))
+                         (format "(%s)" (combine compiled))))))))))
 
 (emacsql-defexpander :drop-table (table)
   (emacsql-with-vars "DROP TABLE "
