@@ -309,6 +309,18 @@ a list of (<string> [arg-pos] ...)."
   (declare (indent 2))
   `(emacsql-add-expander ,keyword ,(length args) (lambda ,args ,@body)))
 
+(defun emacsql-sql-p (thing)
+  "Return non-nil if THING looks like a :select."
+  (and (sequencep thing)
+       (or (not (null (assoc (elt thing 0) emacsql-expanders)))
+           (emacsql-sql-p (elt thing 0)))))
+
+(defun emacsql-get-expander (keyword)
+  "Return the expander with arity for KEYWORD."
+  (if (emacsql-sql-p keyword)
+      (list 0 (lambda () (emacsql-expand keyword :subsql-p)))
+    (cdr (assoc keyword emacsql-expanders))))
+
 (defun emacsql-expand (sql &optional subsql-p)
   "Expand SQL into a SQL-consumable string, with variables."
   (let* ((cache emacsql-expander-cache)
@@ -317,7 +329,7 @@ a list of (<string> [arg-pos] ...)."
         (cl-loop with items = (cl-coerce sql 'list)
                  while (not (null items))
                  for keyword = (pop items)
-                 for (arity expander) = (cdr (assoc keyword emacsql-expanders))
+                 for (arity expander) = (emacsql-get-expander keyword)
                  when expander
                  collect (apply expander (cl-subseq items 0 arity)) into parts
                  else do (error "Unrecognized keyword %s" keyword)
@@ -506,7 +518,7 @@ definitions for return from a `emacsql-defexpander'."
   "Expand EXPR recursively."
   (emacsql-with-vars ""
     (cond
-     ((and (sequencep expr) (eq :select (elt expr 0))) (subsql expr))
+     ((emacsql-sql-p expr) (subsql expr))
      ((atom expr) (var expr :auto))
      ((cl-destructuring-bind (op . args) expr
          (cl-flet ((recur (n) (combine (emacsql--expr (nth n args)))))
