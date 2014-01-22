@@ -326,6 +326,24 @@ statement in the `emacsql` function, 1-indexed.
 To get a literal symbol that looks like one of these variables, escape
 it with an extra dollar sign (i.e. `$$1` becomes `$1`).
 
+## Ignored Features
+
+Emacsql doesn't cover all of SQLite's features, focusing on the most
+important syntax. Here are a list of things that aren't supported, and
+probably will never be.
+
+ * Collating. SQLite has three built-in collation functions: BINARY
+   (default), NOCASE, and RTRIM. Emacsql values never have right-hand
+   whitepsace, so RTRIM won't be of any use. NOCASE is broken
+   (ASCII-only) and there's little reason to use it.
+
+ * Databases attachments. I don't expect any program using Emacsql to
+   become so complex as to warrant multiple databases. Ignoring this
+   removes unneeded complexity.
+
+ * Date and time. These are incompatible with the printed values
+   stored by Emacsql and therefore have little use.
+
 ## Limitations
 
 Emacsql is *not* intended to play well with other programs accessing
