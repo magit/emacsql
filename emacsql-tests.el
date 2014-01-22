@@ -151,6 +151,7 @@
      "LIMIT 4, 30;")))
 
 (ert-deftest emacsql-system ()
+  "A short test that fully interacts with SQLite."
   (should-not (emacsql-sqlite3-unavailable-p))
   (emacsql-with-connection (db nil)
     (emacsql db [:create-table foo [x]])
@@ -158,6 +159,25 @@
     (emacsql db [:insert :into foo :values ([1] [2] [3])])
     (should (equal (emacsql db [:select * :from foo])
                    '((1) (2) (3))))))
+
+(ert-deftest emacsql-foreign-system ()
+  "Tests that foreign keys work properly through Emacsql."
+  (emacsql-with-connection (db nil)
+    (emacsql-thread db
+      [:pragma (= foreign_keys on)]
+      [:create-table person [(id integer :primary) name]]
+      [:create-table likes ([(personid integer) color]
+                            :foreign (personid person id :on-delete :cascade))]
+      [:replace :into person :values ([0 "Chris"] [1 "Jeff"])])
+    (should (equal (emacsql db [:select * :from person :order-by id])
+                   '((0 "Chris") (1 "Jeff"))))
+    (emacsql db [:insert :into likes :values ([0 red] [0 yellow] [1 yellow])])
+    (should (equal (emacsql db [:select * :from likes
+                                        :order-by [personid color]])
+                   '((0 red) (0 yellow) (1 yellow))))
+    (emacsql db [:delete :from person :where (= id 0)])
+    (should (equal (emacsql db [:select * :from likes])
+                   '((1 yellow))))))
 
 (provide 'emacsql-tests)
 
