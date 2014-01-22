@@ -161,6 +161,17 @@ CONN-SPEC is a connection specification like the call to
          (progn ,@body)
        (emacsql-close ,(car conn-spec)))))
 
+(defmacro emacsql-thread (conn &rest statements)
+  "Thread CONN through STATEMENTS.
+A statement can be a list, containing a statement with its arguments."
+  (declare (indent 1))
+  `(let ((emacsql--conn ,conn))
+     ,@(cl-loop for statement in statements
+               when (vectorp statement)
+               collect (list 'emacsql 'emacsql--conn statement)
+               else
+               collect (append (list 'emacsql 'emacsql--conn) statement))))
+
 (defun emacsql-buffer (conn)
   "Get proccess buffer for CONN."
   (process-buffer (emacsql-process conn)))
