@@ -690,6 +690,20 @@ definitions for return from a `emacsql-defexpander'."
   (emacsql-with-vars "PRAGMA "
     (expr expr)))
 
+(emacsql-defexpander :begin (kind)
+  (emacsql-with-vars "BEGIN "
+    (cl-ecase kind
+      (:transaction "TRANSACTION")
+      (:deferred    "DEFERRED")
+      (:immediate   "IMMEDIATE")
+      (:exclusive   "EXCLUSIVE"))))
+
+(emacsql-defexpander :commit ()
+  (list "COMMIT"))
+
+(emacsql-defexpander :rollback ()
+  (list "ROLLBACK"))
+
 (provide 'emacsql)
 
 ;;; emacsql.el ends here

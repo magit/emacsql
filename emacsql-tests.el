@@ -163,6 +163,17 @@
     ([:values [a $$1]] '()
      "VALUES ('a', '$1');")))
 
+(ert-deftest emacsql-transaction ()
+  (emacsql-tests-with-queries
+    ([:begin :transaction] '()
+     "BEGIN TRANSACTION;")
+    ([:begin :immediate] '()
+     "BEGIN IMMEDIATE;")
+    ([:rollback] '()
+     "ROLLBACK;")
+    ([:commit] '()
+     "COMMIT;")))
+
 (ert-deftest emacsql-system ()
   "A short test that fully interacts with SQLite."
   (should-not (emacsql-sqlite3-unavailable-p))

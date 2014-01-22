@@ -287,6 +287,25 @@ Provides `UNION`, `UNION ALL`, `DIFFERENCE`, and `EXCEPT`.
 [:select * :from sales :union :select * :from accounting]
 ```
 
+#### :begin `<:transaction|:immediate|:deferred|:exclusive>`
+
+Provides `BEGIN`. Exactly one of these "arguments" must always be
+supplied. `:deferred` and `:transaction` are aliases.
+
+```el
+[:begin :transaction]
+[:begin :immediate]
+```
+
+#### :commit, :rollback
+
+Provides `COMMIT` and `ROLLBACK`.
+
+```el
+[:commit]
+[:rollback]
+```
+
 #### :pragma `<expr>`
 
 Provides `PRAGMA`.
