@@ -313,7 +313,8 @@ Emacsql is *not* intended to play well with other programs accessing
 the SQLite database. Non-numeric values are are stored encoded as
 s-expressions TEXT values. This avoids ambiguities in parsing output
 from the command line and allows for storage of Emacs richer data
-types. This is a high-performance database specifically for Emacs.
+types. This is an efficient, ACID-compliant database specifically for
+Emacs.
 
 ## See Also
 
