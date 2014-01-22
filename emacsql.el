@@ -361,13 +361,15 @@ a list of (<string> [arg-pos] ...)."
 
 (defun emacsql-var (var)
   "Return the index number of VAR, or nil if VAR is not a variable.
-A variable is a symbol that looks like $1, $2, $3, etc. A $ means $1."
+A variable is a symbol that looks like $1, $2, $3, etc. A $ means
+$1. These are escaped with a double $$, in which case the proper
+symbol is returned."
   (when (symbolp var)
     (let ((name (symbol-name var)))
-      (when (eql (aref name 0) ?$)
-        (if (> (length name) 1)
-            (1- (read (substring name 1)))
-          0)))))
+      (cond
+       ((string-match-p "^\\$[0-9]+" name) (1- (read (substring name 1))))
+       ((string-match-p "^\\$$" name) 0)
+       ((string-match-p "^\\$\\$[0-9]+" name) (intern (substring name 1)))))))
 
 (defun emacsql-escape-format (thing &optional kind)
   "Escape THING for use as a `format' spec, pre-escaping for KIND.
@@ -384,12 +386,14 @@ KIND should be :value or :identifier."
 
 (defun emacsql--vars-var (thing kind)
   "Only use within `emacsql-with-vars'!"
-  (if (emacsql-var thing)
-      (prog1 "%s" (push (cons (emacsql-var thing) kind) emacsql--vars))
-    (cl-ecase kind
-      ((:identifier :value :vector) (emacsql-escape-format thing kind))
-      (:auto (emacsql-escape-format
-              thing (if (symbolp thing) :identifier :value))))))
+  (let ((var (emacsql-var thing)))
+    (when (and var (symbolp var)) (setf thing var))
+    (if (numberp var)
+        (prog1 "%s" (push (cons var kind) emacsql--vars))
+      (cl-ecase kind
+        ((:identifier :value :vector) (emacsql-escape-format thing kind))
+        (:auto (emacsql-escape-format
+                thing (if (symbolp thing) :identifier :value)))))))
 
 (defun emacsql--vars-combine (expanded)
   "Only use within `emacsql-with-vars'!"

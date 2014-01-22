@@ -48,7 +48,9 @@
   (should (eq (emacsql-var '$) 0))
   (should (eq (emacsql-var '$1) 0))
   (should (eq (emacsql-var '$5) 4))
-  (should (eq (emacsql-var '$10) 9)))
+  (should (eq (emacsql-var '$10) 9))
+  (should (eq (emacsql-var '$a) nil))
+  (should (eq (emacsql-var '$$10) '$10)))
 
 (defun emacsql-tests-query (query args result)
   "Check that QUERY outputs RESULT for ARGS."
@@ -150,12 +152,16 @@
     ([:limit [$1 $2]] '(4 30)
      "LIMIT 4, 30;")))
 
-(ert-deftest emacsql-expr ()
+(ert-deftest emacsql-quoting ()
   (emacsql-tests-with-queries
     ([:where (= name 'foo)] '()
      "WHERE name = 'foo';")
     ([:where (= name '$1)] '(qux)
-     "WHERE name = 'qux';")))
+     "WHERE name = 'qux';")
+    ([:where (= name '$$1)] '()
+     "WHERE name = '$1';")
+    ([:values [a $$1]] '()
+     "VALUES ('a', '$1');")))
 
 (ert-deftest emacsql-system ()
   "A short test that fully interacts with SQLite."

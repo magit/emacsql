@@ -121,7 +121,7 @@ Inside expressions, Emacsql cannot tell the difference between symbol
 literals and column references. If you're talking about the symbol
 itself, just quote it as you would in normal Elisp. Note that this
 does not "escape" `$n` variables: it just means the argument gets
-quoted.
+quoted. Use `$$` for escaping variables.
 
 ```el
 [... :where (= category 'hiking)]
@@ -303,6 +303,9 @@ identifiers and values. These refer to argument positions after the
 statement in the `emacsql` function, 1-indexed.
 
     (emacsql db [:select * :from $1 :where (> salary $2)] 'employees 50000)
+
+To get a literal symbol that looks like one of these variables, escape
+it with an extra dollar sign (i.e. `$$1` becomes `$1`).
 
 ## Limitations
 
