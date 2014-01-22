@@ -549,7 +549,7 @@ definitions for return from a `emacsql-defexpander'."
               (cl-ecase (length args)
                 (1 (format "-(%s)" (recur 0)))
                 (2 (format "%s - %s" (recur 0) (recur 1)))))
-             ;; variadic
+             ;; Variadic
              ((and or)
               (cl-case (length args)
                 (0 (if (eq op 'and) "1" "0"))
