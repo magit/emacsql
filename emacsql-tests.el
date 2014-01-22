@@ -75,10 +75,10 @@
     ;; Sub queries
     ([:select name :from (:select * :from $1)] '(people)
      "SELECT name FROM (SELECT * FROM people);")
-    ([:select name :from [people (accounts a)]] '()
-     "SELECT name FROM people, accounts a;")
-    ([:select p:name :from [((:select * :from people) p)]] '()
-     "SELECT p.name FROM (SELECT * FROM people) p;")))
+    ([:select name :from [people (as accounts a)]] '()
+     "SELECT name FROM people, accounts AS a;")
+    ([:select p:name :from [(as (:select * :from people) p)]] '()
+     "SELECT p.name FROM (SELECT * FROM people) AS p;")))
 
 (ert-deftest emacsql-create-table ()
   (emacsql-tests-with-queries

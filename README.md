@@ -103,12 +103,16 @@ so you'll need to enable it for each connection.
 
 ## Operators
 
-Emacsql currently supports the following expression operators, named
+Emacsql supports the following SQLite expression operators, named
 exactly like so in a structured Emacsql statement.
 
     *     /     %     +     -     <<    >>    &
     |     <     <=    >     >=    =     !=
     is    like  glob  and   or    in
+
+In addition, Emacsql has these operators.
+
+    quote   as    not
 
 The `<=` and `>=` operators accept 2 or 3 operands, transforming into
 a SQL `_ BETWEEN _ AND _` operator as appropriate.
@@ -180,6 +184,7 @@ column identifiers, optionally as expressions.
 
 ```el
 [:select [name (/ salary 52)] ...]
+[:select [(as name n) (as age a)] ...]
 ```
 
 #### :from `<table>`
@@ -189,9 +194,9 @@ Provides `FROM`.
 ```el
 [... :from employees]
 [... :from [employees accounts]]
-[... :from [employees (accounts a)]]
+[... :from [employees (as accounts a)]]
 [... :from (:select ...)]
-[... :from [((:select ...) s1) ((:select ...) s2)]]
+[... :from [(as (:select ...) s1) (as (:select ...) s2)]]
 ```
 
 #### :where `<expr>`

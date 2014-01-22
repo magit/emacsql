@@ -504,54 +504,56 @@ definitions for return from a `emacsql-defexpander'."
 (defun emacsql--expr (expr)
   "Expand EXPR recursively."
   (emacsql-with-vars ""
-    (if (atom expr)
-        (var expr :auto)
-      (cl-destructuring-bind (op . args) expr
-        (cl-flet ((recur (n) (combine (emacsql--expr (nth n args)))))
-          (cl-ecase op
-            ;; Trinary/binary
-            ((<= >=)
-             (cl-ecase (length args)
-               (2 (format "%s %s %s" (recur 0) op (recur 1)))
-               (3 (format "%s BETWEEN %s AND %s"
-                          (recur 1)
-                          (recur (if (eq op '>=) 2 0))
-                          (recur (if (eq op '>=) 0 2))))))
-            ;; Binary
-            ((< > = != like glob is and or * / % << >> + & |)
-             (if (= 2 (length args))
-                 (format "%s %s %s"
-                         (recur 0)
-                         (if (eq op '%) '%% (upcase (symbol-name op)))
-                         (recur 1))
-               (error "Wrong number of operands for %s" op)))
-            ;; Unary
-            ((not)
-             (if (= 1 (length args))
-                 (format "%s %s" (upcase (symbol-name op)) (recur 0))
-               (error "Wrong number of operands for %s" op)))
-            ;; Unary/Binary
-            ((-)
-             (cl-ecase (length args)
-               (1 (format "-(%s)" (recur 0)))
-               (2 (format "%s - %s" (recur 0) (recur 1)))))
-            ;; quote special case
-            ((quote)
-             (cl-ecase (length args)
-               (1 (var (nth 0 args) :value))))
-            ;; IN special case
-            ((in)
-             (cl-case (length args)
-               (1 (error "Wrong number of operands for %s" op))
-               (2 (format "%s IN %s" (recur 0) (var (nth 1 args) :vector)))
-               (otherwise
-                (format "%s IN %s" (recur 0) (subsql (cdr args))))))))))))
+    (cond
+     ((and (sequencep expr) (eq :select (elt expr 0))) (subsql expr))
+     ((atom expr) (var expr :auto))
+     ((cl-destructuring-bind (op . args) expr
+         (cl-flet ((recur (n) (combine (emacsql--expr (nth n args)))))
+           (cl-ecase op
+             ;; Trinary/binary
+             ((<= >=)
+              (cl-ecase (length args)
+                (2 (format "%s %s %s" (recur 0) op (recur 1)))
+                (3 (format "%s BETWEEN %s AND %s"
+                           (recur 1)
+                           (recur (if (eq op '>=) 2 0))
+                           (recur (if (eq op '>=) 0 2))))))
+             ;; Binary
+             ((< > = != like glob is and or * / % << >> + & | as)
+              (if (= 2 (length args))
+                  (format "%s %s %s"
+                          (recur 0)
+                          (if (eq op '%) '%% (upcase (symbol-name op)))
+                          (recur 1))
+                (error "Wrong number of operands for %s" op)))
+             ;; Unary
+             ((not)
+              (if (= 1 (length args))
+                  (format "%s %s" (upcase (symbol-name op)) (recur 0))
+                (error "Wrong number of operands for %s" op)))
+             ;; Unary/Binary
+             ((-)
+              (cl-ecase (length args)
+                (1 (format "-(%s)" (recur 0)))
+                (2 (format "%s - %s" (recur 0) (recur 1)))))
+             ;; quote special case
+             ((quote)
+              (cl-ecase (length args)
+                (1 (var (nth 0 args) :value))))
+             ;; IN special case
+             ((in)
+              (cl-case (length args)
+                (1 (error "Wrong number of operands for %s" op))
+                (2 (format "%s IN %s" (recur 0) (var (nth 1 args) :vector)))
+                (otherwise
+                 (format "%s IN %s" (recur 0) (subsql (cdr args)))))))))))))
 
 (defun emacsql--idents (idents)
   "Read in a vector of IDENTS identifiers, or just an single identifier."
   (emacsql-with-vars ""
     (cl-etypecase idents
       (symbol (var idents :identifier))
+      (list (expr idents))
       (vector (mapconcat (lambda (e) (expr e)) idents ", ")))))
 
 (defun emacsql-init-font-lock ()
@@ -573,22 +575,7 @@ definitions for return from a `emacsql-defexpander'."
 (emacsql-defexpander :from (sources)
   "Expands to the FROM keyword."
   (emacsql-with-vars "FROM "
-    (cl-etypecase sources
-      (symbol (var sources :identifier))
-      (list (if (eq :select (car sources))
-                (subsql sources)
-              (cl-destructuring-bind (table alias) sources
-                (concat (var table :identifier) " " (var alias :identifier)))))
-      (vector (mapconcat (lambda (source)
-                           (cl-etypecase source
-                             (symbol (var source :identifier))
-                             (list
-                              (cl-destructuring-bind (table alias) source
-                                (concat (if (symbolp table)
-                                            (var table :identifier)
-                                          (subsql table))
-                                        " " (var alias :identifier))))))
-                         sources ", ")))))
+    (idents sources)))
 
 (emacsql-defexpander :replace ()
   (list "REPLACE"))
