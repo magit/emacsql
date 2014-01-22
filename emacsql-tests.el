@@ -168,9 +168,9 @@
       [:create-table person [(id integer :primary) name]]
       [:create-table likes ([(personid integer) color]
                             :foreign (personid person id :on-delete :cascade))]
-      [:replace :into person :values ([0 "Chris"] [1 "Jeff"])])
+      [:replace :into person :values ([0 "Chris"] [1 "Brian"])])
     (should (equal (emacsql db [:select * :from person :order-by id])
-                   '((0 "Chris") (1 "Jeff"))))
+                   '((0 "Chris") (1 "Brian"))))
     (emacsql db [:insert :into likes :values ([0 red] [0 yellow] [1 yellow])])
     (should (equal (emacsql db [:select * :from likes
                                         :order-by [personid color]])
