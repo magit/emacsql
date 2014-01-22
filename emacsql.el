@@ -711,6 +711,54 @@ definitions for return from a `emacsql-defexpander'."
 (emacsql-defexpander :vacuum ()
   (list "VACUUM"))
 
+;; User interaction functions:
+
+(defvar emacsql-show-buffer-name "*emacsql-show*"
+  "Name of the buffer for displaying intermediate SQL.")
+
+(defun emacsql--indent ()
+  "Indent and wrap the SQL expression in the current buffer."
+  (interactive)
+  (save-excursion
+    (setf (point) (point-min))
+    (let ((case-fold-search nil))
+      (while (search-forward-regexp " [A-Z]+" nil :no-error)
+        (when (> (current-column) (* fill-column 0.8))
+          (backward-word)
+          (insert "\n    "))))))
+
+(defun emacsql-show-sql (string)
+  "Fontify and display the SQL expression in STRING."
+  (let ((fontified
+         (with-temp-buffer
+           (insert string)
+           (sql-mode)
+           (with-no-warnings ;; autoloaded by previous line
+             (sql-highlight-sqlite-keywords))
+           (font-lock-fontify-buffer)
+           (emacsql--indent)
+           (buffer-string))))
+    (with-current-buffer (get-buffer-create emacsql-show-buffer-name)
+      (if (< (length string) fill-column)
+          (message "%s" fontified)
+        (let ((buffer-read-only nil))
+          (erase-buffer)
+          (insert fontified))
+        (special-mode)
+        (visual-line-mode)
+        (pop-to-buffer (current-buffer))))))
+
+(defun emacsql-flatten-sql (sql)
+  "Convert a structured SQL into a flat string for display."
+  (cl-destructuring-bind (string . vars) (emacsql-expand sql)
+    (apply #'format string (cl-loop for i from 1 to (length vars)
+                                    collect (intern (format "$%d" i))))))
+
+(defun emacsql-show-last-sql ()
+  "Display the compiled SQL of the structured SQL expression before point."
+  (interactive)
+  (emacsql-show-sql (emacsql-flatten-sql (preceding-sexp))))
+
 (provide 'emacsql)
 
 ;;; emacsql.el ends here

@@ -51,6 +51,10 @@ shouldn't impact normal use of the database.
 ;; => (("Jeff" 1000) ("Susan" 1001))
 ```
 
+When editing these structured SQL statements, the `M-x
+emacsql-show-last-sql` command (think `eval-last-sexp`) is useful for
+seeing what the actual SQL expression will become when compiled.
+
 ## Schema
 
 A table schema is a vector of column specifications, or a list
