@@ -314,6 +314,10 @@ Provides `PRAGMA`.
 (emacsql db [:pragma (= foreign_keys on)])
 ```
 
+#### :vacuum
+
+Provides `VACUUM`.
+
 ### Templates
 
 To make statement compilation faster, and to avoid making you build up

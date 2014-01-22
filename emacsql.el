@@ -704,6 +704,9 @@ definitions for return from a `emacsql-defexpander'."
 (emacsql-defexpander :rollback ()
   (list "ROLLBACK"))
 
+(emacsql-defexpander :vacuum ()
+  (list "VACUUM"))
+
 (provide 'emacsql)
 
 ;;; emacsql.el ends here
