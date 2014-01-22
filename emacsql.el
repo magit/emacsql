@@ -424,6 +424,7 @@ definitions for return from a `emacsql-defexpander'."
         (let ((next (pop column)))
           (cl-case next
             (:primary (push "PRIMARY KEY" output))
+            (:autoincrement (push "AUTOINCREMENT" output))
             (:non-nil (push "NOT NULL" output))
             (:unique  (push "UNIQUE" output))
             (:default (push "DEFAULT" output)

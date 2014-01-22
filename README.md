@@ -60,8 +60,9 @@ can either be just this symbol or it can include constraints. Because
 Emacsql stores entire lisp objects as values, the only relevant (and
 allowed) types are `integer`, `float`, and `object` (default).
 
-Columns constraints include `:primary` (aka `PRIMARY KEY`), `:unique`,
-`:non-nil` (aka `NOT NULL`), `:default`, and `:check`.
+Columns constraints include `:primary` (aka `PRIMARY KEY`),
+`:autoincrement`, `:unique`, `:non-nil` (aka `NOT NULL`), `:default`,
+and `:check`.
 
 Table constraints can be `:primary`, `:unique`, `:check`, and `:foreign`.
 
