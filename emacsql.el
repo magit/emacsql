@@ -10,9 +10,9 @@
 ;;; Commentary:
 
 ;; The purpose of this package is to provide a high-level Elisp
-;; interface to a high-performance database backend. Not every last
-;; feature of SQLite will be exposed at the high-level, but most of it
-;; should be.
+;; interface to a high-performance database backend. Not every feature
+;; of SQLite will be exposed at the high-level, but most of it should
+;; be.
 
 ;; Every emacsql function operates on a database connection
 ;; established with `emacsql-connect', connecting to a SQLite database
@@ -21,20 +21,17 @@
 
 ;;     (defvar db (emacsql-connect "company.db"))
 
-;; Database connections are automatically closed when the connection
-;; object is garbage collected. Though this doesn't excuse poor coding
-;; habits! :-)
-
-;; Table identifiers can be any lisp object: string, symbol, etc. I
-;; suggest using a symbol. Use `emacsql-create' to create a table.
+;; Identifiers for tables and columns are symbols. SQL keywords are
+;; lisp keywords. Use `emacsql' for sending structured statements to
+;; the database.
 
 ;;     (emacsql db [:create-table people [name id salary]])
 
-;; Column constraints can optionally be provided.
+;; Column constraints can optionally be provided in the schema.
 
 ;;     (emacsql db [:create-table people [name (id integer :unique) salary]])
 
-;; Insert values into a table with `emacsql-insert'.
+;; Insert some values.
 
 ;;     (emacsql db [:insert :into people
 ;;                  :values (["Jeff"  1000 60000.0] ["Susan" 1001 64000.0])])
@@ -47,21 +44,15 @@
 ;;     (emacsql db [:select [name id] :from employees :where (> salary 60000)])
 ;;     ;; => (("Susan" 1001))
 
-;; Queries can be templates using $1, $2, etc.:
+;; Queries can be templates -- $1, $2, etc. -- so they don't need to
+;; be built up dynamically:
 
 ;;     (emacsql db
 ;;              [:select [name id] :from employees :where (> salary $1)]
 ;;              50000)
 ;;     ;; => (("Jeff" 1000) ("Susan" 1001))
 
-;; Limitations:
-
-;; Due to limitations of the SQLite command line program, emacsql is
-;; *not* intended to play well with other programs accessing the
-;; SQLite database. Text values and blobs are stored encoded as
-;; s-expressions in order to avoid ambiguities in parsing output from
-;; the command line. This is a high-performance database specifically
-;; for Emacs.
+;; See README.md for much more complete documentation.
 
 ;;; Code:
 

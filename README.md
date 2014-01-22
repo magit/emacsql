@@ -27,7 +27,7 @@ shouldn't impact normal use of the database.
 ```el
 (defvar db (emacsql-connect "/var/lib/company.db"))
 
-;; Create a table. A table identifier can be any kind of lisp value.
+;; Create a table. Table and column identifiers are symbols.
 (emacsql db [:create-table people [name id salary]])
 
 ;; Or optionally provide column constraints.
