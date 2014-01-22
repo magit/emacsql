@@ -531,6 +531,10 @@ definitions for return from a `emacsql-defexpander'."
              (cl-ecase (length args)
                (1 (format "-(%s)" (recur 0)))
                (2 (format "%s - %s" (recur 0) (recur 1)))))
+            ;; quote special case
+            ((quote)
+             (cl-ecase (length args)
+               (1 (var (nth 0 args) :value))))
             ;; IN special case
             ((in)
              (cl-case (length args)

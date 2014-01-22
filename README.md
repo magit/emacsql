@@ -117,6 +117,17 @@ With `glob` and `like` keep in mind that they're matching the
 *printed* representations of these values, even if the value is a
 string.
 
+Inside expressions, Emacsql cannot tell the difference between symbol
+literals and column references. If you're talking about the symbol
+itself, just quote it as you would in normal Elisp. Note that this
+does not "escape" `$n` variables: it just means the argument gets
+quoted.
+
+```el
+[... :where (= category 'hiking)]
+(emacsql db [... :where (= category '$1)] 'hiking)
+```
+
 The `||` concatenation operator is unsupported because concatenating
 printed representations breaks an important constraint: all values must
 remain readable within SQLite.
