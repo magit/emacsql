@@ -532,7 +532,7 @@ definitions for return from a `emacsql-defexpander'."
                            (recur (if (eq op '>=) 2 0))
                            (recur (if (eq op '>=) 0 2))))))
              ;; Binary
-             ((< > = != like glob is and or * / % << >> + & | as)
+             ((< > = != like glob is * / % << >> + & | as)
               (if (= 2 (length args))
                   (format "%s %s %s"
                           (recur 0)
@@ -549,6 +549,15 @@ definitions for return from a `emacsql-defexpander'."
               (cl-ecase (length args)
                 (1 (format "-(%s)" (recur 0)))
                 (2 (format "%s - %s" (recur 0) (recur 1)))))
+             ;; variadic
+             ((and or)
+              (cl-case (length args)
+                (0 (if (eq op 'and) "1" "0"))
+                (1 (recur 0))
+                (otherwise
+                 (mapconcat
+                  #'recur (cl-loop for i from 0 below (length args) collect i)
+                  (format " %s " (upcase (symbol-name op)))))))
              ;; quote special case
              ((quote)
               (cl-ecase (length args)

@@ -163,6 +163,19 @@
     ([:values [a $$1]] '()
      "VALUES ('a', '$1');")))
 
+(ert-deftest emacsql-expr ()
+  (emacsql-tests-with-queries
+    ([:where (and)] '()
+     "WHERE 1;")
+    ([:where (or)] '()
+     "WHERE 0;")
+    ([:where (and a b)] '()
+     "WHERE a AND b;")
+    ([:where (or a $1)] '(b)
+     "WHERE a OR b;")
+    ([:where (and $1 $2 $3)] '(a b c)
+     "WHERE a AND b AND c;")))
+
 (ert-deftest emacsql-transaction ()
   (emacsql-tests-with-queries
     ([:begin :transaction] '()
