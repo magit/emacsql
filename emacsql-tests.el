@@ -216,6 +216,19 @@
     (should (equal (emacsql db [:select * :from likes])
                    '((1 yellow))))))
 
+(ert-deftest emacsql-error ()
+  "Check that we're getting expected conditions."
+  (should-error (emacsql-compile [:begin :foo])
+                :type 'emacsql-syntax)
+  (should-error (emacsql-compile [:create-table $foo$ [a]])
+                :type 'emacsql-syntax)
+  (should-error (emacsql-compile [:insert :into foo :values 1])
+                :type 'emacsql-syntax)
+  (emacsql-with-connection (db nil)
+    (emacsql db [:create-table foo [x]])
+    (should-error (emacsql db [:create-table foo [x]])
+                  :type 'emacsql-table)))
+
 (provide 'emacsql-tests)
 
 ;;; emacsql-tests.el ends here

@@ -79,6 +79,80 @@
                 nil)))
         (error :cannot-execute)))))
 
+;;; Error definitions
+
+(defmacro emacsql-deferror (symbol parents message)
+  "Defines a new error symbol  for Emacsql."
+  (declare (indent 2))
+  (let ((conditions (cl-remove-duplicates
+                     (append parents (list symbol 'emacsql-error 'error)))))
+    `(prog1 ',symbol
+       (setf (get ',symbol 'error-conditions) ',conditions
+             (get ',symbol 'error-message) ,message))))
+
+(emacsql-deferror emacsql-error () ;; parent condition for all others
+  "Emacsql had an unhandled condition")
+
+(emacsql-deferror emacsql-syntax () "Invalid SQL statement")
+(emacsql-deferror emacsql-table () "SQL table error")
+(emacsql-deferror emacsql-lock () "Database locked")
+(emacsql-deferror emacsql-transaction () "Invalid transaction")
+(emacsql-deferror emacsql-fatal () "Fatal error")
+(emacsql-deferror emacsql-file () "Filesystem access error")
+
+(defvar emacsql-condition-alist
+  '(("unable to open"              emacsql-file)
+    ("cannot open"                 emacsql-file)
+    ("source database is busy"     emacsql-file)
+    ("unknown database"            emacsql-file)
+    ("writable"                    emacsql-file)
+    ("no such table"               emacsql-table)
+    ("table [^ ]+ already exists"  emacsql-table)
+    ("no such column"              emacsql-table)
+    ("already another table"       emacsql-table)
+    ("Cannot add"                  emacsql-table)
+    ("table name"                  emacsql-table)
+    ("already an index"            emacsql-table)
+    ("constraint cannot be drop"   emacsql-table)
+    ("database is locked"          emacsql-lock)
+    ("no transaction is active"    emacsql-transaction)
+    ("cannot start a transaction"  emacsql-transaction)
+    ("out of memory"               emacsql-fatal)
+    ("corrupt database"            emacsql-fatal)
+    ("interrupt"                   emacsql-fatal)
+    ("values were supplied"        emacsql-syntax)
+    ("mismatch"                    emacsql-syntax)
+    ("no such"                     emacsql-syntax)
+    ("does not match"              emacsql-syntax)
+    ("circularly defined"          emacsql-syntax)
+    ("parameters are not allowed"  emacsql-syntax)
+    ("missing"                     emacsql-syntax)
+    ("is only allowed on"          emacsql-syntax)
+    ("more than one primary key"   emacsql-syntax)
+    ("not constant"                emacsql-syntax)
+    ("duplicate"                   emacsql-syntax)
+    ("name reserved"               emacsql-syntax)
+    ("cannot use variables"        emacsql-syntax)
+    ("no tables specified"         emacsql-syntax)
+    ("syntax error"                emacsql-syntax)
+    ("no such function"            emacsql-syntax)
+    ("unknown function"            emacsql-syntax)
+    ("wrong number of arguments"   emacsql-syntax)
+    ("term does not match"         emacsql-syntax)
+    ("clause"                      emacsql-syntax)
+    ("tree is too large"           emacsql-syntax)
+    ("too many"                    emacsql-syntax))
+  "List of regexp's mapping sqlite3 output to conditions.")
+
+(defun emacsql-get-condition (message)
+  (or (cadr (cl-assoc message emacsql-condition-alist
+                      :test (lambda (a b) (string-match-p b a))))
+      'emacsql-error))
+
+(defun emacsql-error (format &rest args)
+  "Like `error', but signal an emacsql-syntax condition."
+  (signal 'emacsql-syntax (list (apply #'format format args))))
+
 ;;; Connection handling:
 
 (cl-defstruct (emacsql (:constructor emacsql--create))
@@ -242,8 +316,10 @@ A statement can be a list, containing a statement with its arguments."
     (setf (point) (point-min))
     (prog1 t
       (when (looking-at "Error:")
-        (error (buffer-substring (line-beginning-position)
-                                 (line-end-position)))))))
+        (let* ((message (buffer-substring (line-beginning-position)
+                                          (line-end-position)))
+               (condition (emacsql-get-condition message)))
+          (signal condition (list message)))))))
 
 ;;; Escaping:
 
@@ -260,7 +336,7 @@ A statement can be a list, containing a statement with its arguments."
         (forbidden "[]-\000-\040!\"#%&'()*+,./;<=>?@[\\^`{|}~\177]"))
     (when (or (string-match-p forbidden string)
               (string-match-p "^[0-9$]" string))
-      (error "Invalid Emacsql identifier: %S" identifier))
+      (emacsql-error "Invalid Emacsql identifier: %S" identifier))
     (if (string-match-p ":" string)
         (replace-regexp-in-string ":" "." string)
       string)))
@@ -281,9 +357,10 @@ A statement can be a list, containing a statement with its arguments."
 
 (defun emacsql-escape-vector (vector)
   "Encode VECTOR into a SQL vector scalar."
-  (cl-etypecase vector
+  (cl-typecase vector
     (list   (mapconcat #'emacsql-escape-vector vector ", "))
-    (vector (concat "(" (mapconcat #'emacsql-escape-value vector ", ") ")"))))
+    (vector (concat "(" (mapconcat #'emacsql-escape-value vector ", ") ")"))
+    (otherwise (emacsql-error "Invalid vector %S" vector))))
 
 ;; Structured SQL compilation:
 
@@ -329,7 +406,7 @@ a list of (<string> [arg-pos] ...)."
                  for (arity expander) = (emacsql-get-expander keyword)
                  when expander
                  collect (apply expander (cl-subseq items 0 arity)) into parts
-                 else do (error "Unrecognized keyword %s" keyword)
+                 else do (emacsql-error "Unrecognized keyword %s" keyword)
                  do (setf items (cl-subseq items arity))
                  finally
                  (let ((string (concat (if subsql-p "(" "")
@@ -344,18 +421,20 @@ a list of (<string> [arg-pos] ...)."
   "Fill in the variables EXPANSION with ARGS."
   (cl-destructuring-bind (format . vars) expansion
     (unless (= (length args) (length vars))
-      (error "Wrong number of arguments for SQL template."))
+      (emacsql-error "Wrong number of arguments for SQL template."))
     (apply #'format format
            (cl-loop for (i . kind) in vars collect
                     (let ((thing (nth i args)))
-                      (cl-ecase kind
+                      (cl-case kind
                         (:identifier (emacsql-escape-identifier thing))
                         (:value (emacsql-escape-value thing))
                         (:vector (emacsql-escape-vector thing))
                         (:schema (car (emacsql--schema-to-string thing)))
                         (:auto (if (symbolp thing)
                                    (emacsql-escape-identifier thing)
-                                 (emacsql-escape-value thing)))))))))
+                                 (emacsql-escape-value thing)))
+                        (otherwise
+                         (emacsql-error "Invalid var type %S" kind))))))))
 
 (defun emacsql-compile (sql &rest args)
   "Compile structured SQL expression into a string."
@@ -399,10 +478,11 @@ KIND should be :value or :identifier."
     (when (and var (symbolp var)) (setf thing var))
     (if (numberp var)
         (prog1 "%s" (push (cons var kind) emacsql--vars))
-      (cl-ecase kind
+      (cl-case kind
         ((:identifier :value :vector) (emacsql-escape-format thing kind))
         (:auto (emacsql-escape-format
-                thing (if (symbolp thing) :identifier :value)))))))
+                thing (if (symbolp thing) :identifier :value)))
+        (otherwise (emacsql-error "Invalid var type: %S" kind))))))
 
 (defun emacsql--vars-combine (expanded)
   "Only use within `emacsql-with-vars'!"
@@ -445,9 +525,9 @@ definitions for return from a `emacsql-defexpander'."
             (object   (setf type "TEXT"))
             (otherwise
              (if (keywordp next)
-                 (error "Unknown schema contraint %s" next)
-               (error "Invalid type %s: %s" next
-                      "must be 'integer', 'float', or 'object'"))))))
+                 (emacsql-error "Unknown schema contraint %s" next)
+               (emacsql-error "Invalid type %s: %s" next
+                              "must be 'integer', 'float', or 'object'"))))))
       (setf output (nreverse output))
       (when type (push type output))
       (push name output)
@@ -472,19 +552,21 @@ definitions for return from a `emacsql-defexpander'."
         (format "(%s) REFERENCES %s (%s)" (idents child) (var table :identifier)
                 (idents parent))
         (cl-loop for (key value) on actions by #'cddr collect
-                 (cl-ecase key
+                 (cl-case key
                    (:on-update "ON UPDATE")
-                   (:on-delete "ON DELETE"))
+                   (:on-delete "ON DELETE")
+                   (otherwise (emacsql-error "Invalid case: %S" key)))
                  collect
-                 (cl-ecase value
+                 (cl-case value
                    (:restrict "RESTRICT")
                    (:set-nil "SET NULL")
                    (:set-default "SET DEFAULT")
-                   (:cascade "CASCADE"))))
+                   (:cascade "CASCADE")
+                   (otherwise (emacsql-error "Invalid action: %S" key)))))
        " "))))
 
 (defun emacsql--schema-to-string (schema)
-  (cl-etypecase schema
+  (cl-typecase schema
     (vector (emacsql--columns-to-string schema))
     (list
      (emacsql-with-vars ""
@@ -493,23 +575,27 @@ definitions for return from a `emacsql-defexpander'."
         (cons
          (combine (emacsql--columns-to-string (pop schema)))
          (cl-loop for (key value) on schema by #'cddr collect
-                  (cl-ecase key
+                  (cl-case key
                     (:primary (format "PRIMARY KEY (%s)" (idents value)))
                     (:unique (format "UNIQUE (%s)" (idents value)))
                     (:check (format "CHECK (%s)" (expr value)))
-                    (:foreign (combine (emacsql--foreign-key value))))))
-        ", ")))))
+                    (:foreign (combine (emacsql--foreign-key value)))
+                    (otherwise
+                     (emacsql-error "Invalid table constraint: %S" key)))))
+        ", ")))
+    (otherwise (emacsql-error "Invalid schema: %S" schema))))
 
 (defun emacsql--vector (vector)
   "Expand VECTOR, making variables as needed."
   (emacsql-with-vars ""
-    (cl-etypecase vector
+    (cl-typecase vector
       (symbol
        (var vector :vector))
       (list
        (mapconcat (lambda (v) (combine (emacsql--vector v))) vector ", "))
       (vector
-       (format "(%s)" (mapconcat (lambda (x) (var x :value)) vector ", "))))))
+       (format "(%s)" (mapconcat (lambda (x) (var x :value)) vector ", ")))
+      (otherwise (emacsql-error "Invalid vector: %S" vector)))))
 
 (defun emacsql--expr (expr)
   "Expand EXPR recursively."
@@ -518,16 +604,19 @@ definitions for return from a `emacsql-defexpander'."
      ((emacsql-sql-p expr) (subsql expr))
      ((atom expr) (var expr :auto))
      ((cl-destructuring-bind (op . args) expr
-         (cl-flet ((recur (n) (combine (emacsql--expr (nth n args)))))
-           (cl-ecase op
+         (cl-flet ((recur (n) (combine (emacsql--expr (nth n args))))
+                   (nops (op)
+                     (emacsql-error "Wrong number of operands for %s" op)))
+           (cl-case op
              ;; Trinary/binary
              ((<= >=)
-              (cl-ecase (length args)
+              (cl-case (length args)
                 (2 (format "%s %s %s" (recur 0) op (recur 1)))
                 (3 (format "%s BETWEEN %s AND %s"
                            (recur 1)
                            (recur (if (eq op '>=) 2 0))
-                           (recur (if (eq op '>=) 0 2))))))
+                           (recur (if (eq op '>=) 0 2))))
+                (otherwise (nops op))))
              ;; Binary
              ((< > = != like glob is * / % << >> + & | as)
               (if (= 2 (length args))
@@ -535,17 +624,18 @@ definitions for return from a `emacsql-defexpander'."
                           (recur 0)
                           (if (eq op '%) '%% (upcase (symbol-name op)))
                           (recur 1))
-                (error "Wrong number of operands for %s" op)))
+                (nops op)))
              ;; Unary
              ((not)
               (if (= 1 (length args))
                   (format "%s %s" (upcase (symbol-name op)) (recur 0))
-                (error "Wrong number of operands for %s" op)))
+                (nops op)))
              ;; Unary/Binary
              ((-)
-              (cl-ecase (length args)
+              (cl-case (length args)
                 (1 (format "-(%s)" (recur 0)))
-                (2 (format "%s - %s" (recur 0) (recur 1)))))
+                (2 (format "%s - %s" (recur 0) (recur 1)))
+                (otherwise (nops op))))
              ;; Variadic
              ((and or)
               (cl-case (length args)
@@ -557,23 +647,26 @@ definitions for return from a `emacsql-defexpander'."
                   (format " %s " (upcase (symbol-name op)))))))
              ;; quote special case
              ((quote)
-              (cl-ecase (length args)
-                (1 (var (nth 0 args) :value))))
+              (cl-case (length args)
+                (1 (var (nth 0 args) :value))
+                (otherwise (nops op))))
              ;; IN special case
              ((in)
               (cl-case (length args)
-                (1 (error "Wrong number of operands for %s" op))
+                (1 (emacsql-error "Wrong number of operands for %s" op))
                 (2 (format "%s IN %s" (recur 0) (var (nth 1 args) :vector)))
                 (otherwise
-                 (format "%s IN %s" (recur 0) (subsql (cdr args)))))))))))))
+                 (format "%s IN %s" (recur 0) (subsql (cdr args))))))
+             (otherwise (emacsql-error "Unknown operator: %S" op)))))))))
 
 (defun emacsql--idents (idents)
   "Read in a vector of IDENTS identifiers, or just an single identifier."
   (emacsql-with-vars ""
-    (cl-etypecase idents
+    (cl-typecase idents
       (symbol (var idents :identifier))
       (list (expr idents))
-      (vector (mapconcat (lambda (e) (expr e)) idents ", ")))))
+      (vector (mapconcat (lambda (e) (expr e)) idents ", "))
+      (otherwise (emacsql-error "Invalid syntax: %S" idents)))))
 
 (defun emacsql-init-font-lock ()
   "Add font-lock highlighting for `emacsql-defexpander'."
@@ -625,17 +718,21 @@ definitions for return from a `emacsql-defexpander'."
 
 (emacsql-defexpander :order-by (columns)
   (emacsql-with-vars "ORDER BY "
-    (cl-flet ((order (k) (cl-ecase k (:asc " ASC") (:desc " DESC"))))
+    (cl-flet ((order (k) (cl-case k
+                           (:asc " ASC")
+                           (:desc " DESC")
+                           (otherwise (emacsql-error "Invalid order: %S" k)))))
       (if (not (vectorp columns))
           (expr columns)
         (cl-loop for column across columns collect
-                 (cl-etypecase column
+                 (cl-typecase column
                    (list (let ((kpos (cl-position-if #'keywordp column)))
                            (if kpos
                                (concat (expr (nth (- 1 kpos) column))
                                        (order (nth kpos column)))
                              (expr column))))
-                   (symbol (var column :identifier)))
+                   (symbol (var column :identifier))
+                   (otherwise (emacsql-error "Invalid order spec: %S" column)))
                  into parts
                  finally (cl-return (mapconcat #'identity parts ", ")))))))
 
@@ -680,9 +777,10 @@ definitions for return from a `emacsql-defexpander'."
 
 (emacsql-defexpander :set (set)
   (emacsql-with-vars "SET "
-    (cl-etypecase set
+    (cl-typecase set
       (vector (idents set))
-      (list (expr set)))))
+      (list (expr set))
+      (otherwise (emacsql-error "Invalid SET expression: %S" set)))))
 
 (emacsql-defexpander :union ()
   (list "UNION"))
@@ -702,11 +800,12 @@ definitions for return from a `emacsql-defexpander'."
 
 (emacsql-defexpander :begin (kind)
   (emacsql-with-vars "BEGIN "
-    (cl-ecase kind
+    (cl-case kind
       (:transaction "TRANSACTION")
       (:deferred    "DEFERRED")
       (:immediate   "IMMEDIATE")
-      (:exclusive   "EXCLUSIVE"))))
+      (:exclusive   "EXCLUSIVE")
+      (otherwise (emacsql-error "Unknown transaction type: %S" kind)))))
 
 (emacsql-defexpander :commit ()
   (list "COMMIT"))
@@ -724,7 +823,6 @@ definitions for return from a `emacsql-defexpander'."
 
 (defun emacsql--indent ()
   "Indent and wrap the SQL expression in the current buffer."
-  (interactive)
   (save-excursion
     (setf (point) (point-min))
     (let ((case-fold-search nil))
