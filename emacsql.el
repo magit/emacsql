@@ -169,6 +169,14 @@ Output should have one row per line, separated by whitespace."
                and do (progn (forward-char 1) (setf row ()))
                finally (cl-return rows)))))
 
+(defmethod emacsql-simple-error-check ((connection emacsql-simple-parser))
+  "Return the error message from CONNECTION, or nil for no error."
+  (with-current-buffer (emacsql-buffer connection)
+    (let ((case-fold-search t))
+      (setf (point) (point-min))
+      (when (looking-at "error:")
+        (buffer-substring (line-beginning-position) (line-end-position))))))
+
 (provide 'emacsql) ; end of generic function declarations
 
 ;; Automatic connection cleanup:

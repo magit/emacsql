@@ -121,24 +121,15 @@ buffer. This is for debugging purposes."
                       :test (lambda (a b) (string-match-p b a))))
       'emacsql-error))
 
-(defun emacsql-sqlite--check-error (conn)
-  "Return non-nil or throw an appropriate error."
-  (with-current-buffer (emacsql-buffer conn)
-    (emacsql-wait conn)
-    (setf (point) (point-min))
-    (prog1 t
-      (when (looking-at "Error:")
-        (let* ((message (buffer-substring (line-beginning-position)
-                                          (line-end-position)))
-               (condition (emacsql-sqlite-get-condition message)))
-          (signal condition (list message)))))))
-
 (defmethod emacsql ((connection emacsql-sqlite-connection) sql &rest args)
   (let ((sql-string (apply #'emacsql-compile sql args)))
     (emacsql-clear connection)
     (emacsql-send-string connection sql-string)
-    (emacsql-sqlite--check-error connection)
-    (emacsql-simple-parse connection)))
+    (emacsql-wait connection)
+    (let ((error (emacsql-simple-error-check connection)))
+      (if error
+          (signal (emacsql-sqlite-get-condition error) (list error))
+        (emacsql-simple-parse connection)))))
 
 (provide 'emacsql-sqlite)
 

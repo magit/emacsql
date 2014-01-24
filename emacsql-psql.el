@@ -68,30 +68,16 @@
     (when (process-live-p process)
       (process-send-string process "\\q\n"))))
 
-(defmethod emacsql-waiting-p ((connection emacsql-psql-connection))
-  (with-current-buffer (emacsql-buffer connection)
-    (cond ((= (buffer-size) 1) (string= "]" (buffer-string)))
-          ((> (buffer-size) 1) (string= "\n]"
-                                        (buffer-substring
-                                         (- (point-max) 2) (point-max)))))))
-
-(defun emacsql-psql--check-error (connection)
-  "Return non-nil or throw an appropriate error."
-  (with-current-buffer (emacsql-buffer connection)
-    (emacsql-wait connection)
-    (setf (point) (point-min))
-    (prog1 t
-      (when (looking-at "ERROR:")
-        (let ((message (buffer-substring (line-beginning-position)
-                                          (line-end-position))))
-          (emacsql-error "%s" message))))))
-
 (defmethod emacsql ((connection emacsql-psql-connection) sql &rest args)
   (let ((sql-string (apply #'emacsql-compile sql args)))
     (emacsql-clear connection)
     (emacsql-send-string connection sql-string)
     (emacsql-psql--check-error connection)
-    (emacsql-simple-parse connection)))
+    (emacsql-wait connection)
+    (let ((error (emacsql-simple-error-check connection)))
+      (if error
+          (signal 'emacsql-error (list error))
+        (emacsql-simple-parse connection)))))
 
 (provide 'emacsql-psql)
 
