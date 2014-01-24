@@ -74,7 +74,6 @@
   (let ((sql-string (apply #'emacsql-compile sql args)))
     (emacsql-clear connection)
     (emacsql-send-string connection sql-string)
-    (emacsql-psql--check-error connection)
     (emacsql-wait connection)
     (let ((error (emacsql-simple-error-check connection)))
       (if error
