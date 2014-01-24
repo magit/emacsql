@@ -9,6 +9,23 @@
 (defvar emacsql-psql-executable "psql"
   "Path to the psql (PostgreSQL client) executable.")
 
+(defun emacsql-psql-unavailable-p ()
+  "Return a reason if the psql executable is not available.
+:no-executable -- cannot find the executable
+:cannot-execute -- cannot run the executable
+:old-version -- sqlite3 version is too old"
+  (let ((psql emacsql-psql-executable))
+    (if (null (executable-find psql))
+        :no-executable
+      (condition-case _
+          (with-temp-buffer
+            (call-process psql nil (current-buffer) nil "--version")
+            (let ((version (cl-third (split-string (buffer-string)))))
+              (if (version< version "1.0.0")
+                  :old-version
+                nil)))
+        (error :cannot-execute)))))
+
 (defclass emacsql-psql-connection (emacsql-connection)
   ((dbname :reader emacsql-psql-dbname :initarg :dbname))
   (:documentation "A connection to a PostgreSQL database."))
