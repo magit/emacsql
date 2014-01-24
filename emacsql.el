@@ -342,7 +342,8 @@ a list of (<string> [arg-pos] ...)."
 (defun emacsql-expand (sql &optional subsql-p)
   "Expand SQL into a SQL-consumable string, with variables."
   (let* ((cache emacsql-expander-cache)
-         (cached (and cache (gethash sql cache))))
+         (key (cons emacsql-type-map sql))
+         (cached (and cache (gethash key cache))))
     (or cached
         (cl-loop with items = (cl-coerce sql 'list)
                  while (not (null items))
@@ -358,7 +359,7 @@ a list of (<string> [arg-pos] ...)."
                                        (if subsql-p ")" ";")))
                        (vars (apply #'nconc (mapcar #'cdr parts))))
                    (cl-return (if cache
-                                  (setf (gethash sql cache) (cons string vars))
+                                  (setf (gethash key cache) (cons string vars))
                                 (cons string vars))))))))
 
 (defun emacsql-format (expansion &rest args)
