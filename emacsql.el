@@ -68,7 +68,8 @@
                :initarg :log-buffer
                :accessor emacsql-log-buffer
                :documentation "Output log (debug)."))
-  (:documentation "A connection to a SQL database."))
+  (:documentation "A connection to a SQL database.")
+  :abstract t)
 
 (defgeneric emacsql (connection sql &rest args)
   "Send SQL s-expression to CONNECTION and return the results.")
