@@ -59,6 +59,7 @@
 
 (require 'cl-lib)
 (require 'eieio)
+(require 'emacsql-reap)
 (require 'emacsql-compiler)
 
 (defclass emacsql-connection ()
@@ -194,50 +195,9 @@ specific error conditions."
 
 ;; Automatic connection cleanup:
 
-(defvar emacsql-connections ()
-  "Collection of all known emacsql connections.
-This collection exists for cleanup purposes.")
-
-(defvar emacsql-reap-timer nil
-  "Timer used to check for dead emacsql connections.")
-
 (defun emacsql-register (connection)
   "Add CONNECTION to the global connection list."
-  (emacsql-start-reap-timer)
-  (push (cons (copy-sequence connection) (emacsql--ref connection))
-        emacsql-connections))
-
-(defun emacsql--ref (thing)
-  "Create a weak reference to THING."
-  (let ((ref (make-hash-table :test 'eq :size 1 :weakness 'value)))
-    (prog1 ref
-      (setf (gethash t ref) thing))))
-
-(defun emacsql--deref (ref)
-  "Retrieve value from REF."
-  (gethash t ref))
-
-(defun emacsql-reap ()
-  "Clean up after lost connections."
-  (cl-loop for (conn-copy . ref) in emacsql-connections
-           when (null (emacsql--deref ref))
-           count (prog1 t (ignore-errors (emacsql-close conn-copy)))
-           into total
-           else collect (cons conn-copy ref) into connections
-           finally (progn
-                     (setf emacsql-connections connections)
-                     (cl-return total))))
-
-(cl-defun emacsql-start-reap-timer (&optional (interval 60))
-  "Start the automatic `emacql-reap' timer."
-  (unless emacsql-reap-timer
-    (setf emacsql-reap-timer (run-at-time interval interval #'emacsql-reap))))
-
-(defun emacsql-stop-reap-timer ()
-  "Stop the automatic `emacsql-reap' timer."
-  (when (timerp emacsql-reap-timer)
-    (cancel-timer emacsql-reap-timer)
-    (setf emacsql-reap-timer nil)))
+  (emacsql-reap-register connection #'emacsql-close (copy-sequence connection)))
 
 ;; Useful macros:
 

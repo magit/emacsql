@@ -5,8 +5,8 @@ BATCH   := $(EMACS) -batch -Q -L .
 COMPILE := $(BATCH) -f batch-byte-compile
 TEST    := $(BATCH) -l $(PACKAGE)-tests.elc -f ert-run-tests-batch
 
-EL = emacsql-compiler.el emacsql.el emacsql-sqlite.el emacsql-psql.el \
-     emacsql-tests.el
+EL = emacsql-reap.el emacsql-compiler.el emacsql.el emacsql-sqlite.el \
+     emacsql-psql.el emacsql-tests.el
 
 ELC = $(EL:.el=.elc)
 
