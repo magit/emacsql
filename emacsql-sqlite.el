@@ -30,7 +30,13 @@
 (defclass emacsql-sqlite-connection (emacsql-connection emacsql-simple-parser)
   ((file :initarg :file
          :type (or null string)
-         :documentation "Database file name."))
+         :documentation "Database file name.")
+   (types :allocation :class
+          :reader emacsql-types
+          :initform '((integer "INTEGER")
+                      (float "REAL")
+                      (object "TEXT")
+                      (nil nil))))
   (:documentation "A connection to a SQLite database."))
 
 ;;;###autoload
@@ -123,7 +129,7 @@ buffer. This is for debugging purposes."
       'emacsql-error))
 
 (defmethod emacsql ((connection emacsql-sqlite-connection) sql &rest args)
-  (let ((sql-string (apply #'emacsql-compile sql args)))
+  (let ((sql-string (apply #'emacsql-compile connection sql args)))
     (emacsql-clear connection)
     (emacsql-send-string connection sql-string)
     (emacsql-wait connection)

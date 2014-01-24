@@ -63,11 +63,14 @@
 (defclass emacsql-connection ()
   ((process :type process
             :initarg :process
-            :accessor emacsql-process)
+            :reader emacsql-process)
    (log-buffer :type (or null buffer)
                :initarg :log-buffer
                :accessor emacsql-log-buffer
-               :documentation "Output log (debug)."))
+               :documentation "Output log (debug).")
+   (types :initform nil
+          :reader emacsql-types
+          :documentation "Maps Emacsql types to SQL types."))
   (:documentation "A connection to a SQL database.")
   :abstract t)
 
@@ -76,6 +79,13 @@
 
 (defgeneric emacsql-close (connection)
   "Close CONNECTION and free all resources.")
+
+(defgeneric emacsql-types (connection)
+  "Return an alist mapping Emacsql types to database types.
+This will mask `emacsql-type-map' during expression compilation.
+This alist should have four key symbols: integer, float, object,
+nil (default type). The values are strings to be inserted into a
+SQL expression.")
 
 (defmethod emacsql-buffer ((connection emacsql-connection))
   "Get proccess buffer for CONNECTION."
@@ -297,6 +307,13 @@ A statement can be a list, containing a statement with its arguments."
 (defvar emacsql-expander-cache (make-hash-table :test 'equal)
   "Cache used to memoize `emacsql-expand'.")
 
+(defvar emacsql-type-map
+  '((integer "INTEGER")
+    (float "REAL")
+    (object "TEXT")
+    (nil "NONE"))
+  "An alist mapping Emacsql types to SQL types.")
+
 (defun emacsql-add-expander (keyword arity function)
   "Register FUNCTION for KEYWORD as a SQL expander.
 FUNCTION should accept the keyword's arguments and should return
@@ -363,9 +380,11 @@ a list of (<string> [arg-pos] ...)."
                         (otherwise
                          (emacsql-error "Invalid var type %S" kind))))))))
 
-(defun emacsql-compile (sql &rest args)
-  "Compile s-expression SQL expression into a string."
-  (apply #'emacsql-format (emacsql-expand sql) args))
+(defun emacsql-compile (connection sql &rest args)
+  "Compile s-expression SQL for CONNECTION into a string."
+  (let* ((mask (when connection (emacsql-types connection)))
+         (emacsql-type-map (or mask emacsql-type-map)))
+    (apply #'emacsql-format (emacsql-expand sql) args)))
 
 (defun emacsql-var (var)
   "Return the index number of VAR, or nil if VAR is not a variable.
@@ -426,9 +445,11 @@ definitions for return from a `emacsql-defexpander'."
 (defun emacsql--column-to-string (column)
   "Convert COLUMN schema into a SQL string."
   (emacsql-with-vars ""
+    (when (symbolp column)
+      (setf column (list column)))
     (let ((name (var (pop column) :identifier))
           (output ())
-          (type nil))
+          (type (cadr (assoc nil emacsql-type-map))))
       (while column
         (let ((next (pop column)))
           (cl-case next
@@ -440,9 +461,8 @@ definitions for return from a `emacsql-defexpander'."
                       (push (var (pop column) :value) output))
             (:check   (push "CHECK" output)
                       (push (format "(%s)" (expr (pop column))) output))
-            (integer  (setf type "INTEGER"))
-            (float    (setf type "REAL"))
-            (object   (setf type "TEXT"))
+            ((integer float object)
+             (setf type (cadr (assoc next emacsql-type-map))))
             (otherwise
              (if (keywordp next)
                  (emacsql-error "Unknown schema contraint %s" next)
@@ -457,9 +477,6 @@ definitions for return from a `emacsql-defexpander'."
   "Convert COLUMNS into a SQL-consumable string."
   (emacsql-with-vars ""
     (cl-loop for column across columns
-             when (symbolp column)
-             collect (var column :identifier) into parts
-             else
              collect (combine (emacsql--column-to-string column)) into parts
              finally (cl-return (mapconcat #'identity parts ", ")))))
 

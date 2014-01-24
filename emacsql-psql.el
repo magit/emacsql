@@ -28,7 +28,13 @@
         (error :cannot-execute)))))
 
 (defclass emacsql-psql-connection (emacsql-connection emacsql-simple-parser)
-  ((dbname :reader emacsql-psql-dbname :initarg :dbname))
+  ((dbname :reader emacsql-psql-dbname :initarg :dbname)
+   (types :allocation :class
+          :reader emacsql-types
+          :initform '((integer "BIGINT")
+                      (float "DOUBLE PRECISION")
+                      (object "TEXT")
+                      (nil "TEXT"))))
   (:documentation "A connection to a PostgreSQL database."))
 
 ;;;###autoload
@@ -74,7 +80,7 @@
       (process-send-string process "\\q\n"))))
 
 (defmethod emacsql ((connection emacsql-psql-connection) sql &rest args)
-  (let ((sql-string (apply #'emacsql-compile sql args)))
+  (let ((sql-string (apply #'emacsql-compile connection sql args)))
     (emacsql-clear connection)
     (emacsql-send-string connection sql-string)
     (emacsql-wait connection)
