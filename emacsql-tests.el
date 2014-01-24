@@ -1,4 +1,4 @@
-;;; emacsql-tests.el --- tests for emacsql
+;;; emacsql-tests.el --- tests for emacsql -*- lexical-binding: t; -*-
 
 ;;; Code:
 
