@@ -32,7 +32,7 @@
   (:documentation "A connection to a PostgreSQL database."))
 
 ;;;###autoload
-(cl-defun emacsql-psql (dbname &key username hostname port)
+(cl-defun emacsql-psql (dbname &key username hostname port debug)
   "Connect to a PostgreSQL server using the psql command line program."
   (let ((args (list dbname)))
     (when username
@@ -54,6 +54,9 @@
       (prog1 connection
         (setf (process-sentinel process)
               (lambda (_proc _) (kill-buffer buffer)))
+        (when debug
+          (setf (emacsql-log-buffer connection)
+                (generate-new-buffer "*emacsql-log*")))
         (emacsql-register connection)
         (mapc (apply-partially #'emacsql-send-string connection)
               '("\\pset pager off"
