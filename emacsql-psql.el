@@ -64,7 +64,7 @@
           (setf (emacsql-log-buffer connection)
                 (generate-new-buffer "*emacsql-log*")))
         (emacsql-register connection)
-        (mapc (apply-partially #'emacsql-send-string connection)
+        (mapc (lambda (s) (emacsql-send-string connection s :no-log))
               '("\\pset pager off"
                 "\\pset null nil"
                 "\\a"
@@ -78,16 +78,6 @@
   (let ((process (emacsql-process connection)))
     (when (process-live-p process)
       (process-send-string process "\\q\n"))))
-
-(defmethod emacsql ((connection emacsql-psql-connection) sql &rest args)
-  (let ((sql-string (apply #'emacsql-compile connection sql args)))
-    (emacsql-clear connection)
-    (emacsql-send-string connection sql-string)
-    (emacsql-wait connection)
-    (let ((error (emacsql-error-check connection)))
-      (if error
-          (signal 'emacsql-error (list error))
-        (emacsql-parse connection)))))
 
 (provide 'emacsql-psql)
 

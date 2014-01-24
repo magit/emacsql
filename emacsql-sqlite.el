@@ -122,21 +122,13 @@ buffer. This is for debugging purposes."
     ("too many"                    emacsql-syntax))
   "List of regexp's mapping sqlite3 output to conditions.")
 
-(defun emacsql-sqlite-get-condition (message)
+(defmethod emacsql-handle ((_ emacsql-sqlite-connection) message)
   "Get condition for MESSAGE provided from SQLite."
-  (or (cadr (cl-assoc message emacsql-sqlite-condition-alist
-                      :test (lambda (a b) (string-match-p b a))))
-      'emacsql-error))
-
-(defmethod emacsql ((connection emacsql-sqlite-connection) sql &rest args)
-  (let ((sql-string (apply #'emacsql-compile connection sql args)))
-    (emacsql-clear connection)
-    (emacsql-send-string connection sql-string)
-    (emacsql-wait connection)
-    (let ((error (emacsql-error-check connection)))
-      (if error
-          (signal (emacsql-sqlite-get-condition error) (list error))
-        (emacsql-parse connection)))))
+  (signal
+   (or (cadr (cl-assoc message emacsql-sqlite-condition-alist
+                       :test (lambda (a b) (string-match-p b a))))
+       'emacsql-error)
+   (list message)))
 
 (provide 'emacsql-sqlite)
 
