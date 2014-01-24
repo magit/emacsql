@@ -52,6 +52,7 @@
       (prog1 connection
         (emacsql-register connection)
         (emacsql-send-string connection "\\pset pager off")
+        (emacsql-send-string connection "\\pset null nil")
         (emacsql-send-string connection "\\a")
         (emacsql-send-string connection "\\t")
         (emacsql-send-string connection "\\f ' '")
