@@ -59,7 +59,7 @@
                                       :dbname dbname)))
       (prog1 connection
         (setf (process-sentinel process)
-              (lambda (_proc _) (kill-buffer buffer)))
+              (lambda (proc _) (kill-buffer (process-buffer proc))))
         (when debug
           (setf (emacsql-log-buffer connection)
                 (generate-new-buffer "*emacsql-log*")))

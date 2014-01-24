@@ -51,7 +51,8 @@ buffer. This is for debugging purposes."
          (sqlite3 emacsql-sqlite3-executable)
          (process (start-process "emacsql-sqlite" buffer sqlite3
                                  "-interactive" fullfile)))
-    (setf (process-sentinel process) (lambda (_proc _) (kill-buffer buffer)))
+    (setf (process-sentinel process)
+          (lambda (proc _) (kill-buffer (process-buffer proc))))
     (process-send-string process ".mode list\n")
     (process-send-string process ".separator ' '\n")
     (process-send-string process ".nullvalue nil\n")
