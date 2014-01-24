@@ -9,6 +9,7 @@
 (defvar emacsql-sqlite3-executable "sqlite3"
   "Path to the sqlite3 executable.")
 
+;;;###autoload
 (defun emacsql-sqlite3-unavailable-p ()
   "Return a reason if the sqlite3 executable is not available.
 :no-executable -- cannot find the executable

@@ -9,6 +9,7 @@
 (defvar emacsql-psql-executable "psql"
   "Path to the psql (PostgreSQL client) executable.")
 
+;;;###autoload
 (defun emacsql-psql-unavailable-p ()
   "Return a reason if the psql executable is not available.
 :no-executable -- cannot find the executable
@@ -30,6 +31,7 @@
   ((dbname :reader emacsql-psql-dbname :initarg :dbname))
   (:documentation "A connection to a PostgreSQL database."))
 
+;;;###autoload
 (cl-defun emacsql-psql (dbname &key username hostname port)
   "Connect to a PostgreSQL server using the psql command line program."
   (let ((args (list dbname)))
