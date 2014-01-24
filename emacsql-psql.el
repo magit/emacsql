@@ -70,6 +70,7 @@
                 "\\a"
                 "\\t"
                 "\\f ' '"
+                "SET client_min_messages TO ERROR;"
                 "\\set PROMPT1 ]"
                 "EMACSQL;")) ; error message flush
         (emacsql-wait connection)))))
