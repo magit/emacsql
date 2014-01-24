@@ -180,14 +180,6 @@ This collection exists for cleanup purposes.")
   "Retrieve value from REF."
   (gethash t ref))
 
-(defun emacsql--flush (conn)
-  "Flush (and toss) any waiting output from CONN."
-  (emacsql--send conn ";\n.print EMACSQL")
-  (with-current-buffer (emacsql-buffer conn)
-    (cl-loop until (string-match-p "EMACSQL\n]" (buffer-string))
-             do (accept-process-output)))
-  (emacsql--clear conn))
-
 (cl-defun emacsql-connect (file &key debug)
   "Open a connected to database stored in FILE.
 If FILE is nil use an in-memory database.
@@ -200,15 +192,17 @@ buffer. This is for debugging purposes."
          (process (start-process "emacsql" buffer emacsql-sqlite3-executable
                                  "-interactive" fullfile)))
     (setf (process-sentinel process) (lambda (_proc _) (kill-buffer buffer)))
-    (process-send-string process ".prompt ]\n")
     (process-send-string process ".mode list\n")
     (process-send-string process ".separator ' '\n")
     (process-send-string process ".nullvalue nil\n")
-    (let ((conn (emacsql--create :process process :file (when file fullfile))))
-      (when debug
-        (setf (emacsql-log conn) (generate-new-buffer "*emacsql-log*")))
+    (process-send-string process ".prompt ]\n")
+    (process-send-string process "EMACSQL;\n") ;; force error message
+    (let ((conn (emacsql--create
+                 :process process
+                 :file (when file fullfile)
+                 :log (when debug (generate-new-buffer "*emacsql-log*")))))
       (prog1 conn
-        (emacsql--flush conn)
+        (emacsql--wait conn)
         (push (cons (copy-sequence conn) (emacsql--ref conn))
               emacsql-connections)))))
 
@@ -311,7 +305,7 @@ A statement can be a list, containing a statement with its arguments."
 (defun emacsql--check-error (conn)
   "Return non-nil or throw an appropriate error."
   (with-current-buffer (emacsql-buffer conn)
-    (emacsql-wait conn)
+    (emacsql--wait conn)
     (setf (point) (point-min))
     (prog1 t
       (when (looking-at "Error:")
@@ -319,6 +313,13 @@ A statement can be a list, containing a statement with its arguments."
                                           (line-end-position)))
                (condition (emacsql-get-condition message)))
           (signal condition (list message)))))))
+
+(defun emacsql--wait (conn &optional timeout)
+  "Block Emacs until CONN has finished sending output."
+  (let ((end (when timeout (+ (float-time) timeout))))
+    (while (and (or (null timeout) (< (float-time) end))
+                (not (emacsql--complete-p conn)))
+      (accept-process-output (emacsql-process conn) timeout))))
 
 ;;; Escaping:
 
@@ -339,13 +340,6 @@ A statement can be a list, containing a statement with its arguments."
     (if (string-match-p ":" string)
         (replace-regexp-in-string ":" "." string)
       string)))
-
-(defun emacsql-wait (conn &optional timeout)
-  "Block Emacs until CONN has finished sending output."
-  (let ((end (when timeout (+ (float-time) timeout))))
-    (while (and (or (null timeout) (< (float-time) end))
-                (not (emacsql--complete-p conn)))
-      (accept-process-output (emacsql-process conn) timeout))))
 
 (defun emacsql-escape-value (value)
   "Escape VALUE for sending to SQLite."
