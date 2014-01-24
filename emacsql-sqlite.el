@@ -26,7 +26,7 @@
                 nil)))
         (error :cannot-execute)))))
 
-(defclass emacsql-sqlite-connection (emacsql-connection)
+(defclass emacsql-sqlite-connection (emacsql-connection emacsql-simple-parser)
   ((file :initarg :file
          :type (or null string)
          :documentation "Database file name."))
@@ -70,25 +70,6 @@ buffer. This is for debugging purposes."
   (let ((process (emacsql-process connection)))
     (when (process-live-p process)
       (process-send-string process ".exit\n"))))
-
-(defmethod emacsql-waiting-p ((connection emacsql-sqlite-connection))
-  (with-current-buffer (emacsql-buffer connection)
-    (cond ((= (buffer-size) 1) (string= "]" (buffer-string)))
-          ((> (buffer-size) 1) (string= "\n]"
-                                        (buffer-substring
-                                         (- (point-max) 2) (point-max)))))))
-
-(defun emacsql-sqlite--parse (connection)
-  "Parse SQLite output into an s-expression."
-  (with-current-buffer (emacsql-buffer connection)
-    (let ((standard-input (current-buffer)))
-      (setf (point) (point-min))
-      (cl-loop until (looking-at "]")
-               collect (read) into row
-               when (looking-at "\n")
-               collect row into rows
-               and do (progn (forward-char 1) (setf row ()))
-               finally (cl-return rows)))))
 
 (defvar emacsql-sqlite-condition-alist
   '(("unable to open"              emacsql-access)
@@ -157,7 +138,7 @@ buffer. This is for debugging purposes."
     (emacsql-clear connection)
     (emacsql-send-string connection sql-string)
     (emacsql-sqlite--check-error connection)
-    (emacsql-sqlite--parse connection)))
+    (emacsql-simple-parse connection)))
 
 (provide 'emacsql-sqlite)
 

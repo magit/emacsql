@@ -115,7 +115,7 @@ MESSAGE should not have a newline on the end."
   "Like `error', but signal an emacsql-syntax condition."
   (signal 'emacsql-syntax (list (apply #'format format args))))
 
-;;; Sending and receiving:
+;; Sending and receiving:
 
 (defmethod emacsql-send-string
   ((connection emacsql-connection) string &optional no-log)
@@ -139,6 +139,35 @@ MESSAGE should not have a newline on the end."
     (while (and (or (null timeout) (< (float-time) end))
                 (not (emacsql-waiting-p connection)))
       (accept-process-output (emacsql-process connection) timeout))))
+
+;; Helper mix-in class:
+
+(defclass emacsql-simple-parser ()
+  ()
+  (:documentation "A mix-in for back-ends with a specific output format.")
+  :abstract t)
+
+(defmethod emacsql-waiting-p ((connection emacsql-simple-parser))
+  "The back-end must us a single \"]\" character as its prompt.
+This prompt value was chosen because it is unreadable."
+  (with-current-buffer (emacsql-buffer connection)
+    (cond ((= (buffer-size) 1) (string= "]" (buffer-string)))
+          ((> (buffer-size) 1) (string= "\n]"
+                                        (buffer-substring
+                                         (- (point-max) 2) (point-max)))))))
+
+(defmethod emacsql-simple-parse ((connection emacsql-simple-parser))
+  "Parse output into an s-expression.
+Output should have one row per line, separated by whitespace."
+  (with-current-buffer (emacsql-buffer connection)
+    (let ((standard-input (current-buffer)))
+      (setf (point) (point-min))
+      (cl-loop until (looking-at "]")
+               collect (read) into row
+               when (looking-at "\n")
+               collect row into rows
+               and do (progn (forward-char 1) (setf row ()))
+               finally (cl-return rows)))))
 
 (provide 'emacsql) ; end of generic function declarations
 
@@ -218,7 +247,7 @@ A statement can be a list, containing a statement with its arguments."
                else
                collect (append (list 'emacsql 'emacsql--conn) statement))))
 
-;;; Escaping:
+;; Escaping:
 
 (defun emacsql-quote (string)
   "Quote STRING for use in a SQL expression."

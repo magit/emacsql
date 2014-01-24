@@ -26,7 +26,7 @@
                 nil)))
         (error :cannot-execute)))))
 
-(defclass emacsql-psql-connection (emacsql-connection)
+(defclass emacsql-psql-connection (emacsql-connection emacsql-simple-parser)
   ((dbname :reader emacsql-psql-dbname :initarg :dbname))
   (:documentation "A connection to a PostgreSQL database."))
 
@@ -91,7 +91,7 @@
     (emacsql-clear connection)
     (emacsql-send-string connection sql-string)
     (emacsql-psql--check-error connection)
-    (emacsql-sqlite--parse connection)))
+    (emacsql-simple-parse connection)))
 
 (provide 'emacsql-psql)
 
