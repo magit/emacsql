@@ -60,6 +60,7 @@ buffer. This is for debugging purposes."
           '(".mode list"
             ".separator ' '"
             ".nullvalue nil"
+            "PRAGMA busy_timeout = 30000;"
             ".prompt ]"
             "EMACSQL;")) ; error message flush
     (when debug
