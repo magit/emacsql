@@ -69,7 +69,8 @@
                :initarg :log-buffer
                :accessor emacsql-log-buffer
                :documentation "Output log (debug).")
-   (types :initform nil
+   (types :allocation :class
+          :initform nil
           :reader emacsql-types
           :documentation "Maps Emacsql types to SQL types."))
   (:documentation "A connection to a SQL database.")
