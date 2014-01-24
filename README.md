@@ -1,13 +1,14 @@
 # Emacsql
 
-Emacsql is a high-level Emacs Lisp front-end for SQLite. It is
-currently a work-in-progress as the s-expression query language is
-still being hammered out.
+Emacsql is a high-level Emacs Lisp front-end for SQLite (primarily),
+PostgreSQL, and potentially other SQL databases. It is currently a
+work-in-progress (90% complete) because the s-expression query
+language is still being hammered out.
 
-It works by keeping a `sqlite3` inferior process running (a
-"connection") for interacting with the back-end database. Connections
-are automatically cleaned up if they are garbage collected. All
-requests are synchronous.
+It works by keeping a `sqlite3` (or `psql`) inferior process running
+(a "connection") for interacting with the back-end database.
+Connections are automatically cleaned up if they are garbage
+collected. All requests are synchronous.
 
 Any [readable lisp value][readable] can be stored as a value in
 Emacsql, including numbers, strings, symbols, lists, vectors, and
@@ -15,17 +16,15 @@ closures. Emacsql has no concept of "TEXT" values; it's all just lisp
 objects. The lisp object `nil` corresponds 1:1 with `NULL` in the
 database.
 
-Requires Emacs 24 or later and SQLite 3 or later.
+Requires Emacs 24 or later.
 
 Due to [bad behavior from SQLite on Windows][stderr] Emacsql will
-*not* signal error messages for invalid statements on this platform.
-Fortunately this would only be an issue during package development and
-shouldn't impact normal use of the database.
+*not* signal error messages for problems on this platform.
 
 ## Example Usage
 
 ```el
-(defvar db (emacsql-connect "/var/lib/company.db"))
+(defvar db (emacsql-connect "~/company.db"))
 
 ;; Create a table. Table and column identifiers are symbols.
 (emacsql db [:create-table people [name id salary]])
@@ -367,6 +366,20 @@ s-expressions TEXT values. This avoids ambiguities in parsing output
 from the command line and allows for storage of Emacs richer data
 types. This is an efficient, ACID-compliant database specifically for
 Emacs.
+
+## Creating a New Front-end
+
+Emacsql uses EIEIO so that interactions with a connection occur
+through generic functions. You need to define a new class that
+inherits from `emacsql-connection`.
+
+ * Implement `emacsql-waiting-p`, `emacsql-close`, and `emacsql`.
+ * Provide a constructor that initializes the connection and calls
+   `emacsql-register` (for automatic connection cleanup).
+ * Ensure that you properly read NULL as nil (hint: ask your back-end
+   to print it that way).
+
+The provided implementations should serve as useful examples.
 
 ## See Also
 
