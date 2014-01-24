@@ -74,7 +74,7 @@
           (with-temp-buffer
             (call-process sqlite3 nil (current-buffer) nil "--version")
             (let ((version (car (split-string (buffer-string)))))
-              (if (version< version "3.7.15")
+              (if (version< version "3.0.0")
                   :old-version
                 nil)))
         (error :cannot-execute)))))
