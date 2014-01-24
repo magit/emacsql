@@ -50,14 +50,17 @@
                                       :process process
                                       :dbname dbname)))
       (prog1 connection
+        (setf (process-sentinel process)
+              (lambda (_proc _) (kill-buffer buffer)))
         (emacsql-register connection)
-        (emacsql-send-string connection "\\pset pager off")
-        (emacsql-send-string connection "\\pset null nil")
-        (emacsql-send-string connection "\\a")
-        (emacsql-send-string connection "\\t")
-        (emacsql-send-string connection "\\f ' '")
-        (emacsql-send-string connection "\\set PROMPT1 ]")
-        (emacsql-send-string connection "EMACSQL;") ; error message flush
+        (mapc (apply-partially #'emacsql-send-string connection)
+              '("\\pset pager off"
+                "\\pset null nil"
+                "\\a"
+                "\\t"
+                "\\f ' '"
+                "\\set PROMPT1 ]"
+                "EMACSQL;")) ; error message flush
         (emacsql-wait connection)))))
 
 (defmethod emacsql-close ((connection emacsql-psql-connection))
