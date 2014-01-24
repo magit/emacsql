@@ -11,7 +11,6 @@
 
 (defun emacsql-sqlite3-unavailable-p ()
   "Return a reason if the sqlite3 executable is not available.
-
 :no-executable -- cannot find the executable
 :cannot-execute -- cannot run the executable
 :old-version -- sqlite3 version is too old"
@@ -61,7 +60,7 @@ buffer. This is for debugging purposes."
           (setf (emacsql-log-buffer connection)
                 (generate-new-buffer "*emacsql-log*")))
         (emacsql-wait connection)
-        (emacsql-add-connection connection)))))
+        (emacsql-register connection)))))
 
 ;;;###autoload
 (defalias 'emacsql-connect 'emacsql-sqlite)

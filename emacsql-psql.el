@@ -33,7 +33,7 @@
                                       :process process
                                       :dbname dbname)))
       (prog1 connection
-        (emacsql-add-connection connection)
+        (emacsql-register connection)
         (emacsql-send-string connection "\\pset pager off")
         (emacsql-send-string connection "\\a")
         (emacsql-send-string connection "\\t")

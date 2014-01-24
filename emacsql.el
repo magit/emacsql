@@ -150,7 +150,7 @@ This collection exists for cleanup purposes.")
 (defvar emacsql-reap-timer nil
   "Timer used to check for dead emacsql connections.")
 
-(defun emacsql-add-connection (connection)
+(defun emacsql-register (connection)
   "Add CONNECTION to the global connection list."
   (emacsql-start-reap-timer)
   (push (cons (copy-sequence connection) (emacsql--ref connection))
