@@ -1,4 +1,4 @@
-;; emacsql-sqlite.el --- SQLite backend for Emacsql -*- lexical-binding: t; -*-
+;; emacsql-sqlite.el --- SQLite front-end for Emacsql -*- lexical-binding: t; -*-
 
 ;;; Code:
 
@@ -40,9 +40,10 @@ If FILE is nil use an in-memory database.
 
 :debug LOG -- When non-nil, log all SQLite commands to a log
 buffer. This is for debugging purposes."
-  (let* ((buffer (generate-new-buffer "*emacsql-connection*"))
+  (let* ((buffer (generate-new-buffer "*emacsql-sqlite*"))
          (fullfile (if file (expand-file-name file) ":memory:"))
-         (process (start-process "emacsql" buffer emacsql-sqlite3-executable
+         (sqlite3 emacsql-sqlite3-executable)
+         (process (start-process "emacsql-sqlite" buffer sqlite3
                                  "-interactive" fullfile)))
     (setf (process-sentinel process) (lambda (_proc _) (kill-buffer buffer)))
     (process-send-string process ".mode list\n")
@@ -68,7 +69,7 @@ buffer. This is for debugging purposes."
 (defmethod emacsql-close ((connection emacsql-sqlite-connection))
   "Gracefully exits the SQLite subprocess."
   (let ((process (emacsql-process connection)))
-    (when (and process (process-live-p process))
+    (when (process-live-p process)
       (process-send-string process ".exit\n"))))
 
 (defmethod emacsql-waiting-p ((connection emacsql-sqlite-connection))
@@ -153,7 +154,6 @@ buffer. This is for debugging purposes."
           (signal condition (list message)))))))
 
 (defmethod emacsql ((connection emacsql-sqlite-connection) sql &rest args)
-  "Send structured SQL expression to CONNECTION with ARGS."
   (let ((sql-string (apply #'emacsql-compile sql args)))
     (emacsql-clear connection)
     (emacsql-send-string connection sql-string)

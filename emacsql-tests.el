@@ -4,6 +4,7 @@
 
 (require 'ert)
 (require 'emacsql)
+(require 'emacsql-sqlite)
 
 (ert-deftest emacsql-escape-identifier ()
   (should (string= (emacsql-escape-identifier "foo") "foo"))
@@ -190,7 +191,7 @@
 (ert-deftest emacsql-system ()
   "A short test that fully interacts with SQLite."
   (should-not (emacsql-sqlite3-unavailable-p))
-  (emacsql-with-connection (db nil)
+  (emacsql-with-connection (db (emacsql-sqlite nil))
     (emacsql db [:create-table foo [x]])
     (should-error (emacsql db [:create-table foo [x]]))
     (emacsql db [:insert :into foo :values ([1] [2] [3])])
@@ -199,7 +200,7 @@
 
 (ert-deftest emacsql-foreign-system ()
   "Tests that foreign keys work properly through Emacsql."
-  (emacsql-with-connection (db nil)
+  (emacsql-with-connection (db (emacsql-sqlite nil))
     (emacsql-thread db
       [:pragma (= foreign_keys on)]
       [:create-table person [(id integer :primary) name]]
@@ -224,7 +225,7 @@
                 :type 'emacsql-syntax)
   (should-error (emacsql-compile [:insert :into foo :values 1])
                 :type 'emacsql-syntax)
-  (emacsql-with-connection (db nil)
+  (emacsql-with-connection (db (emacsql-sqlite nil))
     (emacsql db [:create-table foo [x]])
     (should-error (emacsql db [:create-table foo [x]])
                   :type 'emacsql-table)))

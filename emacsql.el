@@ -194,15 +194,14 @@ This collection exists for cleanup purposes.")
 
 (defmacro emacsql-with-connection (connection-spec &rest body)
   "Open an Emacsql connection, evaluate BODY, and close the connection.
-CONNECTION-SPEC is a connection specification like the call to
-`emacsql-connect', establishing a single binding.
+CONNECTION-SPEC establishes a single binding.
 
-  (emacsql-with-connection (db \"company.db\")
+  (emacsql-with-connection (db (emacsql-sqlite \"company.db\"))
     (emacsql db [:create-table foo [x]])
     (emacsql db [:insert :into foo :values ([1] [2] [3])])
     (emacsql db [:select * :from foo]))"
   (declare (indent 1))
-  `(let ((,(car connection-spec) (emacsql-connect ,@(cdr connection-spec))))
+  `(let ((,(car connection-spec) ,(cadr connection-spec)))
      (unwind-protect
          (progn ,@body)
        (emacsql-close ,(car connection-spec)))))
