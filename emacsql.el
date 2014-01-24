@@ -188,11 +188,11 @@ This collection exists for cleanup purposes.")
              do (accept-process-output)))
   (emacsql--clear conn))
 
-(cl-defun emacsql-connect (file &key log)
+(cl-defun emacsql-connect (file &key debug)
   "Open a connected to database stored in FILE.
 If FILE is nil use an in-memory database.
 
-:log LOG -- When non-nil, log all SQLite commands to a log
+:debug LOG -- When non-nil, log all SQLite commands to a log
 buffer. This is for debugging purposes."
   (emacsql-start-reap-timer)
   (let* ((buffer (generate-new-buffer "*emacsql-connection*"))
@@ -205,7 +205,7 @@ buffer. This is for debugging purposes."
     (process-send-string process ".separator ' '\n")
     (process-send-string process ".nullvalue nil\n")
     (let ((conn (emacsql--create :process process :file (when file fullfile))))
-      (when log
+      (when debug
         (setf (emacsql-log conn) (generate-new-buffer "*emacsql-log*")))
       (prog1 conn
         (emacsql--flush conn)
