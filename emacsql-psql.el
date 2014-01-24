@@ -57,23 +57,22 @@
            (connection (make-instance 'emacsql-psql-connection
                                       :process process
                                       :dbname dbname)))
-      (prog1 connection
-        (setf (process-sentinel process)
-              (lambda (proc _) (kill-buffer (process-buffer proc))))
-        (when debug
-          (setf (emacsql-log-buffer connection)
-                (generate-new-buffer "*emacsql-log*")))
-        (emacsql-register connection)
-        (mapc (lambda (s) (emacsql-send-string connection s :no-log))
-              '("\\pset pager off"
-                "\\pset null nil"
-                "\\a"
-                "\\t"
-                "\\f ' '"
-                "SET client_min_messages TO ERROR;"
-                "\\set PROMPT1 ]"
-                "EMACSQL;")) ; error message flush
-        (emacsql-wait connection)))))
+      (setf (process-sentinel process)
+            (lambda (proc _) (kill-buffer (process-buffer proc))))
+      (when debug
+        (setf (emacsql-log-buffer connection)
+              (generate-new-buffer "*emacsql-log*")))
+      (mapc (lambda (s) (emacsql-send-string connection s :no-log))
+            '("\\pset pager off"
+              "\\pset null nil"
+              "\\a"
+              "\\t"
+              "\\f ' '"
+              "SET client_min_messages TO ERROR;"
+              "\\set PROMPT1 ]"
+              "EMACSQL;")) ; error message flush
+      (emacsql-wait connection)
+      (emacsql-register connection))))
 
 (defmethod emacsql-close ((connection emacsql-psql-connection))
   (let ((process (emacsql-process connection)))

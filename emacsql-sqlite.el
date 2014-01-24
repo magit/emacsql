@@ -50,25 +50,23 @@ buffer. This is for debugging purposes."
          (fullfile (if file (expand-file-name file) ":memory:"))
          (sqlite3 emacsql-sqlite3-executable)
          (process (start-process "emacsql-sqlite" buffer sqlite3
-                                 "-interactive" fullfile)))
+                                 "-interactive" fullfile))
+         (connection (make-instance 'emacsql-sqlite-connection
+                                    :process process
+                                    :file (when file fullfile))))
     (setf (process-sentinel process)
           (lambda (proc _) (kill-buffer (process-buffer proc))))
-    (process-send-string process ".mode list\n")
-    (process-send-string process ".separator ' '\n")
-    (process-send-string process ".nullvalue nil\n")
-    (process-send-string process ".prompt ]\n")
-    (process-send-string process "EMACSQL;\n") ;; error message flush
-    (let ((connection (make-instance
-                       'emacsql-sqlite-connection
-                       :process process
-                       :file (when file fullfile)
-                       :log-buffer )))
-      (prog1 connection
-        (when debug
-          (setf (emacsql-log-buffer connection)
-                (generate-new-buffer "*emacsql-log*")))
-        (emacsql-wait connection)
-        (emacsql-register connection)))))
+    (mapc (lambda (s) (emacsql-send-string connection s :no-log))
+          '(".mode list"
+            ".separator ' '"
+            ".nullvalue nil"
+            ".prompt ]"
+            "EMACSQL;")) ; error message flush
+    (when debug
+      (setf (emacsql-log-buffer connection)
+            (generate-new-buffer "*emacsql-log*")))
+    (emacsql-wait connection)
+    (emacsql-register connection)))
 
 ;;;###autoload
 (defalias 'emacsql-connect 'emacsql-sqlite)

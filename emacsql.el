@@ -196,8 +196,9 @@ specific error conditions."
 ;; Automatic connection cleanup:
 
 (defun emacsql-register (connection)
-  "Add CONNECTION to the global connection list."
-  (emacsql-reap-register connection #'emacsql-close (copy-sequence connection)))
+  "Register CONNECTION for automatic cleanup and return CONNECTION."
+  (emacsql-reap-register connection #'emacsql-close (copy-sequence connection))
+  connection)
 
 ;; Useful macros:
 
