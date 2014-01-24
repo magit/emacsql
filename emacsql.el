@@ -184,7 +184,7 @@ This collection exists for cleanup purposes.")
   "Flush (and toss) any waiting output from CONN."
   (emacsql--send conn ";\n.print EMACSQL")
   (with-current-buffer (emacsql-buffer conn)
-    (cl-loop until (string-match-p "EMACSQL\n#" (buffer-string))
+    (cl-loop until (string-match-p "EMACSQL\n]" (buffer-string))
              do (accept-process-output)))
   (emacsql--clear conn))
 
@@ -200,8 +200,9 @@ buffer. This is for debugging purposes."
          (process (start-process "emacsql" buffer emacsql-sqlite3-executable
                                  "-interactive" fullfile)))
     (setf (process-sentinel process) (lambda (_proc _) (kill-buffer buffer)))
-    (process-send-string process ".prompt #\n")
-    (process-send-string process ".mode line\n")
+    (process-send-string process ".prompt ]\n")
+    (process-send-string process ".mode list\n")
+    (process-send-string process ".separator ' '\n")
     (process-send-string process ".nullvalue nil\n")
     (let ((conn (emacsql--create :process process :file (when file fullfile))))
       (when log
@@ -290,8 +291,8 @@ A statement can be a list, containing a statement with its arguments."
 (defun emacsql--complete-p (conn)
   "Return non-nil if receive buffer has finished filling."
   (with-current-buffer (emacsql-buffer conn)
-    (cond ((= (buffer-size) 1) (string= "#" (buffer-string)))
-          ((> (buffer-size) 1) (string= "\n#"
+    (cond ((= (buffer-size) 1) (string= "]" (buffer-string)))
+          ((> (buffer-size) 1) (string= "\n]"
                                         (buffer-substring
                                          (- (point-max) 2) (point-max)))))))
 
@@ -300,13 +301,11 @@ A statement can be a list, containing a statement with its arguments."
   (with-current-buffer (emacsql-buffer conn)
     (let ((standard-input (current-buffer)))
       (setf (point) (point-min))
-      (cl-loop until (looking-at "#")
-               do (search-forward " = ")
-               for value = (read)
-               collect value into row
-               do (forward-char)
-               when (or (looking-at "\n") (looking-at "#"))
-               collect row into rows and do (setf row ())
+      (cl-loop until (looking-at "]")
+               collect (read) into row
+               when (looking-at "\n")
+               collect row into rows
+               and do (progn (forward-char 1) (setf row ()))
                finally (cl-return rows)))))
 
 (defun emacsql--check-error (conn)
