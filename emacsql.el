@@ -1,29 +1,30 @@
-;;; emacsql.el --- SQL database built on SQLite -*- lexical-binding: t; -*-
+;;; emacsql.el --- high-level SQL database front-end -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Christopher Wellons <wellons@nullprogram.com>
 ;; URL: https://github.com/skeeto/emacsql
 ;; Version: 1.0.0
-;; Package-Requires: ((cl-lib "0.3"))
 
 ;;; Commentary:
 
 ;; The purpose of this package is to provide a high-level Elisp
-;; interface to a high-performance database backend. Not every feature
-;; of SQLite will be exposed at the high-level, but most of it should
-;; be.
+;; interface to a high-performance database back-end. Not every feature
+;; of SQL will be exposed, but the important parts should be.
 
-;; Every emacsql function operates on a database connection
-;; established with `emacsql-connect', connecting to a SQLite database
-;; file. For each connection a sqlite3 inferior process is kept alive.
-;; Connections are closed with `elfeed-close'.
+;; Most emacsql functions operate on a database connection. A
+;; connection to SQLite is established with `emacsql-connect'. For
+;; each such connection a sqlite3 inferior process is kept alive in
+;; the background. Connections are closed with `emacsql-close'.
 
 ;;     (defvar db (emacsql-connect "company.db"))
 
-;; Identifiers for tables and columns are symbols. SQL keywords are
-;; lisp keywords. Use `emacsql' for sending structured statements to
-;; the database.
+;; Other types of database connections are available (PostgreSQL via
+;; `emacsql-psql').
+
+;; Use `emacsql' to send an s-expression SQL statements to a connected
+;; database. Identifiers for tables and columns are symbols. SQL
+;; keywords are lisp keywords. Anything else is data.
 
 ;;     (emacsql db [:create-table people [name id salary]])
 
@@ -57,29 +58,38 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'eieio)
 
-(defvar emacsql-sqlite3-executable "sqlite3"
-  "Path to the sqlite3 executable.")
+(defclass emacsql-connection ()
+  ((process :type process
+            :initarg :process
+            :accessor emacsql-process)
+   (log-buffer :type (or null buffer)
+               :initarg :log-buffer
+               :accessor emacsql-log-buffer
+               :documentation "Output log (debug)."))
+  (:documentation "A connection to a SQL database."))
 
-(defun emacsql-sqlite3-unavailable-p ()
-  "Return a reason if the sqlite3 executable is not available.
+(defgeneric emacsql (connection sql &rest args)
+  "Send SQL s-expression to CONNECTION and return the results.")
 
-:no-executable -- cannot find the executable
-:cannot-execute -- cannot run the executable
-:old-version -- sqlite3 version is too old"
-  (let ((sqlite3 emacsql-sqlite3-executable))
-    (if (null (executable-find sqlite3))
-        :no-executable
-      (condition-case _
-          (with-temp-buffer
-            (call-process sqlite3 nil (current-buffer) nil "--version")
-            (let ((version (car (split-string (buffer-string)))))
-              (if (version< version "3.0.0")
-                  :old-version
-                nil)))
-        (error :cannot-execute)))))
+(defgeneric emacsql-close (connection)
+  "Close CONNECTION and free all resources.")
 
-;;; Error definitions
+(defmethod emacsql-buffer ((connection emacsql-connection))
+  "Get proccess buffer for CONNECTION."
+  (process-buffer (emacsql-process connection)))
+
+(defmethod emacsql-log ((connection emacsql-connection) message)
+  "Log MESSAGE into CONNECTION's log.
+MESSAGE should not have a newline on the end."
+  (let ((log (emacsql-log-buffer connection)))
+    (when log
+      (with-current-buffer log
+        (setf (point) (point-max))
+        (princ (concat message "\n") log)))))
+
+;; Standard Emacsql errors:
 
 (defmacro emacsql-deferror (symbol parents message)
   "Defines a new error symbol  for Emacsql."
@@ -94,74 +104,44 @@
   "Emacsql had an unhandled condition")
 
 (emacsql-deferror emacsql-syntax () "Invalid SQL statement")
-(emacsql-deferror emacsql-table () "SQL table error")
+(emacsql-deferror emacsql-table () "Table error")
 (emacsql-deferror emacsql-lock () "Database locked")
 (emacsql-deferror emacsql-transaction () "Invalid transaction")
 (emacsql-deferror emacsql-fatal () "Fatal error")
-(emacsql-deferror emacsql-file () "Filesystem access error")
-
-(defvar emacsql-condition-alist
-  '(("unable to open"              emacsql-file)
-    ("cannot open"                 emacsql-file)
-    ("source database is busy"     emacsql-file)
-    ("unknown database"            emacsql-file)
-    ("writable"                    emacsql-file)
-    ("no such table"               emacsql-table)
-    ("table [^ ]+ already exists"  emacsql-table)
-    ("no such column"              emacsql-table)
-    ("already another table"       emacsql-table)
-    ("Cannot add"                  emacsql-table)
-    ("table name"                  emacsql-table)
-    ("already an index"            emacsql-table)
-    ("constraint cannot be drop"   emacsql-table)
-    ("database is locked"          emacsql-lock)
-    ("no transaction is active"    emacsql-transaction)
-    ("cannot start a transaction"  emacsql-transaction)
-    ("out of memory"               emacsql-fatal)
-    ("corrupt database"            emacsql-fatal)
-    ("interrupt"                   emacsql-fatal)
-    ("values were supplied"        emacsql-syntax)
-    ("mismatch"                    emacsql-syntax)
-    ("no such"                     emacsql-syntax)
-    ("does not match"              emacsql-syntax)
-    ("circularly defined"          emacsql-syntax)
-    ("parameters are not allowed"  emacsql-syntax)
-    ("missing"                     emacsql-syntax)
-    ("is only allowed on"          emacsql-syntax)
-    ("more than one primary key"   emacsql-syntax)
-    ("not constant"                emacsql-syntax)
-    ("duplicate"                   emacsql-syntax)
-    ("name reserved"               emacsql-syntax)
-    ("cannot use variables"        emacsql-syntax)
-    ("no tables specified"         emacsql-syntax)
-    ("syntax error"                emacsql-syntax)
-    ("no such function"            emacsql-syntax)
-    ("unknown function"            emacsql-syntax)
-    ("wrong number of arguments"   emacsql-syntax)
-    ("term does not match"         emacsql-syntax)
-    ("clause"                      emacsql-syntax)
-    ("tree is too large"           emacsql-syntax)
-    ("too many"                    emacsql-syntax))
-  "List of regexp's mapping sqlite3 output to conditions.")
-
-(defun emacsql-get-condition (message)
-  (or (cadr (cl-assoc message emacsql-condition-alist
-                      :test (lambda (a b) (string-match-p b a))))
-      'emacsql-error))
+(emacsql-deferror emacsql-access () "Database access error")
 
 (defun emacsql-error (format &rest args)
   "Like `error', but signal an emacsql-syntax condition."
   (signal 'emacsql-syntax (list (apply #'format format args))))
 
-;;; Connection handling:
+;;; Sending and receiving:
 
-(cl-defstruct (emacsql (:constructor emacsql--create))
-  "A connection to a SQLite database."
-  process file log)
+(defmethod emacsql-send-string
+  ((connection emacsql-connection) string &optional no-log)
+  "Send STRING to CONNECTION, automatically appending newline."
+  (let ((process (emacsql-process connection)))
+    (unless no-log (emacsql-log connection string))
+    (process-send-string process string)
+    (process-send-string process "\n")))
 
-(defun emacsql-buffer (conn)
-  "Get proccess buffer for CONN."
-  (process-buffer (emacsql-process conn)))
+(defmethod emacsql-clear ((connection emacsql-connection))
+  "Clear the process buffer for CONNECTION-SPEC."
+  (with-current-buffer (emacsql-buffer connection)
+    (erase-buffer)))
+
+(defgeneric emacsql-waiting-p (connection)
+  "Return non-nil if CONNECTION is ready for more input.")
+
+(defmethod emacsql-wait ((connection emacsql-connection) &optional timeout)
+  "Block until CONNECTION is waiting for further input."
+  (let ((end (when timeout (+ (float-time) timeout))))
+    (while (and (or (null timeout) (< (float-time) end))
+                (not (emacsql-waiting-p connection)))
+      (accept-process-output (emacsql-process connection) timeout))))
+
+(provide 'emacsql) ; end of generic function declarations
+
+;; Automatic connection cleanup:
 
 (defvar emacsql-connections ()
   "Collection of all known emacsql connections.
@@ -169,6 +149,12 @@ This collection exists for cleanup purposes.")
 
 (defvar emacsql-reap-timer nil
   "Timer used to check for dead emacsql connections.")
+
+(defun emacsql-add-connection (connection)
+  "Add CONNECTION to the global connection list."
+  (emacsql-start-reap-timer)
+  (push (cons (copy-sequence connection) (emacsql--ref connection))
+        emacsql-connections))
 
 (defun emacsql--ref (thing)
   "Create a weak reference to THING."
@@ -179,64 +165,6 @@ This collection exists for cleanup purposes.")
 (defun emacsql--deref (ref)
   "Retrieve value from REF."
   (gethash t ref))
-
-(cl-defun emacsql-connect (file &key debug)
-  "Open a connected to database stored in FILE.
-If FILE is nil use an in-memory database.
-
-:debug LOG -- When non-nil, log all SQLite commands to a log
-buffer. This is for debugging purposes."
-  (emacsql-start-reap-timer)
-  (let* ((buffer (generate-new-buffer "*emacsql-connection*"))
-         (fullfile (if file (expand-file-name file) ":memory:"))
-         (process (start-process "emacsql" buffer emacsql-sqlite3-executable
-                                 "-interactive" fullfile)))
-    (setf (process-sentinel process) (lambda (_proc _) (kill-buffer buffer)))
-    (process-send-string process ".mode list\n")
-    (process-send-string process ".separator ' '\n")
-    (process-send-string process ".nullvalue nil\n")
-    (process-send-string process ".prompt ]\n")
-    (process-send-string process "EMACSQL;\n") ;; force error message
-    (let ((conn (emacsql--create
-                 :process process
-                 :file (when file fullfile)
-                 :log (when debug (generate-new-buffer "*emacsql-log*")))))
-      (prog1 conn
-        (emacsql--wait conn)
-        (push (cons (copy-sequence conn) (emacsql--ref conn))
-              emacsql-connections)))))
-
-(defun emacsql-close (conn)
-  "Close connection to CONN database."
-  (let ((process (emacsql-process conn)))
-    (when (and process (process-live-p process))
-      (process-send-string process ".exit\n"))))
-
-(defmacro emacsql-with-connection (conn-spec &rest body)
-  "Open an Emacsql connection, evaluate BODY, and close the connection.
-CONN-SPEC is a connection specification like the call to
-`emacsql-connect', establishing a single binding.
-
-  (emacsql-with-connection (db \"company.db\")
-    (emacsql db [:create-table foo [x]])
-    (emacsql db [:insert :into foo :values ([1] [2] [3])])
-    (emacsql db [:select * :from foo]))"
-  (declare (indent 1))
-  `(let ((,(car conn-spec) (emacsql-connect ,@(cdr conn-spec))))
-     (unwind-protect
-         (progn ,@body)
-       (emacsql-close ,(car conn-spec)))))
-
-(defmacro emacsql-thread (conn &rest statements)
-  "Thread CONN through STATEMENTS.
-A statement can be a list, containing a statement with its arguments."
-  (declare (indent 1))
-  `(let ((emacsql--conn ,conn))
-     ,@(cl-loop for statement in statements
-               when (vectorp statement)
-               collect (list 'emacsql 'emacsql--conn statement)
-               else
-               collect (append (list 'emacsql 'emacsql--conn) statement))))
 
 (defun emacsql-reap ()
   "Clean up after lost connections."
@@ -260,66 +188,35 @@ A statement can be a list, containing a statement with its arguments."
     (cancel-timer emacsql-reap-timer)
     (setf emacsql-reap-timer nil)))
 
-;;; Sending and receiving:
+;; Useful macros:
 
-(defun emacsql--log (conn &rest messages)
-  "Log MESSAGES into CONN's log."
-  (let ((log (emacsql-log conn)))
-    (when log
-      (with-current-buffer log
-        (setf (point) (point-max))
-        (mapc (lambda (s) (princ s log)) messages)))))
+(require 'emacsql-sqlite) ; for `emacsql-connect'
 
-(defun emacsql--send (conn string)
-  "Send STRING to CONN, automatically appending newline."
-  (let ((process (emacsql-process conn)))
-    (emacsql--log conn string "\n")
-    (process-send-string process string)
-    (process-send-string process "\n")))
+(defmacro emacsql-with-connection (connection-spec &rest body)
+  "Open an Emacsql connection, evaluate BODY, and close the connection.
+CONNECTION-SPEC is a connection specification like the call to
+`emacsql-connect', establishing a single binding.
 
-(defun emacsql--clear (conn)
-  "Clear the process buffer for CONN."
-  (with-current-buffer (emacsql-buffer conn)
-    (erase-buffer)))
+  (emacsql-with-connection (db \"company.db\")
+    (emacsql db [:create-table foo [x]])
+    (emacsql db [:insert :into foo :values ([1] [2] [3])])
+    (emacsql db [:select * :from foo]))"
+  (declare (indent 1))
+  `(let ((,(car connection-spec) (emacsql-connect ,@(cdr connection-spec))))
+     (unwind-protect
+         (progn ,@body)
+       (emacsql-close ,(car connection-spec)))))
 
-(defun emacsql--complete-p (conn)
-  "Return non-nil if receive buffer has finished filling."
-  (with-current-buffer (emacsql-buffer conn)
-    (cond ((= (buffer-size) 1) (string= "]" (buffer-string)))
-          ((> (buffer-size) 1) (string= "\n]"
-                                        (buffer-substring
-                                         (- (point-max) 2) (point-max)))))))
-
-(defun emacsql--parse (conn)
-  "Parse a query result into an s-expression."
-  (with-current-buffer (emacsql-buffer conn)
-    (let ((standard-input (current-buffer)))
-      (setf (point) (point-min))
-      (cl-loop until (looking-at "]")
-               collect (read) into row
-               when (looking-at "\n")
-               collect row into rows
-               and do (progn (forward-char 1) (setf row ()))
-               finally (cl-return rows)))))
-
-(defun emacsql--check-error (conn)
-  "Return non-nil or throw an appropriate error."
-  (with-current-buffer (emacsql-buffer conn)
-    (emacsql--wait conn)
-    (setf (point) (point-min))
-    (prog1 t
-      (when (looking-at "Error:")
-        (let* ((message (buffer-substring (line-beginning-position)
-                                          (line-end-position)))
-               (condition (emacsql-get-condition message)))
-          (signal condition (list message)))))))
-
-(defun emacsql--wait (conn &optional timeout)
-  "Block Emacs until CONN has finished sending output."
-  (let ((end (when timeout (+ (float-time) timeout))))
-    (while (and (or (null timeout) (< (float-time) end))
-                (not (emacsql--complete-p conn)))
-      (accept-process-output (emacsql-process conn) timeout))))
+(defmacro emacsql-thread (connection &rest statements)
+  "Thread CONNECTION through STATEMENTS.
+A statement can be a list, containing a statement with its arguments."
+  (declare (indent 1))
+  `(let ((emacsql--conn ,connection))
+     ,@(cl-loop for statement in statements
+               when (vectorp statement)
+               collect (list 'emacsql 'emacsql--conn statement)
+               else
+               collect (append (list 'emacsql 'emacsql--conn) statement))))
 
 ;;; Escaping:
 
@@ -355,7 +252,7 @@ A statement can be a list, containing a statement with its arguments."
     (vector (concat "(" (mapconcat #'emacsql-escape-value vector ", ") ")"))
     (otherwise (emacsql-error "Invalid vector %S" vector))))
 
-;; Structured SQL compilation:
+;; S-expression SQL compilation:
 
 (defvar emacsql-expanders ()
   "Alist of all expansion functions.")
@@ -430,15 +327,8 @@ a list of (<string> [arg-pos] ...)."
                          (emacsql-error "Invalid var type %S" kind))))))))
 
 (defun emacsql-compile (sql &rest args)
-  "Compile structured SQL expression into a string."
+  "Compile s-expression SQL expression into a string."
   (apply #'emacsql-format (emacsql-expand sql) args))
-
-(defun emacsql (conn sql &rest args)
-  "Send structured SQL expression to CONN with ARGS."
-  (emacsql--clear conn)
-  (emacsql--send conn (apply #'emacsql-format (emacsql-expand sql) args))
-  (emacsql--check-error conn)
-  (emacsql--parse conn))
 
 (defun emacsql-var (var)
   "Return the index number of VAR, or nil if VAR is not a variable.
@@ -846,16 +736,15 @@ definitions for return from a `emacsql-defexpander'."
         (pop-to-buffer (current-buffer))))))
 
 (defun emacsql-flatten-sql (sql)
-  "Convert a structured SQL into a flat string for display."
+  "Convert a s-expression SQL into a flat string for display."
   (cl-destructuring-bind (string . vars) (emacsql-expand sql)
     (apply #'format string (cl-loop for i from 1 to (length vars)
                                     collect (intern (format "$%d" i))))))
 
+;;;###autoload
 (defun emacsql-show-last-sql ()
-  "Display the compiled SQL of the structured SQL expression before point."
+  "Display the compiled SQL of the s-expression SQL expression before point."
   (interactive)
   (emacsql-show-sql (emacsql-flatten-sql (preceding-sexp))))
-
-(provide 'emacsql)
 
 ;;; emacsql.el ends here

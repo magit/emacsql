@@ -5,7 +5,7 @@ BATCH   := $(EMACS) -batch -Q -L .
 COMPILE := $(BATCH) -f batch-byte-compile
 TEST    := $(BATCH) -l $(PACKAGE)-tests.elc -f ert-run-tests-batch
 
-EL = $(PACKAGE).el $(PACKAGE)-tests.el
+EL = emacsql.el emacsql-sqlite.el $(PACKAGE)-tests.el
 
 ELC = $(EL:.el=.elc)
 
@@ -22,4 +22,4 @@ clean:
 	$(RM) *.elc
 
 %.elc: %.el
-	@$(COMPILE) $<
+	$(COMPILE) $<
