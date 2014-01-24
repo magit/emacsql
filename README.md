@@ -18,8 +18,18 @@ database.
 
 Requires Emacs 24 or later.
 
-Due to [bad behavior from SQLite on Windows][stderr] Emacsql will
-*not* signal error messages for problems on this platform.
+### Windows Issues
+
+Due to [bad behavior from both SQLite and Windows][stderr] the
+official SQLite command shell binary will *not* work with Emacsql on
+Windows. Fortunately, [this simple patch][patch] corrects the issue.
+Here's a build with the fix:
+
+ * [sqlite3.exe][exe] (3.8.2, [asc][asc])
+
+Also, due to a [long-standing Emacs bug][batch], Emacsql cannot be
+used in Emacs' "-batch" mode on Windows, which includes running the
+Emacsql test suite from the Makefile.
 
 ## Example Usage
 
@@ -389,3 +399,7 @@ The provided implementations should serve as useful examples.
 [readable]: http://nullprogram.com/blog/2013/12/30/#almost_everything_prints_readably
 [stderr]: http://thread.gmane.org/gmane.comp.db.sqlite.general/85824
 [foreign]: http://www.sqlite.org/foreignkeys.html
+[patch]: http://skeeto.s3.amazonaws.com/emacs/sqlite3-stderr-fix.patch
+[exe]: http://skeeto.s3.amazonaws.com/emacs/sqlite3-3.8.2-fixed.exe
+[asc]: http://skeeto.s3.amazonaws.com/emacs/sqlite3-3.8.2-fixed.exe.asc
+[batch]: http://lists.gnu.org/archive/html/emacs-pretest-bug/2005-11/msg00320.html
