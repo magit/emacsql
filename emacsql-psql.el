@@ -75,10 +75,10 @@
     (emacsql-clear connection)
     (emacsql-send-string connection sql-string)
     (emacsql-wait connection)
-    (let ((error (emacsql-simple-error-check connection)))
+    (let ((error (emacsql-error-check connection)))
       (if error
           (signal 'emacsql-error (list error))
-        (emacsql-simple-parse connection)))))
+        (emacsql-parse connection)))))
 
 (provide 'emacsql-psql)
 

@@ -156,7 +156,7 @@ This prompt value was chosen because it is unreadable."
                                         (buffer-substring
                                          (- (point-max) 2) (point-max)))))))
 
-(defmethod emacsql-simple-parse ((connection emacsql-simple-parser))
+(defmethod emacsql-parse ((connection emacsql-simple-parser))
   "Parse output into an s-expression.
 Output should have one row per line, separated by whitespace."
   (with-current-buffer (emacsql-buffer connection)
@@ -169,7 +169,7 @@ Output should have one row per line, separated by whitespace."
                and do (progn (forward-char 1) (setf row ()))
                finally (cl-return rows)))))
 
-(defmethod emacsql-simple-error-check ((connection emacsql-simple-parser))
+(defmethod emacsql-error-check ((connection emacsql-simple-parser))
   "Return the error message from CONNECTION, or nil for no error."
   (with-current-buffer (emacsql-buffer connection)
     (let ((case-fold-search t))
