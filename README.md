@@ -75,9 +75,10 @@ allowed) types are `integer`, `float`, and `object` (default).
 
 Columns constraints include `:primary` (aka `PRIMARY KEY`),
 `:autoincrement`, `:unique`, `:non-nil` (aka `NOT NULL`), `:default`,
-and `:check`.
+`:check`, and `:references` (foreign key).
 
-Table constraints can be `:primary`, `:unique`, `:check`, and `:foreign`.
+Table constraints can be `:primary`, `:unique`, `:check`, and
+`:references`.
 
 ```el
 ;; No constraints schema with four columns:
@@ -96,7 +97,7 @@ or `:on-update` and possible actions are `:set-nil`, `:set-default`,
 `:restrict`, `:cascade`. See [the SQLite documentation][foreign] for
 the details on what each of these means.
 
-`:foreign (<child-keys> <parent-table> <parent-keys> [<actions>])`.
+`:references (<child-keys> <parent-table> <parent-keys> [<actions>])`
 
 ```el
 ;; "subject" table
@@ -104,7 +105,7 @@ the details on what each of these means.
 
 ;; "tag" table references subjects
 ([(subjectid integer) tag]
- :foreign (subjectid subject id :on-delete :cascade))
+ :references (subjectid subject id :on-delete :cascade))
 ```
 
 Put the keys in a vector if the reference is composite. Also remember

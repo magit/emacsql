@@ -218,6 +218,8 @@ definitions for return from a `emacsql-defexpander'."
                       (push (var (pop column) :value) output))
             (:check   (push "CHECK" output)
                       (push (format "(%s)" (expr (pop column))) output))
+            (:references
+             (push (combine (emacsql--references (pop column))) output))
             ((integer float object)
              (setf type (cadr (assoc next emacsql-type-map))))
             (otherwise
@@ -237,14 +239,13 @@ definitions for return from a `emacsql-defexpander'."
              collect (combine (emacsql--column-to-string column)) into parts
              finally (cl-return (mapconcat #'identity parts ", ")))))
 
-(defun emacsql--foreign-key (spec)
-  (emacsql-with-vars "FOREIGN KEY "
-    (cl-destructuring-bind (child table parent . actions) (cl-coerce spec 'list)
+(defun emacsql--references (spec)
+  (emacsql-with-vars "REFERENCES "
+    (cl-destructuring-bind (table parent . actions) (cl-coerce spec 'list)
       (mapconcat
        #'identity
        (cons
-        (format "(%s) REFERENCES %s (%s)" (idents child) (var table :identifier)
-                (idents parent))
+        (format "%s (%s)" (var table :identifier) (idents parent))
         (cl-loop for (key value) on actions by #'cddr collect
                  (cl-case key
                    (:on-update "ON UPDATE")
@@ -258,6 +259,12 @@ definitions for return from a `emacsql-defexpander'."
                    (:cascade "CASCADE")
                    (otherwise (emacsql-error "Invalid action: %S" key)))))
        " "))))
+
+(defun emacsql--foreign-key (spec)
+  (emacsql-with-vars "FOREIGN KEY "
+    (cl-destructuring-bind (child . references) (cl-coerce spec 'list)
+      (format "(%s) %s" (idents child)
+              (combine (emacsql--references references))))))
 
 (defun emacsql--schema-to-string (schema)
   (cl-typecase schema
@@ -273,7 +280,7 @@ definitions for return from a `emacsql-defexpander'."
                     (:primary (format "PRIMARY KEY (%s)" (idents value)))
                     (:unique (format "UNIQUE (%s)" (idents value)))
                     (:check (format "CHECK (%s)" (expr value)))
-                    (:foreign (combine (emacsql--foreign-key value)))
+                    (:references (combine (emacsql--foreign-key value)))
                     (otherwise
                      (emacsql-error "Invalid table constraint: %S" key)))))
         ", ")))

@@ -111,10 +111,10 @@
      "CREATE TABLE foo (a NONE, b NONE, c NONE, PRIMARY KEY (a, c));")
     ([:create-table foo ([a b c] :unique [a b c])] '()
      "CREATE TABLE foo (a NONE, b NONE, c NONE, UNIQUE (a, b, c));")
-    ([:create-table foo ([a b] :check (< a b)) ] '()
+    ([:create-table foo ([a b] :check (< a b))] '()
      "CREATE TABLE foo (a NONE, b NONE, CHECK (a < b));")
     ([:create-table foo
-      ([a b c] :foreign ([a b] bar [aa bb] :on-delete :cascade))] '()
+      ([a b c] :references ([a b] bar [aa bb] :on-delete :cascade))] '()
       (concat "CREATE TABLE foo (a NONE, b NONE, c NONE, FOREIGN KEY (a, b) "
               "REFERENCES bar (aa, bb) ON DELETE CASCADE);"))
     ;; Drop table
@@ -218,8 +218,9 @@
   (emacsql-with-connection (db (emacsql-sqlite nil))
     (emacsql-thread db
       [:create-table person [(id integer :primary) name]]
-      [:create-table likes ([(personid integer) color]
-                            :foreign (personid person id :on-delete :cascade))]
+      [:create-table likes
+       ([(personid integer) color]
+        :references (personid person id :on-delete :cascade))]
       [:replace :into person :values ([0 "Chris"] [1 "Brian"])])
     (should (equal (emacsql db [:select * :from person :order-by id])
                    '((0 "Chris") (1 "Brian"))))
