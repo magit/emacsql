@@ -39,13 +39,13 @@
                   (string identifier)
                   (keyword (substring (symbol-name identifier) 1))
                   (otherwise (format "%S" identifier))))
-        (forbidden "[]-\000-\040!\"#%&'()*+,./;<=>?@[\\^`{|}~\177]"))
+        (forbidden "[]\000-\040!\"#%&'()*+,./;<=>?@[\\^`{|}~\177]"))
     (when (or (string-match-p forbidden string)
               (string-match-p "^[0-9$]" string))
       (emacsql-error "Invalid Emacsql identifier: %S" identifier))
-    (if (string-match-p ":" string)
-        (replace-regexp-in-string ":" "." string)
-      string)))
+    (setf string (replace-regexp-in-string ":" "." string))
+    (setf string (replace-regexp-in-string "-" "_" string))
+    string))
 
 (defun emacsql-escape-value (value)
   "Escape VALUE for sending to SQLite."

@@ -13,6 +13,9 @@
   (should-error (emacsql-escape-identifier "a b"))
   (should-error (emacsql-escape-identifier '$foo))
   (should-error (emacsql-escape-identifier 10))
+  (should (string= (emacsql-escape-identifier 'person-id) "person_id"))
+  (should (string= (emacsql-escape-identifier
+                    'people:person-id) "people.person_id"))
   (should (string= (emacsql-escape-identifier 'foo$) "foo$"))
   (should (string= (emacsql-escape-identifier "foo:bar") "foo.bar")))
 
