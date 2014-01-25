@@ -61,6 +61,7 @@ buffer. This is for debugging purposes."
             ".separator ' '"
             ".nullvalue nil"
             "PRAGMA busy_timeout = 30000;"
+            "PRAGMA foreign_keys = 1;"
             ".prompt ]"
             "EMACSQL;")) ; error message flush
     (when debug

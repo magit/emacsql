@@ -217,7 +217,6 @@
   "Tests that foreign keys work properly through Emacsql."
   (emacsql-with-connection (db (emacsql-sqlite nil))
     (emacsql-thread db
-      [:pragma (= foreign_keys on)]
       [:create-table person [(id integer :primary) name]]
       [:create-table likes ([(personid integer) color]
                             :foreign (personid person id :on-delete :cascade))]
