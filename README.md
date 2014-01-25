@@ -326,6 +326,22 @@ Provides `COMMIT` and `ROLLBACK`.
 [:rollback]
 ```
 
+#### :alter-table `<table>`, :rename-to `<table>`
+
+Provides `ALTER TABLE` and `RENAME TO`.
+
+```el
+[:alter-table prices :rename-to costs]
+```
+
+### :add-column `<column-spec>`
+
+Provides `ADD COLUMN`.
+
+```el
+[:alter-table tags :add-column (rating integer :non-nil)]
+```
+
 #### :pragma `<expr>`
 
 Provides `PRAGMA`.

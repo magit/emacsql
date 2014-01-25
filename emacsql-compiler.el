@@ -507,6 +507,21 @@ definitions for return from a `emacsql-defexpander'."
 (emacsql-defexpander :rollback ()
   (list "ROLLBACK"))
 
+(emacsql-defexpander :alter-table (table)
+  (emacsql-with-vars "ALTER TABLE "
+    (var table :identifier)))
+
+(emacsql-defexpander :add-column (column)
+  (emacsql-with-vars "ADD COLUMN "
+    (cl-typecase column
+      (symbol (var column :identifier))
+      (list (combine (emacsql--column-to-string column)))
+      (otherwise (emacsql-error "Only one column allowed here: %S" column)))))
+
+(emacsql-defexpander :rename-to (new-name)
+  (emacsql-with-vars "RENAME TO "
+    (var new-name :identifier)))
+
 (emacsql-defexpander :vacuum ()
   (list "VACUUM"))
 

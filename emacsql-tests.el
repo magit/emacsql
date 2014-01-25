@@ -191,6 +191,15 @@
     ([:commit] '()
      "COMMIT;")))
 
+(ert-deftest emacsql-alter-table ()
+  (emacsql-tests-with-queries
+   ([:alter-table foo :rename-to bar] '()
+    "ALTER TABLE foo RENAME TO bar;")
+   ([:alter-table $1 :rename-to $2] '(alpha beta)
+    "ALTER TABLE alpha RENAME TO beta;")
+   ([:alter-table foo :add-column ($1 integer :non-nil)] '(size)
+    "ALTER TABLE foo ADD COLUMN size INTEGER NOT NULL;")))
+
 (ert-deftest emacsql-system ()
   "A short test that fully interacts with SQLite."
   (should-not (emacsql-sqlite3-unavailable-p))
