@@ -272,9 +272,13 @@ A statement can be a list, containing a statement with its arguments."
                                     collect (intern (format "$%d" i))))))
 
 ;;;###autoload
-(defun emacsql-show-last-sql ()
-  "Display the compiled SQL of the s-expression SQL expression before point."
-  (interactive)
-  (emacsql-show-sql (emacsql-flatten-sql (preceding-sexp))))
+(defun emacsql-show-last-sql (&optional prefix)
+  "Display the compiled SQL of the s-expression SQL expression before point.
+A prefix argument causes the SQL to be printed into the current buffer."
+  (interactive "P")
+  (let ((sql (emacsql-flatten-sql (preceding-sexp))))
+    (if prefix
+        (insert sql)
+      (emacsql-show-sql ))))
 
 ;;; emacsql.el ends here
