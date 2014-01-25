@@ -126,7 +126,7 @@ exactly like so in a structured Emacsql statement.
 
 In addition, Emacsql has these operators.
 
-    quote   as    not
+    quote   as    not     funcall
 
 The `<=` and `>=` operators accept 2 or 3 operands, transforming into
 a SQL `_ BETWEEN _ AND _` operator as appropriate.

@@ -344,6 +344,12 @@ definitions for return from a `emacsql-defexpander'."
               (cl-case (length args)
                 (1 (var (nth 0 args) :value))
                 (otherwise (nops op))))
+             ;; funcall special case
+             ((funcall)
+              (cl-case (length args)
+                (2 (format "%s(%s)" (var (nth 0 args) :identifier) (recur 1)))
+                (otherwise
+                 (emacsql-error "Wrong number of operands for %s" op))))
              ;; IN special case
              ((in)
               (cl-case (length args)
