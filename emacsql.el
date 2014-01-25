@@ -4,7 +4,6 @@
 
 ;; Author: Christopher Wellons <wellons@nullprogram.com>
 ;; URL: https://github.com/skeeto/emacsql
-;; Version: 1.0.0
 
 ;;; Commentary:
 
