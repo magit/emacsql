@@ -191,7 +191,7 @@ Provides `DROP TABLE`.
 [:drop-table employees]
 ```
 
-#### :select `<column-spec>`
+#### :select `<column-spec>|(:distinct <column-spec>)`
 
 Provides `SELECT`. `column-spec` can be a `*` symbol or a vector of
 column identifiers, optionally as expressions.
@@ -199,6 +199,7 @@ column identifiers, optionally as expressions.
 ```el
 [:select [name (/ salary 52)] ...]
 [:select [(as name n) (as age a)] ...]
+[:select (:distinct [name age id]) ...]
 ```
 
 #### :from `<table>`

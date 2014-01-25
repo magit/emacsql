@@ -374,9 +374,17 @@ definitions for return from a `emacsql-defexpander'."
 (emacsql-defexpander :select (arg)
   "Expands to the SELECT keyword."
   (emacsql-with-vars "SELECT "
-    (if (eq '* arg)
-        "*"
-      (idents arg))))
+    (cond ((eq '* arg)
+           "*")
+          ((listp arg)
+           (cl-case (length arg)
+             (1 (idents (car arg)))
+             (2 (cl-case (car arg)
+                  (:distinct (concat "DISTINCT " (idents (cadr arg))))
+                  (:all (concat "ALL " (idents (cadr arg))))
+                  (otherwise (emacsql-error "Invalid SELECT: %S" (car arg)))))
+             (otherwise (emacsql-error "Invalid SELECT idents: %S" arg))))
+          ((idents arg)))))
 
 (emacsql-defexpander :from (sources)
   "Expands to the FROM keyword."
