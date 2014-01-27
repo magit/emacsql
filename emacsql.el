@@ -278,6 +278,6 @@ A prefix argument causes the SQL to be printed into the current buffer."
   (let ((sql (emacsql-flatten-sql (preceding-sexp))))
     (if prefix
         (insert sql)
-      (emacsql-show-sql ))))
+      (emacsql-show-sql sql))))
 
 ;;; emacsql.el ends here
