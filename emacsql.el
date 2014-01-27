@@ -58,7 +58,7 @@
 
 (require 'cl-lib)
 (require 'eieio)
-(require 'emacsql-reap)
+(require 'finalize)
 (require 'emacsql-compiler)
 
 (defclass emacsql-connection ()
@@ -196,7 +196,7 @@ specific error conditions."
 
 (defun emacsql-register (connection)
   "Register CONNECTION for automatic cleanup and return CONNECTION."
-  (emacsql-reap-register connection #'emacsql-close (copy-sequence connection))
+  (finalize-register connection #'emacsql-close (copy-sequence connection))
   connection)
 
 ;; Useful macros:

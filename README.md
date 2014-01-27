@@ -395,7 +395,14 @@ from the command line and allows for storage of Emacs richer data
 types. This is an efficient, ACID-compliant database specifically for
 Emacs.
 
-## Creating a New Front-end
+## Contributing and Extending
+
+You'll need to install [Cask][cask], which is required for compilation
+and unit testing.
+
+    make test
+
+### Creating a New Front-end
 
 Emacsql uses EIEIO so that interactions with a connection occur
 through generic functions. You need to define a new class that
@@ -424,3 +431,4 @@ the emacsql-simple-parser mixin class to do most of the work.
 [exe]: http://skeeto.s3.amazonaws.com/emacs/sqlite3-3.8.2-fixed.exe
 [asc]: http://skeeto.s3.amazonaws.com/emacs/sqlite3-3.8.2-fixed.exe.asc
 [batch]: http://lists.gnu.org/archive/html/emacs-pretest-bug/2005-11/msg00320.html
+[cask]: http://cask.github.io/

@@ -1,2 +1,4 @@
 *.elc
 *.tar
+.cask
+emacsql-pkg.el

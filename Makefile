@@ -1,12 +1,12 @@
-PACKAGE  = emacsql
-VERSION := $(word 1,$(subst -, ,$(shell git describe)))
-
 EMACS   ?= emacs
-BATCH   := $(EMACS) -batch -Q -L .
-COMPILE := $(BATCH) -f batch-byte-compile
+CASK    ?= cask
+VIRTUAL := $(CASK) exec $(EMACS)
+BATCH   := $(VIRTUAL) -batch -Q -L .
 
-EL = emacsql-reap.el emacsql-compiler.el emacsql.el emacsql-sqlite.el \
-     emacsql-psql.el emacsql-tests.el
+PACKAGE := emacsql
+VERSION := $(shell $(CASK) version)
+
+EL = emacsql-compiler.el emacsql.el emacsql-sqlite.el emacsql-psql.el
 ELC = $(EL:.el=.elc)
 EXTRA_DIST = README.md UNLICENSE
 
@@ -14,18 +14,25 @@ EXTRA_DIST = README.md UNLICENSE
 
 all : test
 
-compile: $(ELC)
+.cask : Cask
+	cask install
+	touch .cask
+
+compile: .cask $(ELC)
 
 package : $(PACKAGE)-$(VERSION).tar
+
+$(PACKAGE)-pkg.el : Cask
+	$(CASK) package
 
 $(PACKAGE)-$(VERSION).tar : $(EL) $(PACKAGE)-pkg.el $(EXTRA_DIST)
 	tar -cf $@ --transform "s,^,$(PACKAGE)-$(VERSION)/," $^
 
-test: compile
+test: compile $(PACKAGE)-tests.elc
 	$(BATCH) -l $(PACKAGE)-tests.elc -f ert-run-tests-batch
 
 clean:
-	$(RM) *.tar $(ELC)
+	$(RM) *.tar *.elc $(PACKAGE)-pkg.el
 
 %.elc: %.el
-	$(COMPILE) $<
+	$(BATCH) -f batch-byte-compile $<
