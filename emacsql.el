@@ -252,7 +252,7 @@ single transaction at the lowest level."
                   (not emacsql--completed))
          (emacsql emacsql--connection [:rollback])))))
 
-(defmacro emacsql-with-bind (connection-sql-args &rest body)
+(defmacro emacsql-with-bind (connection sql-and-args &rest body)
   "For each result row bind the column names for each returned row.
 Returns the result of the last evaluated BODY.
 
@@ -261,12 +261,18 @@ allowed). Hint: all of the bound identifiers must be known at
 compile time. For example, in the expression below the variables
 'name' and 'phone' will be bound for the body.
 
-  (emacsql-with-bind (db [:select [name phone] :from people])
+  (emacsql-with-bind db [:select [name phone] :from people]
+    (message \"Found %s with %s\" name phone))
+
+  (emacsql-with-bind db ([:select [name phone]
+                          :from people
+                          :where (= name $1)] my-name)
     (message \"Found %s with %s\" name phone))
 
 Each column must be a plain symbol, no expressions allowed here."
-  (declare (indent 1))
-  (cl-destructuring-bind (connection sql . args) connection-sql-args
+  (declare (indent 2))
+  (let ((sql (if (vectorp sql-and-args) sql-and-args (car sql-and-args)))
+        (args (unless (vectorp sql-and-args) (cdr sql-and-args))))
     (cl-assert (eq :select (elt sql 0)))
     (let ((vars (elt sql 1)))
       (when (eq '* vars)
