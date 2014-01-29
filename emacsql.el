@@ -252,6 +252,33 @@ single transaction at the lowest level."
                   (not emacsql--completed))
          (emacsql emacsql--connection [:rollback])))))
 
+(defmacro emacsql-with-bind (connection-sql-args &rest body)
+  "For each result row bind the column names for each returned row.
+Returns the result of the last evaluated BODY.
+
+All column names must be provided in the query ($ and * are not
+allowed). Hint: all of the bound identifiers must be known at
+compile time. For example, in the expression below the variables
+'name' and 'phone' will be bound for the body.
+
+  (emacsql-with-bind (db [:select [name phone] :from people])
+    (message \"Found %s with %s\" name phone))
+
+Each column must be a plain symbol, no expressions allowed here."
+  (declare (indent 1))
+  (cl-destructuring-bind (connection sql . args) connection-sql-args
+    (cl-assert (eq :select (elt sql 0)))
+    (let ((vars (elt sql 1)))
+      (when (eq '* vars)
+        (error "Must explicitly list columns in `emacsql-with-bind'."))
+      (cl-assert (cl-every #'symbolp vars))
+      `(let ((emacsql--results (emacsql ,connection ,sql ,@args))
+             (emacsql--final nil))
+         (dolist (emacsql--result emacsql--results emacsql--final)
+           (setf emacsql--final
+                 (cl-destructuring-bind ,(cl-coerce vars 'list) emacsql--result
+                   ,@body)))))))
+
 ;; User interaction functions:
 
 (defvar emacsql-show-buffer-name "*emacsql-show*"
