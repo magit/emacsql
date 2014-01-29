@@ -407,11 +407,44 @@ definitions for return from a `emacsql-defexpander'."
   (emacsql-with-vars "FROM "
     (idents sources)))
 
-(emacsql-defexpander :replace ()
-  (list "REPLACE"))
+(emacsql-defexpander :join (source)
+  (emacsql-with-vars "JOIN "
+    (idents source)))
+
+(emacsql-defexpander :natural ()
+  (list "NATURAL"))
+
+(emacsql-defexpander :outer ()
+  (list "OUTER"))
+
+(emacsql-defexpander :inner ()
+  (list "INNER"))
+
+(emacsql-defexpander :cross ()
+  (list "CROSS"))
+
+(emacsql-defexpander :left ()
+  (list "LEFT"))
+
+(emacsql-defexpander :right ()
+  (list "RIGHT"))
+
+(emacsql-defexpander :full ()
+  (list "FULL"))
+
+(emacsql-defexpander :on (expr)
+  (emacsql-with-vars "ON "
+    (expr expr)))
+
+(emacsql-defexpander :using (columns)
+  (emacsql-with-vars "USING "
+    (format "(%s)" (idents columns))))
 
 (emacsql-defexpander :insert ()
   (list "INSERT"))
+
+(emacsql-defexpander :replace ()
+  (list "REPLACE"))
 
 (emacsql-defexpander :into (table)
   "Expands to the INTO keywords."

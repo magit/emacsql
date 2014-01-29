@@ -215,6 +215,42 @@ Provides `FROM`.
 [... :from [(as (:select ...) s1) (as (:select ...) s2)]]
 ```
 
+#### :join `<table>`
+
+Provides `JOIN`.
+
+```el
+[... :join players ...]
+[... :join (as players p) ...]
+```
+
+#### :outer, :inner, :cross, :natural, :left, :right, :full
+
+Provides `OUTER`, `INNER`, `CROSS`, `NATURAL`, `LEFT`, `RIGHT`, and
+`FULL`.
+
+```el
+[... :natural :join ...]
+[... :left :outer :join ...]
+```
+
+#### :on `<expr>`
+
+Provides `ON`.
+
+```el
+[... :on (= entry-id other-id)]
+```
+
+#### :using `<column>|[<columns>]`
+
+Provides `USING`.
+
+```el
+[... :using entry-id]
+[... :using [entry-id, feed-id]]
+```
+
 #### :where `<expr>`, :having `<expr>`
 
 Provides `WHERE` and `HAVING`.
