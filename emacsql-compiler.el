@@ -40,7 +40,8 @@
                   (keyword (substring (symbol-name identifier) 1))
                   (otherwise (format "%S" identifier))))
         (forbidden "[]\000-\040!\"#%&'()*+,./;<=>?@[\\^`{|}~\177]"))
-    (when (or (string-match-p forbidden string)
+    (when (or (null identifier)
+              (string-match-p forbidden string)
               (string-match-p "^[0-9$]" string))
       (emacsql-error "Invalid Emacsql identifier: %S" identifier))
     (setf string (replace-regexp-in-string ":" "." string))
@@ -137,7 +138,7 @@ a list of (<string> [arg-pos] ...)."
                         (:value (emacsql-escape-value thing))
                         (:vector (emacsql-escape-vector thing))
                         (:schema (car (emacsql--schema-to-string thing)))
-                        (:auto (if (symbolp thing)
+                        (:auto (if (and thing (symbolp thing))
                                    (emacsql-escape-identifier thing)
                                  (emacsql-escape-value thing)))
                         (otherwise
@@ -178,7 +179,7 @@ KIND should be :value or :identifier."
       (cl-case kind
         ((:identifier :value :vector) (emacsql-escape-format thing kind))
         (:auto (emacsql-escape-format
-                thing (if (symbolp thing) :identifier :value)))
+                thing (if (and thing (symbolp thing)) :identifier :value)))
         (otherwise (emacsql-error "Invalid var type: %S" kind))))))
 
 (defun emacsql--vars-combine (expanded)
