@@ -73,6 +73,9 @@ can either be just this symbol or it can include constraints. Because
 Emacsql stores entire lisp objects as values, the only relevant (and
 allowed) types are `integer`, `float`, and `object` (default).
 
+Dashes in identifiers are converted into underscores when compiled
+into SQL. This allows for lisp-style identifiers to be used in SQL.
+
 Columns constraints include `:primary` (aka `PRIMARY KEY`),
 `:autoincrement`, `:unique`, `:non-nil` (aka `NOT NULL`), `:default`,
 `:check`, and `:references` (foreign key).
@@ -392,7 +395,7 @@ Provides `COMMIT` and `ROLLBACK`.
 Provides `PRAGMA`.
 
 ```el
-(emacsql db [:pragma (= foreign_keys on)])
+(emacsql db [:pragma (= foreign-keys on)])
 ```
 
 ##### :vacuum
