@@ -58,6 +58,7 @@
 (defun emacsql-escape-vector (vector)
   "Encode VECTOR into a SQL vector scalar."
   (cl-typecase vector
+    (null   (emacsql-error "Empty SQL vector expression."))
     (list   (mapconcat #'emacsql-escape-vector vector ", "))
     (vector (concat "(" (mapconcat #'emacsql-escape-value vector ", ") ")"))
     (otherwise (emacsql-error "Invalid vector %S" vector))))
