@@ -117,6 +117,9 @@
       ([a b c] :references ([a b] bar [aa bb] :on-delete :cascade))] '()
       (concat "CREATE TABLE foo (a NONE, b NONE, c NONE, FOREIGN KEY (a, b) "
               "REFERENCES bar (aa, bb) ON DELETE CASCADE);"))
+    ;; Template
+    ([:create-table $1 $2] '(foo [alpha beta delta])
+     "CREATE TABLE foo (alpha NONE, beta NONE, delta NONE);")
     ;; Drop table
     ([:drop-table $1] '(foo)
      "DROP TABLE foo;")))

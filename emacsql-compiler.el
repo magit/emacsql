@@ -173,7 +173,8 @@ KIND should be :value or :identifier."
   (let ((var (emacsql-var thing)))
     (when (and var (symbolp var)) (setf thing var))
     (if (numberp var)
-        (prog1 "%s" (push (cons var kind) emacsql--vars))
+        (prog1 "%s"
+          (setf emacsql--vars (nconc emacsql--vars (list (cons var kind)))))
       (cl-case kind
         ((:identifier :value :vector) (emacsql-escape-format thing kind))
         (:auto (emacsql-escape-format
