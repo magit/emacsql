@@ -228,6 +228,30 @@ A statement can be a list, containing a statement with its arguments."
                else
                collect (append (list 'emacsql 'emacsql--conn) statement))))
 
+(defvar emacsql--transaction-level 0
+  "Keeps track of nested transactions in `emacsql-with-transaction'.")
+
+(defmacro emacsql-with-transaction (connection &rest body)
+  "Evaluate BODY inside a single transaction, issuing a rollback on error.
+This macro can be nested indefinitely, wrapping everything in a
+single transaction at the lowest level."
+  (declare (indent 1))
+  `(let ((emacsql--connection ,connection)
+         (emacsql--completed nil)
+         (emacsql--transaction-level (1+ emacsql--transaction-level)))
+     (unwind-protect
+         (progn
+           (when (= 1 emacsql--transaction-level)
+             (emacsql emacsql--connection [:begin :transaction]))
+           (let ((result (progn ,@body)))
+             (prog1 result
+               (when (= 1 emacsql--transaction-level)
+                 (emacsql emacsql--connection [:commit]))
+               (setf emacsql--completed t))))
+       (when (and (= 1 emacsql--transaction-level)
+                  (not emacsql--completed))
+         (emacsql emacsql--connection [:rollback])))))
+
 ;; User interaction functions:
 
 (defvar emacsql-show-buffer-name "*emacsql-show*"
