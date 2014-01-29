@@ -169,11 +169,10 @@ function.
 
 Rather than the typical uppercase SQL keywords, keywords in a
 structured Emacsql statement are literally just that: lisp keywords.
-When multiple keywords appear in sequence, Emacsql will generally
-concatenate them with a dash, e.g. `CREATE TABLE` becomes
-`:create-table`.
 
-#### :create-table `<table>` `<schema|select>`
+#### Table
+
+##### :create-table `<table>` `<schema|select>`
 
 Provides `CREATE TABLE`. A selection can be used in place of a schema,
 which will create a `CREATE TABLE ... AS` statement.
@@ -184,7 +183,7 @@ which will create a `CREATE TABLE ... AS` statement.
 [:create-table names [:select name :from employees]]
 ```
 
-#### :drop-table `<table>`
+##### :drop-table `<table>`
 
 Provides `DROP TABLE`.
 
@@ -192,179 +191,7 @@ Provides `DROP TABLE`.
 [:drop-table employees]
 ```
 
-#### :select `<column-spec>|(:distinct <column-spec>)`
-
-Provides `SELECT`. `column-spec` can be a `*` symbol or a vector of
-column identifiers, optionally as expressions.
-
-```el
-[:select [name (/ salary 52)] ...]
-[:select [(as name n) (as age a)] ...]
-[:select (:distinct [name age id]) ...]
-```
-
-#### :from `<table>`
-
-Provides `FROM`.
-
-```el
-[... :from employees]
-[... :from [employees accounts]]
-[... :from [employees (as accounts a)]]
-[... :from (:select ...)]
-[... :from [(as (:select ...) s1) (as (:select ...) s2)]]
-```
-
-#### :join `<table>`
-
-Provides `JOIN`.
-
-```el
-[... :join players ...]
-[... :join (as players p) ...]
-```
-
-#### :outer, :inner, :cross, :natural, :left, :right, :full
-
-Provides `OUTER`, `INNER`, `CROSS`, `NATURAL`, `LEFT`, `RIGHT`, and
-`FULL`.
-
-```el
-[... :natural :join ...]
-[... :left :outer :join ...]
-```
-
-#### :on `<expr>`
-
-Provides `ON`.
-
-```el
-[... :on (= entry-id other-id)]
-```
-
-#### :using `<column>|[<columns>]`
-
-Provides `USING`.
-
-```el
-[... :using entry-id]
-[... :using [entry-id, feed-id]]
-```
-
-#### :where `<expr>`, :having `<expr>`
-
-Provides `WHERE` and `HAVING`.
-
-```el
-[... :where (< count 10)]
-[... :having (= size 10)]
-```
-
-#### :group-by `<expr>`
-
-Provides `GROUP BY`.
-
-```el
-[... :group-by name]
-```
-
-#### :order-by `<expr>|(<expr> <:asc|:desc>)|[<expr> ...]`
-
-Provides `ORDER BY`.
-
-```el
-[... :order-by date]
-[... :order-by [(width :asc) (height :desc)]]
-[... :order-by [(width :asc) (- height)]]
-```
-
-#### :limit `<limit>|[<offset> <limit>]`
-
-Provides `LIMIT` and `OFFSET`.
-
-```el
-[... :limit 50]
-[... :limit [150 50]]
-```
-
-#### :insert, :replace
-
-Provides `INSERT`, `REPLACE`.
-
-```el
-[:insert :into ...]
-[:replace :into ...]
-```
-
-#### :into `<table>`
-
-Provides `INTO`.
-
-```el
-[:into employees ...]
-[:into (employees [id name]) ...]
-```
-
-#### :delete
-
-Provides `DELETE`.
-
-```el
-[:delete :from employees :where ...]
-```
-
-#### :values `<vector>|(<vector> ...)`
-
-```el
-[:insert :into employees :values ["Jeff" 0]]
-[:insert :into employees :values (["Jeff" 0] ["Susan" 0])]
-```
-
-#### :update `<table>`
-
-Provides `UPDATE`.
-
-```el
-[:update people :set ...]
-```
-
-#### :set `<assignment>|[<assignment> ...]`
-
-Provides `SET`.
-
-```el
-[:update people :set (= name "Richy") :where ...]
-[:update people :set [(= name "Richy") (= salary 300000)] :where ...]
-```
-
-#### :union, :union-all, :difference, :except
-
-Provides `UNION`, `UNION ALL`, `DIFFERENCE`, and `EXCEPT`.
-
-```el
-[:select * :from sales :union :select * :from accounting]
-```
-
-#### :begin `<:transaction|:immediate|:deferred|:exclusive>`
-
-Provides `BEGIN`. Exactly one of these "arguments" must always be
-supplied. `:deferred` and `:transaction` are aliases.
-
-```el
-[:begin :transaction]
-[:begin :immediate]
-```
-
-#### :commit, :rollback
-
-Provides `COMMIT` and `ROLLBACK`.
-
-```el
-[:commit]
-[:rollback]
-```
-
-#### :alter-table `<table>`, :rename-to `<table>`
+##### :alter-table `<table>`, :rename-to `<table>`
 
 Provides `ALTER TABLE` and `RENAME TO`.
 
@@ -380,7 +207,187 @@ Provides `ADD COLUMN`.
 [:alter-table tags :add-column (rating integer :non-nil)]
 ```
 
-#### :pragma `<expr>`
+#### Selection
+
+##### :select `<column-spec>|(:distinct <column-spec>)`
+
+Provides `SELECT`. `column-spec` can be a `*` symbol or a vector of
+column identifiers, optionally as expressions.
+
+```el
+[:select [name (/ salary 52)] ...]
+[:select [(as name n) (as age a)] ...]
+[:select (:distinct [name age id]) ...]
+```
+
+##### :from `<table>`
+
+Provides `FROM`.
+
+```el
+[... :from employees]
+[... :from [employees accounts]]
+[... :from [employees (as accounts a)]]
+[... :from (:select ...)]
+[... :from [(as (:select ...) s1) (as (:select ...) s2)]]
+```
+
+##### :join `<table>`
+
+Provides `JOIN`.
+
+```el
+[... :join players ...]
+[... :join (as players p) ...]
+```
+
+##### :outer, :inner, :cross, :natural, :left, :right, :full
+
+Provides `OUTER`, `INNER`, `CROSS`, `NATURAL`, `LEFT`, `RIGHT`, and
+`FULL`.
+
+```el
+[... :natural :join ...]
+[... :left :outer :join ...]
+```
+
+##### :on `<expr>`
+
+Provides `ON`.
+
+```el
+[... :on (= entry-id other-id)]
+```
+
+##### :using `<column>|[<columns>]`
+
+Provides `USING`.
+
+```el
+[... :using entry-id]
+[... :using [entry-id, feed-id]]
+```
+
+##### :where `<expr>`, :having `<expr>`
+
+Provides `WHERE` and `HAVING`.
+
+```el
+[... :where (< count 10)]
+[... :having (= size 10)]
+```
+
+##### :group-by `<expr>`
+
+Provides `GROUP BY`.
+
+```el
+[... :group-by name]
+```
+
+##### :order-by `<expr>|(<expr> <:asc|:desc>)|[<expr> ...]`
+
+Provides `ORDER BY`.
+
+```el
+[... :order-by date]
+[... :order-by [(width :asc) (height :desc)]]
+[... :order-by [(width :asc) (- height)]]
+```
+
+##### :limit `<limit>|[<offset> <limit>]`
+
+Provides `LIMIT` and `OFFSET`.
+
+```el
+[... :limit 50]
+[... :limit [150 50]]
+```
+
+##### :union, :union-all, :difference, :except
+
+Provides `UNION`, `UNION ALL`, `DIFFERENCE`, and `EXCEPT`.
+
+```el
+[:select * :from sales :union :select * :from accounting]
+```
+
+#### Manipulation
+
+##### :insert, :replace
+
+Provides `INSERT`, `REPLACE`.
+
+```el
+[:insert :into ...]
+[:replace :into ...]
+```
+
+##### :into `<table>`
+
+Provides `INTO`.
+
+```el
+[:into employees ...]
+[:into (employees [id name]) ...]
+```
+
+##### :delete
+
+Provides `DELETE`.
+
+```el
+[:delete :from employees :where ...]
+```
+
+##### :values `<vector>|(<vector> ...)`
+
+```el
+[:insert :into employees :values ["Jeff" 0]]
+[:insert :into employees :values (["Jeff" 0] ["Susan" 0])]
+```
+
+##### :update `<table>`
+
+Provides `UPDATE`.
+
+```el
+[:update people :set ...]
+```
+
+##### :set `<assignment>|[<assignment> ...]`
+
+Provides `SET`.
+
+```el
+[:update people :set (= name "Richy") :where ...]
+[:update people :set [(= name "Richy") (= salary 300000)] :where ...]
+```
+
+#### Transaction
+
+##### :begin `<:transaction|:immediate|:deferred|:exclusive>`
+
+Provides `BEGIN`. Exactly one of these "arguments" must always be
+supplied. `:deferred` and `:transaction` are aliases.
+
+```el
+[:begin :transaction]
+[:begin :immediate]
+```
+
+##### :commit, :rollback
+
+Provides `COMMIT` and `ROLLBACK`.
+
+```el
+[:commit]
+[:rollback]
+```
+
+#### Meta
+
+##### :pragma `<expr>`
 
 Provides `PRAGMA`.
 
@@ -388,7 +395,7 @@ Provides `PRAGMA`.
 (emacsql db [:pragma (= foreign_keys on)])
 ```
 
-#### :vacuum
+##### :vacuum
 
 Provides `VACUUM`.
 
