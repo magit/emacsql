@@ -199,7 +199,7 @@ Provides `ALTER TABLE` and `RENAME TO`.
 [:alter-table prices :rename-to costs]
 ```
 
-### :add-column `<column-spec>`
+##### :add-column `<column-spec>`
 
 Provides `ADD COLUMN`.
 
