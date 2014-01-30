@@ -56,6 +56,7 @@ buffer. This is for debugging purposes."
                                     :file (when file fullfile))))
     (setf (process-sentinel process)
           (lambda (proc _) (kill-buffer (process-buffer proc))))
+    (buffer-disable-undo buffer)
     (mapc (lambda (s) (emacsql-send-string connection s :no-log))
           '(".mode list"
             ".separator ' '"

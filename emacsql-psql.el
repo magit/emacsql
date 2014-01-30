@@ -59,6 +59,7 @@
                                       :dbname dbname)))
       (setf (process-sentinel process)
             (lambda (proc _) (kill-buffer (process-buffer proc))))
+      (buffer-disable-undo buffer)
       (when debug
         (setf (emacsql-log-buffer connection)
               (generate-new-buffer "*emacsql-log*")))
