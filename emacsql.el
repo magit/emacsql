@@ -63,6 +63,10 @@
 (require 'finalize)
 (require 'emacsql-compiler)
 
+(defvar emacsql-global-timeout 30
+  "Maximum number of seconds to wait before bailing out on a SQL command.
+If nil, wait forever.")
+
 (defclass emacsql-connection ()
   ((process :type process
             :initarg :process
@@ -121,10 +125,13 @@ MESSAGE should not have a newline on the end."
 
 (defmethod emacsql-wait ((connection emacsql-connection) &optional timeout)
   "Block until CONNECTION is waiting for further input."
-  (let ((end (when timeout (+ (float-time) timeout))))
-    (while (and (or (null timeout) (< (float-time) end))
+  (let* ((real-timeout (or timeout emacsql-global-timeout))
+         (end (when real-timeout (+ (float-time) real-timeout))))
+    (while (and (or (null real-timeout) (< (float-time) end))
                 (not (emacsql-waiting-p connection)))
-      (accept-process-output (emacsql-process connection) timeout))))
+      (accept-process-output (emacsql-process connection) real-timeout))
+    (unless (emacsql-waiting-p connection)
+      (signal 'emacsql-timeout (list "Query timed out" real-timeout)))))
 
 (defgeneric emacsql-parse (connection)
   "Return the results of parsing the latest output or signal an error.")

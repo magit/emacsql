@@ -22,6 +22,7 @@
 (emacsql-deferror emacsql-transaction () "Invalid transaction")
 (emacsql-deferror emacsql-fatal () "Fatal error")
 (emacsql-deferror emacsql-access () "Database access error")
+(emacsql-deferror emacsql-timeout () "Query timeout error")
 
 (defun emacsql-error (format &rest args)
   "Like `error', but signal an emacsql-syntax condition."
