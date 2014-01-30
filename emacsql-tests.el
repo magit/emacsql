@@ -6,6 +6,9 @@
 (require 'emacsql)
 (require 'emacsql-sqlite)
 
+(defvar emacsql-tests-timeout 4
+  "Be aggressive about not waiting on subprocesses in unit tests.")
+
 (ert-deftest emacsql-escape-identifier ()
   (should (string= (emacsql-escape-identifier "foo") "foo"))
   (should (string= (emacsql-escape-identifier 'foo) "foo"))
@@ -210,31 +213,33 @@
 (ert-deftest emacsql-system ()
   "A short test that fully interacts with SQLite."
   (should-not (emacsql-sqlite3-unavailable-p))
-  (emacsql-with-connection (db (emacsql-sqlite nil))
-    (emacsql db [:create-table foo [x]])
-    (should-error (emacsql db [:create-table foo [x]]))
-    (emacsql db [:insert :into foo :values ([1] [2] [3])])
-    (should (equal (emacsql db [:select * :from foo])
-                   '((1) (2) (3))))))
+  (let ((emacsql-global-timeout emacsql-tests-timeout))
+    (emacsql-with-connection (db (emacsql-sqlite nil))
+      (emacsql db [:create-table foo [x]])
+      (should-error (emacsql db [:create-table foo [x]]))
+      (emacsql db [:insert :into foo :values ([1] [2] [3])])
+      (should (equal (emacsql db [:select * :from foo])
+                     '((1) (2) (3)))))))
 
 (ert-deftest emacsql-foreign-system ()
   "Tests that foreign keys work properly through Emacsql."
-  (emacsql-with-connection (db (emacsql-sqlite nil))
-    (emacsql-thread db
-      [:create-table person [(id integer :primary) name]]
-      [:create-table likes
-       ([(personid integer) color]
-        :references (personid person id :on-delete :cascade))]
-      [:replace :into person :values ([0 "Chris"] [1 "Brian"])])
-    (should (equal (emacsql db [:select * :from person :order-by id])
-                   '((0 "Chris") (1 "Brian"))))
-    (emacsql db [:insert :into likes :values ([0 red] [0 yellow] [1 yellow])])
-    (should (equal (emacsql db [:select * :from likes
-                                        :order-by [personid color]])
-                   '((0 red) (0 yellow) (1 yellow))))
-    (emacsql db [:delete :from person :where (= id 0)])
-    (should (equal (emacsql db [:select * :from likes])
-                   '((1 yellow))))))
+  (let ((emacsql-global-timeout emacsql-tests-timeout))
+    (emacsql-with-connection (db (emacsql-sqlite nil))
+      (emacsql-thread db
+        [:create-table person [(id integer :primary) name]]
+        [:create-table likes
+                       ([(personid integer) color]
+                        :references (personid person id :on-delete :cascade))]
+        [:replace :into person :values ([0 "Chris"] [1 "Brian"])])
+      (should (equal (emacsql db [:select * :from person :order-by id])
+                     '((0 "Chris") (1 "Brian"))))
+      (emacsql db [:insert :into likes :values ([0 red] [0 yellow] [1 yellow])])
+      (should (equal (emacsql db [:select * :from likes
+                                          :order-by [personid color]])
+                     '((0 red) (0 yellow) (1 yellow))))
+      (emacsql db [:delete :from person :where (= id 0)])
+      (should (equal (emacsql db [:select * :from likes])
+                     '((1 yellow)))))))
 
 (ert-deftest emacsql-error ()
   "Check that we're getting expected conditions."
@@ -244,10 +249,11 @@
                 :type 'emacsql-syntax)
   (should-error (emacsql-compile nil [:insert :into foo :values 1])
                 :type 'emacsql-syntax)
-  (emacsql-with-connection (db (emacsql-sqlite nil))
-    (emacsql db [:create-table foo [x]])
-    (should-error (emacsql db [:create-table foo [x]])
-                  :type 'emacsql-table)))
+  (let ((emacsql-global-timeout emacsql-tests-timeout))
+    (emacsql-with-connection (db (emacsql-sqlite nil))
+      (emacsql db [:create-table foo [x]])
+      (should-error (emacsql db [:create-table foo [x]])
+                    :type 'emacsql-table))))
 
 (provide 'emacsql-tests)
 
