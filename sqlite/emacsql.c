@@ -48,12 +48,6 @@ void buffer_free(buffer *buffer) {
     free(buffer);
 }
 
-#define CHECK(sqlitecall)                       \
-    if (sqlitecall != SQLITE_OK) {              \
-        send_error(sqlite3_errcode(db), sqlite3_errmsg(db));        \
-        continue;                                                   \
-    }
-
 int main(int argc, char **argv) {
     char *file = NULL;
     if (argc != 2) {
@@ -100,9 +94,15 @@ int main(int argc, char **argv) {
             continue;
         }
 
-        /* Run SQL and print rows. */
+        /* Parse SQL statement. */
         sqlite3_stmt *stmt = NULL;
-        CHECK(sqlite3_prepare_v2(db, input->buffer, length, &stmt, NULL));
+        result = sqlite3_prepare_v2(db, input->buffer, length, &stmt, NULL);
+        if (result != SQLITE_OK) {
+            send_error(sqlite3_errcode(db), sqlite3_errmsg(db));
+            continue;
+        }
+
+        /* Print out rows. */
         int ncolumns = sqlite3_column_count(stmt);
         printf("%d\n", ncolumns);
         while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
                            sqlite3_column_bytes(stmt, i), stdout);
                     break;
                 case SQLITE_BLOB:
-                    send_error(SQLITE_NOLFS, "blobs not supported by Emacsql");
+                    printf(" nil");
                     break;
                 }
             }
