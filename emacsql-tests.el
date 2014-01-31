@@ -254,6 +254,17 @@
       (should-error (emacsql db [:create-table foo [x]])
                     :type 'emacsql-error))))
 
+(ert-deftest emacsql-special-chars ()
+  "A short test that interacts with SQLite with special characters."
+  (let ((emacsql-global-timeout 4))
+    (emacsql-with-connection (db (emacsql-sqlite nil))
+      (emacsql db [:create-table test-table [x]])
+      (emacsql db [:insert :into test-table
+                           :values ([""] [\])])
+      (should (process-live-p (emacsql-process db)))
+      (should (equal (emacsql db [:select * :from test-table])
+                     '(("") (\)))))))
+
 (provide 'emacsql-tests)
 
 ;;; emacsql-tests.el ends here
