@@ -6,27 +6,12 @@
 (require 'eieio)
 (require 'emacsql)
 
-(defvar emacsql-sqlite3-executable "sqlite3"
-  "Path to the sqlite3 executable.")
+(defvar emacsql-sqlite-executable
+  (expand-file-name "bin/emacsql-sqlite-linux-x86_64"
+                    (file-name-directory load-file-name))
+  "Path to the Emacsql backend (this is not the sqlite3 shell).")
 
-(defun emacsql-sqlite3-unavailable-p ()
-  "Return a reason if the sqlite3 executable is not available.
-:no-executable -- cannot find the executable
-:cannot-execute -- cannot run the executable
-:old-version -- sqlite3 version is too old"
-  (let ((sqlite3 emacsql-sqlite3-executable))
-    (if (null (executable-find sqlite3))
-        :no-executable
-      (condition-case _
-          (with-temp-buffer
-            (call-process sqlite3 nil (current-buffer) nil "--version")
-            (let ((version (car (split-string (buffer-string)))))
-              (if (version< version "3.0.0")
-                  :old-version
-                nil)))
-        (error :cannot-execute)))))
-
-(defclass emacsql-sqlite-connection (emacsql-connection emacsql-simple-parser)
+(defclass emacsql-sqlite-connection (emacsql-connection emacsql-protocol-mixin)
   ((file :initarg :file
          :type (or null string)
          :documentation "Database file name.")
@@ -44,29 +29,22 @@ If FILE is nil use an in-memory database.
 
 :debug LOG -- When non-nil, log all SQLite commands to a log
 buffer. This is for debugging purposes."
-  (let* ((buffer (generate-new-buffer "*emacsql-sqlite*"))
+  (let* ((process-connection-type nil)  ; use a pipe
+         (buffer (generate-new-buffer "*emacsql-sqlite*"))
          (fullfile (if file (expand-file-name file) ":memory:"))
-         (sqlite3 emacsql-sqlite3-executable)
-         (process (start-process "emacsql-sqlite" buffer sqlite3
-                                 "-interactive" fullfile))
+         (process (start-process
+                   "emacsql-sqlite" buffer emacsql-sqlite-executable fullfile))
          (connection (make-instance 'emacsql-sqlite-connection
                                     :process process
                                     :file (when file fullfile))))
     (setf (process-sentinel process)
           (lambda (proc _) (kill-buffer (process-buffer proc))))
-    (buffer-disable-undo buffer)
-    (mapc (lambda (s) (emacsql-send-string connection s :no-log))
-          '(".mode list"
-            ".separator ' '"
-            ".nullvalue nil"
-            "PRAGMA busy_timeout = 30000;"
-            "PRAGMA foreign_keys = 1;"
-            ".prompt ]"
-            "EMACSQL;")) ; error message flush
+    (emacsql-wait connection)
+    (emacsql connection [:pragma (= busy-timeout $1)]
+             (/ (* emacsql-global-timeout 1000) 2))
     (when debug
       (setf (emacsql-log-buffer connection)
             (generate-new-buffer "*emacsql-log*")))
-    (emacsql-wait connection)
     (emacsql-register connection)))
 
 (defalias 'emacsql-connect 'emacsql-sqlite)
@@ -75,57 +53,29 @@ buffer. This is for debugging purposes."
   "Gracefully exits the SQLite subprocess."
   (let ((process (emacsql-process connection)))
     (when (process-live-p process)
-      (process-send-string process ".exit\n"))))
+      (process-send-eof process))))
+
+(defmethod emacsql-send-message ((connection emacsql-sqlite-connection) message)
+  (let ((process (emacsql-process connection)))
+    (process-send-string process (format "%d " (string-bytes message)))
+    (process-send-string process message)
+    (process-send-string process "\n")))
 
 (defvar emacsql-sqlite-condition-alist
-  '(("unable to open"              emacsql-access)
-    ("cannot open"                 emacsql-access)
-    ("source database is busy"     emacsql-access)
-    ("unknown database"            emacsql-access)
-    ("writable"                    emacsql-access)
-    ("no such table"               emacsql-table)
-    ("table [^ ]+ already exists"  emacsql-table)
-    ("no such column"              emacsql-table)
-    ("already another table"       emacsql-table)
-    ("Cannot add"                  emacsql-table)
-    ("table name"                  emacsql-table)
-    ("already an index"            emacsql-table)
-    ("constraint cannot be drop"   emacsql-table)
-    ("database is locked"          emacsql-lock)
-    ("no transaction is active"    emacsql-transaction)
-    ("cannot start a transaction"  emacsql-transaction)
-    ("out of memory"               emacsql-fatal)
-    ("corrupt database"            emacsql-fatal)
-    ("interrupt"                   emacsql-fatal)
-    ("values were supplied"        emacsql-syntax)
-    ("mismatch"                    emacsql-syntax)
-    ("no such"                     emacsql-syntax)
-    ("does not match"              emacsql-syntax)
-    ("circularly defined"          emacsql-syntax)
-    ("parameters are not allowed"  emacsql-syntax)
-    ("missing"                     emacsql-syntax)
-    ("is only allowed on"          emacsql-syntax)
-    ("more than one primary key"   emacsql-syntax)
-    ("not constant"                emacsql-syntax)
-    ("duplicate"                   emacsql-syntax)
-    ("name reserved"               emacsql-syntax)
-    ("cannot use variables"        emacsql-syntax)
-    ("no tables specified"         emacsql-syntax)
-    ("syntax error"                emacsql-syntax)
-    ("no such function"            emacsql-syntax)
-    ("unknown function"            emacsql-syntax)
-    ("wrong number of arguments"   emacsql-syntax)
-    ("term does not match"         emacsql-syntax)
-    ("clause"                      emacsql-syntax)
-    ("tree is too large"           emacsql-syntax)
-    ("too many"                    emacsql-syntax))
+  '(((1 4 9 12 17 18 20 21 22 25) emacsql-error)
+    ((2)                          emacsql-internal)
+    ((3 8 10 13 14 15 23)         emacsql-access)
+    ((5 6)                        emacsql-locked)
+    ((7)                          emacsql-memory)
+    ((11 16 24 26)                emacsql-corruption)
+    ((19)                         emacsql-constraint)
+    ((27 28)                      emacsql-warning))
   "List of regexp's mapping sqlite3 output to conditions.")
 
-(defmethod emacsql-handle ((_ emacsql-sqlite-connection) message)
+(defmethod emacsql-handle ((_ emacsql-sqlite-connection) code message)
   "Get condition for MESSAGE provided from SQLite."
   (signal
-   (or (cadr (cl-assoc message emacsql-sqlite-condition-alist
-                       :test (lambda (a b) (string-match-p b a))))
+   (or (cl-second (cl-assoc code emacsql-sqlite-condition-alist :test #'memql))
        'emacsql-error)
    (list message)))
 

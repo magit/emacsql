@@ -212,7 +212,6 @@
 
 (ert-deftest emacsql-system ()
   "A short test that fully interacts with SQLite."
-  (should-not (emacsql-sqlite3-unavailable-p))
   (let ((emacsql-global-timeout emacsql-tests-timeout))
     (emacsql-with-connection (db (emacsql-sqlite nil))
       (emacsql db [:create-table foo [x]])
@@ -253,7 +252,7 @@
     (emacsql-with-connection (db (emacsql-sqlite nil))
       (emacsql db [:create-table foo [x]])
       (should-error (emacsql db [:create-table foo [x]])
-                    :type 'emacsql-table))))
+                    :type 'emacsql-error))))
 
 (provide 'emacsql-tests)
 

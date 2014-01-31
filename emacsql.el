@@ -107,13 +107,12 @@ MESSAGE should not have a newline on the end."
 
 ;; Sending and receiving:
 
-(defmethod emacsql-send-string
-  ((connection emacsql-connection) string &optional no-log)
-  "Send STRING to CONNECTION, automatically appending newline."
-  (let ((process (emacsql-process connection)))
-    (unless no-log (emacsql-log connection string))
-    (process-send-string process string)
-    (process-send-string process "\n")))
+(defgeneric emacsql-send-message ((connection emacsql-connection) message)
+  "Send MESSAGE to CONNECTION.")
+
+(defmethod emacsql-send-message :before
+  ((connection emacsql-connection) message)
+  (emacsql-log connection message))
 
 (defmethod emacsql-clear ((connection emacsql-connection))
   "Clear the process buffer for CONNECTION-SPEC."
@@ -146,58 +145,53 @@ MESSAGE should not have a newline on the end."
   "Send SQL s-expression to CONNECTION and return the results."
   (let ((sql-string (apply #'emacsql-compile connection sql args)))
     (emacsql-clear connection)
-    (emacsql-send-string connection sql-string)
+    (emacsql-send-message connection sql-string)
     (emacsql-wait connection)
     (emacsql-parse connection)))
 
 ;; Helper mixin class:
 
-(defclass emacsql-simple-parser ()
+(defclass emacsql-protocol-mixin ()
   ()
   (:documentation
-   "A mixin for back-ends with a straightforward output format.
+   "A mixin for back-ends following the Emacsql protocol.
 The back-end prompt must be a single \"]\" character. This prompt
 value was chosen because it is unreadable. Output must have
 exactly one row per line, fields separated by whitespace. NULL
 must display as \"nil\".")
   :abstract t)
 
-(defmethod emacsql-waiting-p ((connection emacsql-simple-parser))
+(defmethod emacsql-waiting-p ((connection emacsql-protocol-mixin))
   "Return true of the end of the buffer has a properly-formatted prompt."
   (with-current-buffer (emacsql-buffer connection)
-    (cond ((= (buffer-size) 1) (string= "]" (buffer-string)))
-          ((> (buffer-size) 1) (string= "\n]"
-                                        (buffer-substring
-                                         (- (point-max) 2) (point-max)))))))
+    (and (>= (buffer-size) 2)
+         (string= "#\n" (buffer-substring (- (point-max) 2) (point-max))))))
 
-(defmethod emacsql-handle ((_ emacsql-simple-parser) message)
-  "Signal a specific condition for MESSAGE from CONNECTION.
+(defmethod emacsql-handle ((_ emacsql-protocol-mixin) code message)
+  "Signal a specific condition for CODE from CONNECTION.
 Subclasses should override this method in order to provide more
 specific error conditions."
-  (signal 'emacsql-syntax (list message)))
+  (signal 'emacsql-syntax (list code message)))
 
-(defmethod emacsql-check-error ((connection emacsql-simple-parser))
-  "Return the error message from CONNECTION, or nil for no error."
-  (with-current-buffer (emacsql-buffer connection)
-    (let ((case-fold-search t))
-      (setf (point) (point-min))
-      (when (looking-at "error:")
-        (let* ((beg (line-beginning-position))
-               (end (line-end-position)))
-          (emacsql-handle connection (buffer-substring beg end)))))))
-
-(defmethod emacsql-parse ((connection emacsql-simple-parser))
-  "Parse well-formed output into an s-expression."
-  (emacsql-check-error connection)
+(defmethod emacsql-check-error ((connection emacsql-protocol-mixin))
+  "Signal the error message from CONNECTION, or return nil."
   (with-current-buffer (emacsql-buffer connection)
     (let ((standard-input (current-buffer)))
       (setf (point) (point-min))
-      (cl-loop until (looking-at "]")
-               collect (read) into row
-               when (looking-at "\n")
-               collect row into rows
-               and do (progn (forward-char 1) (setf row ()))
-               finally (cl-return rows)))))
+      (when (eql (read) 'error)
+        (emacsql-handle connection (read) (read))))))
+
+(defmethod emacsql-parse ((connection emacsql-protocol-mixin))
+  "Parse well-formed output into an s-expression."
+  (emacsql-check-error connection)
+  (with-current-buffer (emacsql-buffer connection)
+    (setf (point) (point-min))
+    (let* ((standard-input (current-buffer))
+           (num-columns (read)))
+      (forward-char 1)
+      (cl-loop until (looking-at "#")
+               collect (cl-loop repeat num-columns collect (read))
+               and do (forward-char 1)))))
 
 (provide 'emacsql) ; end of generic function declarations
 

@@ -26,7 +26,7 @@
                 nil)))
         (error :cannot-execute)))))
 
-(defclass emacsql-psql-connection (emacsql-connection emacsql-simple-parser)
+(defclass emacsql-psql-connection (emacsql-connection)
   ((dbname :reader emacsql-psql-dbname :initarg :dbname)
    (types :allocation :class
           :reader emacsql-types
@@ -61,7 +61,7 @@
       (when debug
         (setf (emacsql-log-buffer connection)
               (generate-new-buffer "*emacsql-log*")))
-      (mapc (lambda (s) (emacsql-send-string connection s :no-log))
+      (mapc (apply-partially #'emacsql-send-message connection)
             '("\\pset pager off"
               "\\pset null nil"
               "\\a"

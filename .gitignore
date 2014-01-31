@@ -2,3 +2,5 @@
 *.tar
 .cask
 *-pkg.el
+bin/
+*.o
