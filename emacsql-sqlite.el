@@ -5,9 +5,10 @@
 (require 'cl-lib)
 (require 'eieio)
 (require 'emacsql)
+(require 'emacsql-system)
 
 (defvar emacsql-sqlite-executable
-  (expand-file-name "bin/emacsql-sqlite-linux-x86_64"
+  (expand-file-name (emacsql-system-binary "bin/emacsql-sqlite")
                     (file-name-directory load-file-name))
   "Path to the Emacsql backend (this is not the sqlite3 shell).")
 

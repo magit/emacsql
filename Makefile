@@ -6,7 +6,8 @@ BATCH   := $(VIRTUAL) -batch -Q -L .
 PACKAGE := emacsql
 VERSION := $(shell $(CASK) version)
 
-EL = emacsql-compiler.el emacsql.el emacsql-sqlite.el emacsql-psql.el
+EL = emacsql-compiler.el emacsql-system.el emacsql.el \
+     emacsql-sqlite.el emacsql-psql.el
 ELC = $(EL:.el=.elc)
 EXTRA_DIST = README.md UNLICENSE
 
