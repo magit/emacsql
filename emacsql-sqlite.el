@@ -9,7 +9,6 @@
 (defvar emacsql-sqlite3-executable "sqlite3"
   "Path to the sqlite3 executable.")
 
-;;;###autoload
 (defun emacsql-sqlite3-unavailable-p ()
   "Return a reason if the sqlite3 executable is not available.
 :no-executable -- cannot find the executable
@@ -39,7 +38,6 @@
                       (nil nil))))
   (:documentation "A connection to a SQLite database."))
 
-;;;###autoload
 (cl-defun emacsql-sqlite (file &key debug)
   "Open a connected to database stored in FILE.
 If FILE is nil use an in-memory database.
@@ -71,7 +69,6 @@ buffer. This is for debugging purposes."
     (emacsql-wait connection)
     (emacsql-register connection)))
 
-;;;###autoload
 (defalias 'emacsql-connect 'emacsql-sqlite)
 
 (defmethod emacsql-close ((connection emacsql-sqlite-connection))
