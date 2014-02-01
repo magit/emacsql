@@ -1,14 +1,14 @@
 # Emacsql
 
 Emacsql is a high-level Emacs Lisp front-end for SQLite (primarily),
-PostgreSQL, and potentially other SQL databases. It is currently a
-work-in-progress (90% complete) because the s-expression query
-language is still being hammered out.
+PostgreSQL, and potentially other SQL databases.
 
-It works by keeping a `sqlite3` (or `psql`) inferior process running
-(a "connection") for interacting with the back-end database.
-Connections are automatically cleaned up if they are garbage
-collected. All requests are synchronous.
+It is currently a work-in-progress (around 90% complete).
+
+It works by maintaining a inferior process running (a "connection")
+for interacting with the back-end database. Connections are
+automatically cleaned up if they are garbage collected. All requests
+are synchronous.
 
 Any [readable lisp value][readable] can be stored as a value in
 Emacsql, including numbers, strings, symbols, lists, vectors, and
@@ -16,20 +16,19 @@ closures. Emacsql has no concept of "TEXT" values; it's all just lisp
 objects. The lisp object `nil` corresponds 1:1 with `NULL` in the
 database.
 
+This package includes custom native binaries for communicating with a
+SQLite database. When linked with GNU Readline, or when run in
+Windows, the official sqlite3 command shell is incapable of correct
+interaction. If your package depends on Emacsql it also means you
+don't have to rely on the user having particular software installed.
+
 Requires Emacs 24 or later.
 
-### Windows Issues
+### Windows Issue
 
-Due to [bad behavior from both SQLite and Windows][stderr] the
-official SQLite command shell binary will *not* work with Emacsql on
-Windows. Fortunately, [this simple patch][patch] corrects the issue.
-Here's a build with the fix:
-
- * [sqlite3.exe][exe] (3.8.2, [asc][asc])
-
-Also, due to a [long-standing Emacs bug][batch], Emacsql cannot be
-used in Emacs' "-batch" mode on Windows, which includes running the
-Emacsql test suite from the Makefile.
+Due to a [long-standing Emacs bug][batch], Emacsql cannot be used in
+Emacs' "-batch" mode on Windows, which includes running the Emacsql
+test suite from the Makefile.
 
 ## Example Usage
 
@@ -422,7 +421,7 @@ probably will never be.
 
  * Collating. SQLite has three built-in collation functions: BINARY
    (default), NOCASE, and RTRIM. Emacsql values never have right-hand
-   whitepsace, so RTRIM won't be of any use. NOCASE is broken
+   whitespace, so RTRIM won't be of any use. NOCASE is broken
    (ASCII-only) and there's little reason to use it.
 
  * Databases attachments. I don't expect any program using Emacsql to
@@ -463,7 +462,7 @@ inherits from `emacsql-connection`.
 
 The provided implementations should serve as useful examples. If your
 back-end outputs data in a clean, standard way you may be able to use
-the emacsql-simple-parser mixin class to do most of the work.
+the emacsql-protocol-mixin class to do most of the work.
 
 ## See Also
 
@@ -473,8 +472,5 @@ the emacsql-simple-parser mixin class to do most of the work.
 [readable]: http://nullprogram.com/blog/2013/12/30/#almost_everything_prints_readably
 [stderr]: http://thread.gmane.org/gmane.comp.db.sqlite.general/85824
 [foreign]: http://www.sqlite.org/foreignkeys.html
-[patch]: http://skeeto.s3.amazonaws.com/emacs/sqlite3-stderr-fix.patch
-[exe]: http://skeeto.s3.amazonaws.com/emacs/sqlite3-3.8.2-fixed.exe
-[asc]: http://skeeto.s3.amazonaws.com/emacs/sqlite3-3.8.2-fixed.exe.asc
 [batch]: http://lists.gnu.org/archive/html/emacs-pretest-bug/2005-11/msg00320.html
 [cask]: http://cask.github.io/
