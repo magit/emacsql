@@ -26,9 +26,8 @@
                (mapcar #'car emacsql-tests-connection-factories)))
 
 (ert-deftest emacsql-escape-identifier ()
-  (should-error (string= (emacsql-escape-identifier "foo")))
+  (should-error (emacsql-escape-identifier "foo"))
   (should (string= (emacsql-escape-identifier 'foo) "foo"))
-  (should-error (string= (emacsql-escape-identifier :foo)))
   (should (string= (emacsql-escape-identifier 'a\ b) "\"a\\ b\""))
   (should (string= (emacsql-escape-identifier '$foo) "\"$foo\""))
   (should-error (emacsql-escape-identifier 10))
@@ -80,7 +79,7 @@
 
 (defun emacsql-tests-query (query args result)
   "Check that QUERY outputs RESULT for ARGS."
-  (should (string= (apply #'emacsql-compile nil (emacsql-expand query) args)
+  (should (string= (apply #'emacsql-compile nil query args)
                    result)))
 
 (defmacro emacsql-tests-with-queries (&rest queries)
@@ -108,101 +107,94 @@
 
 (ert-deftest emacsql-create-table ()
   (emacsql-tests-with-queries
-    ([:create-table foo [a b c]] ()
-     "CREATE TABLE foo (a NONE, b NONE, c NONE);")
-    ([:create-table (:temporary :if-not-exists x) [y]] '()
-     "CREATE TEMPORARY TABLE IF NOT EXISTS x (y NONE);")
-    ([:create-table foo [(a :default 10)]] '()
-     "CREATE TABLE foo (a NONE DEFAULT 10);")
-    ([:create-table foo [(a :primary :non-nil) b]] '()
-     "CREATE TABLE foo (a NONE PRIMARY KEY NOT NULL, b NONE);")
-    ([:create-table foo [a (b :check (< b 10))]] '()
-     "CREATE TABLE foo (a NONE, b NONE CHECK (b < 10));")
-    ([:create-table foo $S1] '([a b (c :primary)])
-     "CREATE TABLE foo (a NONE, b NONE, c NONE PRIMARY KEY);")
-    ([:create-table foo [a b (c :default $1)]] '("FOO")
-     "CREATE TABLE foo (a NONE, b NONE, c NONE DEFAULT '\"FOO\"');")
+    ([:create-table foo ([a b c])] ()
+     "CREATE TABLE foo (a &NONE, b &NONE, c &NONE);")
+    ([:create-temporary-table :if-not-exists x ([y])] '()
+     "CREATE TEMPORARY TABLE IF NOT EXISTS x (y &NONE);")
+    ([:create-table foo ([(a :default 10)])] '()
+     "CREATE TABLE foo (a &NONE DEFAULT 10);")
+    ([:create-table foo ([(a :primary-key :not-null) b])] '()
+     "CREATE TABLE foo (a &NONE PRIMARY KEY NOT NULL, b &NONE);")
+    ([:create-table foo ([a (b :check (< b 10))])] '()
+     "CREATE TABLE foo (a &NONE, b &NONE CHECK (b < 10));")
+    ([:create-table foo $S1] '([a b (c :primary-key)])
+     "CREATE TABLE foo (a &NONE, b &NONE, c &NONE PRIMARY KEY);")
+    ([:create-table foo ([a b (c :default "FOO")])] '()
+     "CREATE TABLE foo (a &NONE, b &NONE, c &NONE DEFAULT '\"FOO\"');")
     ;; From select
-    ([:create-table $1 [:select name :from $2]] '(names people)
+    ([:create-table $i1 :as [:select name :from $i2]] '(names people)
      "CREATE TABLE names AS (SELECT name FROM people);")
     ;; Table constraints
-    ([:create-table foo ([a b c] :primary [a c])] '()
-     "CREATE TABLE foo (a NONE, b NONE, c NONE, PRIMARY KEY (a, c));")
-    ([:create-table foo ([a b c] :unique [a b c])] '()
-     "CREATE TABLE foo (a NONE, b NONE, c NONE, UNIQUE (a, b, c));")
-    ([:create-table foo ([a b] :check (< a b))] '()
-     "CREATE TABLE foo (a NONE, b NONE, CHECK (a < b));")
-    ([:create-table foo
-      ([a b c] :references ([a b] bar [aa bb] :on-delete :cascade))] '()
-      (concat "CREATE TABLE foo (a NONE, b NONE, c NONE, FOREIGN KEY (a, b) "
+    ([:create-table foo ([a b c] (:primary-key [a c]))] '()
+     "CREATE TABLE foo (a &NONE, b &NONE, c &NONE, PRIMARY KEY (a, c));")
+    ([:create-table foo ([a b c] (:unique [a b c]))] '()
+     "CREATE TABLE foo (a &NONE, b &NONE, c &NONE, UNIQUE (a, b, c));")
+    ([:create-table foo ([a b] (:check (< a b)))] '()
+     "CREATE TABLE foo (a &NONE, b &NONE, CHECK (a < b));")
+    ([:create-table foo ([a b c]
+                         (:foreign-key [a b] :references bar [aa bb]
+                                       :on-delete :cascade))] '()
+      (concat "CREATE TABLE foo (a &NONE, b &NONE, c &NONE, FOREIGN KEY (a, b) "
               "REFERENCES bar (aa, bb) ON DELETE CASCADE);"))
     ;; Template
-    ([:create-table $1 $2] '(foo [alpha beta delta])
-     "CREATE TABLE foo (alpha NONE, beta NONE, delta NONE);")
+    ([:create-table $i1 $S2] '(foo [alpha beta delta])
+     "CREATE TABLE foo (alpha &NONE, beta &NONE, delta &NONE);")
     ;; Drop table
-    ([:drop-table $1] '(foo)
+    ([:drop-table $i1] '(foo)
      "DROP TABLE foo;")))
 
 (ert-deftest emacsql-update ()
   (emacsql-tests-with-queries
-    ([:update people :set (= id $1)] '(10)
+    ([:update people :set (= id $s1)] '(10)
      "UPDATE people SET id = 10;")))
 
 (ert-deftest emacsql-insert ()
   (emacsql-tests-with-queries
-    ([:insert :into foo :values [nil $1]] '(10.1)
+    ([:insert :into foo :values [nil $s1]] '(10.1)
      "INSERT INTO foo VALUES (NULL, 10.1);")
-    ([:insert :into (foo [a b]) :values $1] '([1 2])
+    ([:insert :into foo [a b] :values $v1] '([1 2])
      "INSERT INTO foo (a, b) VALUES (1, 2);")
-    ([:replace :into $1 :values $2] '(bar ([1 2] [3 4]))
+    ([:replace :into $i1 :values $v2] '(bar ([1 2] [3 4]))
      "REPLACE INTO bar VALUES (1, 2), (3, 4);")))
 
 (ert-deftest emacsql-order-by ()
   (emacsql-tests-with-queries
     ([:order-by foo] '()
      "ORDER BY foo;")
-    ([:order-by [$1]] '(bar)
+    ([:order-by [$i1]] '(bar)
      "ORDER BY bar;")
     ([:order-by (- foo)] '()
      "ORDER BY -(foo);")
-    ([:order-by [(a :asc) ((/ b 2) :desc)]] '()
+    ([:order-by [(asc a) (desc (/ b 2))]] '()
      "ORDER BY a ASC, b / 2 DESC;")))
 
 (ert-deftest emacsql-limit ()
   (emacsql-tests-with-queries
     ([:limit 10] '()
      "LIMIT 10;")
-    ([:limit $1] '(11)
+    ([:limit $s1] '(11)
      "LIMIT 11;")
     ([:limit [12]] '()
      "LIMIT 12;")
     ([:limit [2 10]] '()
      "LIMIT 2, 10;")
-    ([:limit [$1 $2]] '(4 30)
+    ([:limit [$s1 $s2]] '(4 30)
      "LIMIT 4, 30;")))
 
 (ert-deftest emacsql-quoting ()
   (emacsql-tests-with-queries
     ([:where (= name 'foo)] '()
      "WHERE name = 'foo';")
-    ([:where (= name '$1)] '(qux)
-     "WHERE name = 'qux';")
-    ([:where (= name '$$1)] '()
-     "WHERE name = '$1';")
-    ([:values [a $$1]] '()
-     "VALUES ('a', '$1');")))
+    ([:where (= name '$s1)] '(qux)
+     "WHERE name = 'qux';")))
 
 (ert-deftest emacsql-expr ()
   (emacsql-tests-with-queries
-    ([:where (and)] '()
-     "WHERE 1;")
-    ([:where (or)] '()
-     "WHERE 0;")
     ([:where (and a b)] '()
      "WHERE a AND b;")
-    ([:where (or a $1)] '(b)
+    ([:where (or a $i1)] '(b)
      "WHERE a OR b;")
-    ([:where (and $1 $2 $3)] '(a b c)
+    ([:where (and $i1 $i2 $i3)] '(a b c)
      "WHERE a AND b AND c;")))
 
 (ert-deftest emacsql-transaction ()
@@ -220,9 +212,9 @@
   (emacsql-tests-with-queries
    ([:alter-table foo :rename-to bar] '()
     "ALTER TABLE foo RENAME TO bar;")
-   ([:alter-table $1 :rename-to $2] '(alpha beta)
+   ([:alter-table $i1 :rename-to $i2] '(alpha beta)
     "ALTER TABLE alpha RENAME TO beta;")
-   ([:alter-table foo :add-column ($1 integer :non-nil)] '(size)
+   ([:alter-table foo :add-column size :integer :not-null] '()
     "ALTER TABLE foo ADD COLUMN size INTEGER NOT NULL;")))
 
 (ert-deftest emacsql-system ()
@@ -230,8 +222,8 @@
   (let ((emacsql-global-timeout emacsql-tests-timeout))
     (dolist (factory emacsql-tests-connection-factories)
       (emacsql-with-connection (db (funcall (cdr factory)))
-        (emacsql db [:create-table (:temporary foo) [x]])
-        (should-error (emacsql db [:create-table (:temporary foo) [x]]))
+        (emacsql db [:create-temporary-table foo ([x])])
+        (should-error (emacsql db [:create-temporary-table foo ([x])]))
         (emacsql db [:insert :into foo :values ([1] [2] [3])])
         (should (equal (emacsql db [:select * :from foo])
                        '((1) (2) (3))))))))
@@ -242,10 +234,11 @@
     (dolist (factory emacsql-tests-connection-factories)
       (emacsql-with-connection (db (funcall (cdr factory)))
         (emacsql-thread db
-          [:create-table (:temporary person) [(id integer :primary) name]]
-          [:create-table (:temporary likes)
-                         ([(personid integer) color]
-                          :references (personid person id :on-delete :cascade))]
+          [:create-temporary-table person ([(id integer :primary-key) name])]
+          [:create-temporary-table likes
+           ([(personid integer) color]
+            (:foreign-key [personid] :references person [id]
+                          :on-delete :cascade))]
           [:insert :into person :values ([0 "Chris"] [1 "Brian"])])
         (should (equal (emacsql db [:select * :from person :order-by id])
                        '((0 "Chris") (1 "Brian"))))
@@ -260,17 +253,13 @@
 
 (ert-deftest emacsql-error ()
   "Check that we're getting expected conditions."
-  (should-error (emacsql-compile nil [:begin :foo])
-                :type 'emacsql-syntax)
-  (should-error (emacsql-compile nil [:create-table $foo$ [a]])
-                :type 'emacsql-syntax)
   (should-error (emacsql-compile nil [:insert :into foo :values 1])
                 :type 'emacsql-syntax)
   (let ((emacsql-global-timeout emacsql-tests-timeout))
     (dolist (factory emacsql-tests-connection-factories)
       (emacsql-with-connection (db (funcall (cdr factory)))
-        (emacsql db [:create-table (:temporary foo) [x]])
-        (should-error (emacsql db [:create-table (:temporary foo) [x]])
+        (emacsql db [:create-temporary-table foo ([x])])
+        (should-error (emacsql db [:create-temporary-table foo ([x])])
                       :type 'emacsql-error)))))
 
 (ert-deftest emacsql-special-chars ()
@@ -278,9 +267,8 @@
   (let ((emacsql-global-timeout 4))
     (dolist (factory emacsql-tests-connection-factories)
       (emacsql-with-connection (db (funcall (cdr factory)))
-        (emacsql db [:create-table (:temporary test-table) [x]])
-        (emacsql db [:insert :into test-table
-                             :values ([""] [\])])
+        (emacsql db [:create-temporary-table test-table [x]])
+        (emacsql db [:insert :into test-table :values ([""] [\])])
         (should (process-live-p (emacsql-process db)))
         (should (equal (emacsql db [:select * :from test-table])
                        '(("") (\))))))))

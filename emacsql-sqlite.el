@@ -41,7 +41,7 @@ buffer. This is for debugging purposes."
     (setf (process-sentinel process)
           (lambda (proc _) (kill-buffer (process-buffer proc))))
     (emacsql-wait connection)
-    (emacsql connection [:pragma (= busy-timeout $1)]
+    (emacsql connection [:pragma (= busy-timeout $s1)]
              (/ (* emacsql-global-timeout 1000) 2))
     (when debug
       (setf (emacsql-log-buffer connection)

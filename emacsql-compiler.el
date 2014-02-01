@@ -55,7 +55,7 @@
         (if (or (string-match-p special print)
                 (string-match-p "^[0-9$]" print))
             (emacsql-quote-identifier print)
-          name)))))
+          print)))))
 
 (defun emacsql-escape-scalar (value)
   "Escape VALUE for sending to SQLite."
@@ -124,7 +124,7 @@ KIND should be :scalar or :identifier."
      (symbol (list (emacsql-escape-identifier column)
                    (cadr (assoc nil emacsql-type-map))))
      (list (cl-destructuring-bind (name . constraints) column
-             (delete-if
+             (cl-delete-if
               (lambda (s) (zerop (length s)))
               (list (emacsql-escape-identifier name)
                     (if (member (car constraints) '(integer float object))
@@ -207,7 +207,7 @@ which will be combined with variable definitions."
              (if (symbolp thing)
                  (emacsql-escape-identifier thing)
                (emacsql-escape-scalar thing))))
-        (prog1 "%s"
+        (prog1 (if (eq (cdr param) :schema) "(%s)" "%s")
           (check param)
           (setf emacsql--vars (nconc emacsql--vars (list param))))))))
 
@@ -215,7 +215,7 @@ which will be combined with variable definitions."
   "Prepare VECTOR."
   (emacsql-with-params ""
     (cl-typecase vector
-      (symbol (param vector :vector))
+      (symbol (emacsql--!param vector :vector))
       (list (mapconcat #'svector vector ", "))
       (vector (format "(%s)" (mapconcat #'scalar vector ", ")))
       (otherwise (emacsql-error "Invalid vector: %S" vector)))))
@@ -247,6 +247,9 @@ which will be combined with variable definitions."
                (1 (format "-(%s)" (recur 0)))
                (2 (format "%s - %s" (recur 0) (recur 1)))
                (otherwise (nops op))))
+            ;; Ordering
+            ((asc desc)
+             (format "%s %s" (recur 0) (upcase (symbol-name op))))
             ;; Special case quote
             ((quote) (scalar (nth 0 args)))
             ;; Guess
@@ -284,7 +287,7 @@ which will be combined with variable definitions."
                                       (emacsql--from-keyword item)))
                            (symbolp (if (eq item '*)
                                         "*"
-                                      (identifier item)))
+                                      (param item)))
                            (vector (if (emacsql-sql-p item)
                                        (subsql item)
                                      (let ((idents (combine
@@ -296,7 +299,10 @@ which will be combined with variable definitions."
                                      (emacsql-escape-format
                                       (format "(%s)"
                                               (emacsql-prepare-schema item)))
-                                   (combine (emacsql--*expr item)))))
+                                   (combine (emacsql--*expr item))))
+                           (otherwise
+                            (emacsql-escape-format
+                             (emacsql-escape-scalar item))))
                          into parts
                          do (setf last item)
                          finally (cl-return
@@ -314,7 +320,7 @@ which will be combined with variable definitions."
                         (:identifier (emacsql-escape-identifier thing))
                         (:scalar (emacsql-escape-scalar thing))
                         (:vector (emacsql-escape-vector thing))
-                        (:schema (car (emacsql--schema-to-string thing)))
+                        (:schema (emacsql-prepare-schema thing))
                         (otherwise
                          (emacsql-error "Invalid var type %S" kind))))))))
 

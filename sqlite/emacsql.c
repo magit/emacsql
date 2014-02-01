@@ -1,12 +1,35 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "sqlite3.h"
 
 #define TRUE 1
 #define FALSE 0
 
+char *dup(const char *s) {
+    char *copy = malloc(strlen(s));
+    while (*s) {
+        *copy = *s;
+        copy++;
+        s++;
+    }
+    return copy;
+}
+
+char *escape(char *message) {
+    while (*message) {
+        if (*message == '"') {
+            *message = '\'';
+        }
+        message++;
+    }
+    return message;
+}
+
 void send_error(int code, const char *message) {
-    printf("error %d \"%s\"\n", code, message);
+    char *escaped = escape(dup(message));
+    printf("error %d \"%s\"\n", code, escaped);
+    free(escaped);
 }
 
 typedef struct {
