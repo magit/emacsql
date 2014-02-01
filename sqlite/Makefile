@@ -3,7 +3,7 @@ ifeq ($(OS),Windows_NT)
     BINARY  = emacsql-sqlite-$(OSTUPLE).exe
 else
     PART_ARCH = $(shell uname -m)
-    PART_OS   = $(shell uname -ms | tr '[A-Z]' '[a-z]')
+    PART_OS   = $(shell uname -s | tr '[A-Z]' '[a-z]')
     OSTUPLE   = $(PART_ARCH)-$(PART_OS)
     BINARY    = emacsql-sqlite-$(OSTUPLE)
     LDLIBS    = -ldl

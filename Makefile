@@ -11,7 +11,7 @@ EL = emacsql-compiler.el emacsql-system.el emacsql.el \
 ELC = $(EL:.el=.elc)
 EXTRA_DIST = README.md UNLICENSE
 
-.PHONY : all compile package test clean
+.PHONY : all binary compile package test clean distclean
 
 all : test
 
@@ -19,7 +19,10 @@ all : test
 	cask install
 	touch .cask
 
-compile: .cask $(ELC)
+binary :
+	$(MAKE) -C sqlite
+
+compile: .cask $(ELC) binary
 
 package : $(PACKAGE)-$(VERSION).tar
 
@@ -32,8 +35,11 @@ $(PACKAGE)-$(VERSION).tar : $(EL) $(PACKAGE)-pkg.el $(EXTRA_DIST)
 test: compile $(PACKAGE)-tests.elc
 	$(BATCH) -l $(PACKAGE)-tests.elc -f ert-run-tests-batch
 
-clean:
+clean :
 	$(RM) *.tar *.elc $(PACKAGE)-pkg.el
 
-%.elc: %.el
+distclean :
+	$(MAKE) -C sqlite clean
+
+%.elc : %.el
 	$(BATCH) -f batch-byte-compile $<
