@@ -173,25 +173,15 @@ Subclasses should override this method in order to provide more
 specific error conditions."
   (signal 'emacsql-syntax (list code message)))
 
-(defmethod emacsql-check-error ((connection emacsql-protocol-mixin))
-  "Signal the error message from CONNECTION, or return nil."
-  (with-current-buffer (emacsql-buffer connection)
-    (let ((standard-input (current-buffer)))
-      (setf (point) (point-min))
-      (when (eql (read) 'error)
-        (emacsql-handle connection (read) (read))))))
-
 (defmethod emacsql-parse ((connection emacsql-protocol-mixin))
   "Parse well-formed output into an s-expression."
-  (emacsql-check-error connection)
   (with-current-buffer (emacsql-buffer connection)
     (setf (point) (point-min))
     (let* ((standard-input (current-buffer))
-           (num-columns (read)))
-      (forward-char 1)
-      (cl-loop until (looking-at "#")
-               collect (cl-loop repeat num-columns collect (read))
-               and do (forward-char 1)))))
+           (value (read)))
+      (if (eql value 'error)
+          (emacsql-handle connection (read) (read))
+        value))))
 
 (provide 'emacsql) ; end of generic function declarations
 

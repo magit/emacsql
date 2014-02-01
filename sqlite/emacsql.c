@@ -102,33 +102,42 @@ int main(int argc, char **argv) {
         }
 
         /* Print out rows. */
-        int ncolumns = sqlite3_column_count(stmt);
-        printf("%d\n", ncolumns);
+        int first = TRUE, ncolumns = sqlite3_column_count(stmt);
+        printf("(");
         while (sqlite3_step(stmt) == SQLITE_ROW) {
+            if (first) {
+                printf("(");
+                first = FALSE;
+            } else {
+                printf("\n (");
+            }
             for (int i = 0; i < ncolumns; i++) {
+                if (i > 0) {
+                    printf(" ");
+                }
                 int type = sqlite3_column_type(stmt, i);
                 switch (type) {
                 case SQLITE_INTEGER:
-                    printf(" %llu", sqlite3_column_int64(stmt, i));
+                    printf("%lld", sqlite3_column_int64(stmt, i));
                     break;
                 case SQLITE_FLOAT:
-                    printf(" %f", sqlite3_column_double(stmt, i));
+                    printf("%f", sqlite3_column_double(stmt, i));
                     break;
                 case SQLITE_NULL:
-                    printf(" nil");
+                    printf("nil");
                     break;
                 case SQLITE_TEXT:
-                    fputc(' ', stdout);
                     fwrite(sqlite3_column_text(stmt, i), 1,
                            sqlite3_column_bytes(stmt, i), stdout);
                     break;
                 case SQLITE_BLOB:
-                    printf(" nil");
+                    printf("nil");
                     break;
                 }
             }
-            printf("\n");
+            printf(")");
         }
+        printf(")\n");
         if (sqlite3_finalize(stmt) != SQLITE_OK) {
             fprintf(stderr, "error %d: %s\n",
                     sqlite3_errcode(db), sqlite3_errmsg(db));
