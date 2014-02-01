@@ -139,7 +139,7 @@ MESSAGE should not have a newline on the end."
   "Compile s-expression SQL for CONNECTION into a string."
   (let* ((mask (when connection (emacsql-types connection)))
          (emacsql-type-map (or mask emacsql-type-map)))
-    (apply #'emacsql-format (emacsql-expand sql) args)))
+    (concat (apply #'emacsql-format (emacsql-prepare sql) args) ";")))
 
 (defmethod emacsql ((connection emacsql-connection) sql &rest args)
   "Send SQL s-expression to CONNECTION and return the results."
@@ -316,18 +316,23 @@ Each column must be a plain symbol, no expressions allowed here."
 
 (defun emacsql-flatten-sql (sql)
   "Convert a s-expression SQL into a flat string for display."
-  (cl-destructuring-bind (string . vars) (emacsql-expand sql)
-    (apply #'format string (cl-loop for i from 1 to (length vars)
-                                    collect (intern (format "$%d" i))))))
+  (cl-destructuring-bind (string . vars) (emacsql-prepare sql)
+    (concat
+     (apply #'format string (cl-loop for i from 1 to (length vars)
+                                     collect (intern (format "$%d" i))))
+     ";")))
 
 ;;;###autoload
 (defun emacsql-show-last-sql (&optional prefix)
   "Display the compiled SQL of the s-expression SQL expression before point.
 A prefix argument causes the SQL to be printed into the current buffer."
   (interactive "P")
-  (let ((sql (emacsql-flatten-sql (preceding-sexp))))
-    (if prefix
-        (insert sql)
-      (emacsql-show-sql sql))))
+  (let ((sexp (preceding-sexp)))
+    (if (emacsql-sql-p sexp)
+        (let ((sql (emacsql-flatten-sql sexp)))
+          (if prefix
+              (insert sql)
+            (emacsql-show-sql sql)))
+      (user-error "Invalid SQL: %S" sexp))))
 
 ;;; emacsql.el ends here
