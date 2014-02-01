@@ -25,6 +25,7 @@
 (defun emacsql-system-tuple ()
   "Return a tuple (kernel architecture) for the current system."
   (list
+   (emacsql-system-architecture)
    (cl-ecase system-type
      (gnu 'hurd)
      (gnu/linux 'linux)
@@ -32,8 +33,7 @@
      (darwin 'darwin)
      (ms-dos 'dos)
      (windows-nt 'windows)
-     (cygwin 'windows))
-   (emacsql-system-architecture)))
+     (cygwin 'windows))))
 
 (defun emacsql-system-binary (prefix)
   "Determine an executable name for PREFIX."
