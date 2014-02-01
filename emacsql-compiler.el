@@ -252,6 +252,16 @@ which will be combined with variable definitions."
              (format "%s %s" (recur 0) (upcase (symbol-name op))))
             ;; Special case quote
             ((quote) (scalar (nth 0 args)))
+            ;; Special case funcall
+            ((funcall)
+             (format "%s(%s)" (recur 0)
+                     (if (and (= 2 (length args))
+                              (eq '* (nth 1 args)))
+                         "*"
+                       (mapconcat
+                        #'recur (cl-loop for i from 1 below (length args)
+                                         collect i)
+                        ", "))))
             ;; Guess
             (otherwise
              (mapconcat
