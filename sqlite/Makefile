@@ -1,5 +1,12 @@
-BINARY  = emacsql-sqlite-$(shell uname -sm | tr '[A-Z]' '[a-z]' | tr ' ' '-')
-LDLIBS  = -ldl
+ifeq ($(OS),Windows_NT)
+    OSTUPLE = windows-x86
+    BINARY  = emacsql-sqlite-$(OSTUPLE).exe
+else
+    OSTUPLE = $(shell uname -sm | tr '[A-Z]' '[a-z]' | tr ' ' '-')
+    BINARY  = emacsql-sqlite-$(OSTUPLE)
+    LDLIBS  = -ldl
+endif
+
 CFLAGS  = -O2 --std=c99 -W -Wall -Wextra
 CFLAGS += -DSQLITE_THREADSAFE=0
 CFLAGS += -DSQLITE_DEFAULT_FOREIGN_KEYS=1

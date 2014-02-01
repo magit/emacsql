@@ -80,10 +80,9 @@ int main(int argc, char **argv) {
         fflush(stdout);
 
         /* Gather input from Emacs. */
-        size_t length;
-        int result = scanf("%zu ", &length);
+        unsigned length;
+        int result = scanf("%u ", &length);
         if (result == EOF) {
-            printf("EOF DETECTED\n");
             break;
         } else if (result != 1) {
             send_error(SQLITE_ERROR, "middleware parsing error");
