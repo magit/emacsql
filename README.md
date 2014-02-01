@@ -39,7 +39,8 @@ test suite from the Makefile.
 (emacsql db [:create-table people [name id salary]])
 
 ;; Or optionally provide column constraints.
-(emacsql db [:create-table people [name (id integer :unique) (salary float)]])
+(emacsql db [:create-table people
+             ([name (id integer :primary-key) (salary float)]]))
 
 ;; Insert some data:
 (emacsql db [:insert :into people
@@ -54,364 +55,217 @@ test suite from the Makefile.
 ;; Queries can be templates, using $1, $2, etc.:
 (emacsql db [:select [name id]
              :from people
-             :where (> salary $1)]
+             :where (> salary $s1)]
          50000)
 ;; => (("Jeff" 1000) ("Susan" 1001))
 ```
 
-When editing these structured SQL statements, the `M-x
+When editing these prepared SQL s-expression statements, the `M-x
 emacsql-show-last-sql` command (think `eval-last-sexp`) is useful for
 seeing what the actual SQL expression will become when compiled.
 
 ## Schema
 
-A table schema is a vector of column specifications, or a list
-containing a vector of column specifications followed by table
-specifications. A column identifier is a symbol and a specification
-can either be just this symbol or it can include constraints. Because
+A table schema is a list whose first element is a vector of column
+specifications. The rest of the list specifies table constraints. A
+column identifier is a symbol and a column's specification can either
+be just this symbol or it can include constraints as a list. Because
 Emacsql stores entire lisp objects as values, the only relevant (and
 allowed) types are `integer`, `float`, and `object` (default).
 
+    ([(<column>) ...] (<table-constraint> ...) ...])
+
 Dashes in identifiers are converted into underscores when compiled
 into SQL. This allows for lisp-style identifiers to be used in SQL.
-
-Columns constraints include `:primary` (aka `PRIMARY KEY`),
-`:autoincrement`, `:unique`, `:non-nil` (aka `NOT NULL`), `:default`,
-`:check`, and `:references` (foreign key).
-
-Table constraints can be `:primary`, `:unique`, `:check`, and
-`:references`.
+Constraints follow the compilation rules below.
 
 ```el
 ;; No constraints schema with four columns:
-[name id building room]
+([name id building room])
 
 ;; Add some column constraints:
-[(name :unique) (id integer :primary) building room]
+([(name :unique) (id integer :primary-key) building room])
 
 ;; Add some table constraints:
-([(name :unique) (id integer :primary) building room]
- :unique [building room] :check ())
+([(name :unique) (id integer :primary-key) building room]
+ (:unique [building room])
+ (:check (> id 0)))
 ```
 
-Foreign keys are the most complex. Action triggers are `:on-delete`
-or `:on-update` and possible actions are `:set-nil`, `:set-default`,
-`:restrict`, `:cascade`. See [the SQLite documentation][foreign] for
-the details on what each of these means.
-
-`:references (<child-keys> <parent-table> <parent-keys> [<actions>])`
+Here's an example using foreign keys.
 
 ```el
-;; "subject" table
-[(id integer :primary) subject]
+;; "subjects" table schema
+([(id integer :primary-key) subject])
 
 ;; "tag" table references subjects
-([(subjectid integer) tag]
- :references (subjectid subject id :on-delete :cascade))
+([(subject-id integer) tag]
+ (:foreign-key [subject-id] :references subjects [id]
+               :on-delete :cascade))
 ```
 
-Put the keys in a vector if the reference is composite. Also remember
-that foreign key checks are currently disabled by default in SQLite,
-so you'll need to enable it for each connection.
-
-```el
-(emacsql db [:pragma (= foreign_keys on)])
-```
+Foreign keys are enabled by default in Emacsql.
 
 ## Operators
 
-Emacsql supports the following SQLite expression operators, named
-exactly like so in a structured Emacsql statement.
+Expressions are written lisp-style, with the operator first. If it
+looks like an operator Emacsql treats it like an operator. However,
+several operators are special.
 
-    *     /     %     +     -     <<    >>    &
-    |     <     <=    >     >=    =     !=
-    is    like  glob  and   or    in
-
-In addition, Emacsql has these operators.
-
-    quote   as    not     funcall
+    <=    >=    funcall    quote
 
 The `<=` and `>=` operators accept 2 or 3 operands, transforming into
 a SQL `_ BETWEEN _ AND _` operator as appropriate.
 
-With `glob` and `like` keep in mind that they're matching the
-*printed* representations of these values, even if the value is a
-string.
+For function-like "operators" like `count` and `ave` use the `funcall`
+"operator."
+
+```el
+[:select (funcall ave age) :from people]
+```
 
 Inside expressions, Emacsql cannot tell the difference between symbol
 literals and column references. If you're talking about the symbol
 itself, just quote it as you would in normal Elisp. Note that this
-does not "escape" `$n` variables: it just means the argument gets
-quoted. Use `$$` for escaping variables.
+does not "escape" `$tn` parameter symbols.
 
 ```el
-[... :where (= category 'hiking)]
-(emacsql db [... :where (= category '$1)] 'hiking)
+(emacsql db [... :where (= category 'hiking)])
 ```
+
+Since template parameters include their type they never need to be
+quoted.
+
+With `glob` and `like` SQL operators keep in mind that they're
+matching the *printed* representations of these values, even if the
+value is a string.
 
 The `||` concatenation operator is unsupported because concatenating
 printed representations breaks an important constraint: all values must
 remain readable within SQLite.
 
-## Structured Statements
+## Prepared Statements
 
-The database is interacted with via structured s-expression
-statements. You won't be concatenating strings on your own. (And it
-leaves out any possibility of a SQL injection!) See the "Usage"
-section above for examples. A statement is a vector of keywords and
-other lisp object.
+The database is interacted with via prepared SQL s-expression
+statements. You shouldn't normally be concatenating strings on your
+own. (And it leaves out any possibility of a SQL injection!) See the
+"Usage" section above for examples. A statement is a vector of
+keywords and other lisp object.
 
-Structured Emacsql statements are compiled into SQL statements. The
-statement compiler is memoized so that using the same statement
-multiple times is fast. To assist in this, the statement can act as a
-template -- using `$1`, `$2`, etc. -- working like the Elisp `format`
-function.
+Prepared Emacsql s-expression statements are compiled into SQL
+statements. The statement compiler is memoized so that using the same
+statement multiple times is fast. To assist in this, the statement can
+act as a template -- using `$i1`, `$s2`, etc. -- working like the
+Elisp `format` function.
 
-### Keywords
+### Compilation Rules
 
-Rather than the typical uppercase SQL keywords, keywords in a
-structured Emacsql statement are literally just that: lisp keywords.
+Rather than the typical uppercase SQL keywords, keywords in a prepared
+Emacsql statement are literally just that: lisp keywords. Emacsql only
+understands a very small amount of SQL's syntax. The compiler follows
+some simple rules to convert an s-expression into SQL.
 
-#### Table
+ * All prepared statements are vectors.
 
-##### :create-table `<table>` `<schema|select>`
-
-Provides `CREATE TABLE`. A selection can be used in place of a schema,
-which will create a `CREATE TABLE ... AS` statement.
-
-```el
-[:create-table employees [name (id integer :primary) (salary float)]]
-[:create-table (:temporary :if-not-exists employees) ...]
-[:create-table names [:select name :from employees]]
-```
-
-##### :drop-table `<table>`
-
-Provides `DROP TABLE`.
+A prepared s-expression statement is a vector beginning with a keyword
+followed by a series of keywords and special values.
 
 ```el
-[:drop-table employees]
+[:select ... :from ...]
 ```
 
-##### :alter-table `<table>`, :rename-to `<table>`
+ * Keywords are split and capitalized.
 
-Provides `ALTER TABLE` and `RENAME TO`.
+Dashes are converted into spaces and the keyword gets capitalized. For
+example, `:if-not-exists` becomes `IF NOT EXISTS`. How you choose to
+combine keywords is up to your personal taste (e.g. `:drop :table` vs.
+`:drop-table`).
+
+ * Standalone symbols are identifiers.
+
+Emacsql doesn't know what symbols refer to identifiers and what
+symbols should be treated as values. Use quotes to mark a symbol as a
+value. For example, `people` here will become an identifier.
 
 ```el
-[:alter-table prices :rename-to costs]
+[:insert-into people :values ...]
 ```
 
-##### :add-column `<column-spec>`
+ * Row-oriented information is stored as vectors.
 
-Provides `ADD COLUMN`.
+This includes rows being inserted and sets of columns. If you're
+talking about a raw, put it in a vector.
 
 ```el
-[:alter-table tags :add-column (rating integer :non-nil)]
+[:select [id name] :from people]
 ```
 
-#### Selection
+ * Lists are treated as expressions.
 
-##### :select `<column-spec>|(:distinct <column-spec>)`
-
-Provides `SELECT`. `column-spec` can be a `*` symbol or a vector of
-column identifiers, optionally as expressions.
+This is true even within row-oriented vectors.
 
 ```el
-[:select [name (/ salary 52)] ...]
-[:select [(as name n) (as age a)] ...]
-[:select (:distinct [name age id]) ...]
+[... :where (= name "Bob")]
+[:select [(/ seconds 60) count] :from ...]
 ```
 
-##### :from `<table>`
-
-Provides `FROM`.
+Some things that are are traditionally keywords, particularly those
+that are mixed in with expressions, have been converted into
+operators.
 
 ```el
-[... :from employees]
-[... :from [employees accounts]]
-[... :from [employees (as accounts a)]]
-[... :from (:select ...)]
-[... :from [(as (:select ...) s1) (as (:select ...) s2)]]
+[... :order-by [(asc b), (desc a)]]  ; "ORDER BY b ASC, a DESC"
 ```
 
-##### :join `<table>`
+ * The `:values` keyword is special.
 
-Provides `JOIN`.
+What follows `:values` is always treated like a vector or list of
+vectors. Normally this would appear to be a column reference.
 
 ```el
-[... :join players ...]
-[... :join (as players p) ...]
+[... :values [1 2 3]]
+[... :values ([1 2 3] [4 5 6])]  ; insert multiple rows
 ```
 
-##### :outer, :inner, :cross, :natural, :left, :right, :full
+ * Schemas are always lists at the top level.
 
-Provides `OUTER`, `INNER`, `CROSS`, `NATURAL`, `LEFT`, `RIGHT`, and
-`FULL`.
+This is to distinguish schemas from everything else. They are lists
+whose first element is a vector (column specifications). With the
+exception of what follows `:values`, nothing else would be shaped like
+this.
 
 ```el
-[... :natural :join ...]
-[... :left :outer :join ...]
+[:create-table people ([(id :primary-key) name])]
 ```
-
-##### :on `<expr>`
-
-Provides `ON`.
-
-```el
-[... :on (= entry-id other-id)]
-```
-
-##### :using `<column>|[<columns>]`
-
-Provides `USING`.
-
-```el
-[... :using entry-id]
-[... :using [entry-id, feed-id]]
-```
-
-##### :where `<expr>`, :having `<expr>`
-
-Provides `WHERE` and `HAVING`.
-
-```el
-[... :where (< count 10)]
-[... :having (= size 10)]
-```
-
-##### :group-by `<expr>`
-
-Provides `GROUP BY`.
-
-```el
-[... :group-by name]
-```
-
-##### :order-by `<expr>|(<expr> <:asc|:desc>)|[<expr> ...]`
-
-Provides `ORDER BY`.
-
-```el
-[... :order-by date]
-[... :order-by [(width :asc) (height :desc)]]
-[... :order-by [(width :asc) (- height)]]
-```
-
-##### :limit `<limit>|[<offset> <limit>]`
-
-Provides `LIMIT` and `OFFSET`.
-
-```el
-[... :limit 50]
-[... :limit [150 50]]
-```
-
-##### :union, :union-all, :difference, :except
-
-Provides `UNION`, `UNION ALL`, `DIFFERENCE`, and `EXCEPT`.
-
-```el
-[:select * :from sales :union :select * :from accounting]
-```
-
-#### Manipulation
-
-##### :insert, :replace
-
-Provides `INSERT`, `REPLACE`.
-
-```el
-[:insert :into ...]
-[:replace :into ...]
-```
-
-##### :into `<table>`
-
-Provides `INTO`.
-
-```el
-[:into employees ...]
-[:into (employees [id name]) ...]
-```
-
-##### :delete
-
-Provides `DELETE`.
-
-```el
-[:delete :from employees :where ...]
-```
-
-##### :values `<vector>|(<vector> ...)`
-
-```el
-[:insert :into employees :values ["Jeff" 0]]
-[:insert :into employees :values (["Jeff" 0] ["Susan" 0])]
-```
-
-##### :update `<table>`
-
-Provides `UPDATE`.
-
-```el
-[:update people :set ...]
-```
-
-##### :set `<assignment>|[<assignment> ...]`
-
-Provides `SET`.
-
-```el
-[:update people :set (= name "Richy") :where ...]
-[:update people :set [(= name "Richy") (= salary 300000)] :where ...]
-```
-
-#### Transaction
-
-##### :begin `<:transaction|:immediate|:deferred|:exclusive>`
-
-Provides `BEGIN`. Exactly one of these "arguments" must always be
-supplied. `:deferred` and `:transaction` are aliases.
-
-```el
-[:begin :transaction]
-[:begin :immediate]
-```
-
-##### :commit, :rollback
-
-Provides `COMMIT` and `ROLLBACK`.
-
-```el
-[:commit]
-[:rollback]
-```
-
-#### Meta
-
-##### :pragma `<expr>`
-
-Provides `PRAGMA`.
-
-```el
-(emacsql db [:pragma (= foreign-keys on)])
-```
-
-##### :vacuum
-
-Provides `VACUUM`.
 
 ### Templates
 
 To make statement compilation faster, and to avoid making you build up
-statements dynamically, you can insert `$n` "variables" in place of
-identifiers and values. These refer to argument positions after the
-statement in the `emacsql` function, 1-indexed.
+statements dynamically, you can insert `$tn` parameters in place of
+identifiers and values. These refer to the argument's type and its
+argument position after the statement in the `emacsql` function,
+one-indexed.
 
-    (emacsql db [:select * :from $1 :where (> salary $2)] 'employees 50000)
+```el
+(emacsql db [:select * :from $i1 :where (> salary $s2)] 'employees 50000)
+```
 
-To get a literal symbol that looks like one of these variables, escape
-it with an extra dollar sign (i.e. `$$1` becomes `$1`).
+The letter before the number is the type.
+
+ * `i` : identifier
+ * `s` : scalar
+ * `v` : vector (or multiple vectors)
+ * `S` : schema
+
+When combined with `:values`, the vector type can refer to lists of
+rows.
+
+```el
+(emacsql db [:insert-into people :values $v1]
+            '([0 "Calvin"] [1 "Hobbes"] [3 "Susie"]))
+```
+
+This is why rows must be vectors and not lists.
 
 ## Ignored Features
 
