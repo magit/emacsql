@@ -51,7 +51,9 @@
     (setf args (nreverse args))
     (let* ((buffer (generate-new-buffer "*emacsql-psql*"))
            (psql emacsql-psql-executable)
-           (process (apply #'start-process "emacsql-psql" buffer psql args))
+           (command (mapconcat #'shell-quote-argument (cons psql args) " "))
+           (process (start-process-shell-command
+                     "emacsql-psql" buffer (concat "stty raw && " command)))
            (connection (make-instance 'emacsql-psql-connection
                                       :process process
                                       :dbname dbname)))
