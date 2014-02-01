@@ -51,7 +51,7 @@
     (setf string (replace-regexp-in-string "-" "_" string))
     string))
 
-(defun emacsql-escape-value (value)
+(defun emacsql-escape-scalar (value)
   "Escape VALUE for sending to SQLite."
   (let ((print-escape-newlines t))
     (cond ((null value) "NULL")
@@ -63,7 +63,7 @@
   (cl-typecase vector
     (null   (emacsql-error "Empty SQL vector expression."))
     (list   (mapconcat #'emacsql-escape-vector vector ", "))
-    (vector (concat "(" (mapconcat #'emacsql-escape-value vector ", ") ")"))
+    (vector (concat "(" (mapconcat #'emacsql-escape-scalar vector ", ") ")"))
     (otherwise (emacsql-error "Invalid vector %S" vector))))
 
 ;; Statement compilers:
@@ -139,12 +139,12 @@ a list of (<string> [arg-pos] ...)."
                     (let ((thing (nth i args)))
                       (cl-case kind
                         (:identifier (emacsql-escape-identifier thing))
-                        (:value (emacsql-escape-value thing))
+                        (:scalar (emacsql-escape-scalar thing))
                         (:vector (emacsql-escape-vector thing))
                         (:schema (car (emacsql--schema-to-string thing)))
                         (:auto (if (and thing (symbolp thing))
                                    (emacsql-escape-identifier thing)
-                                 (emacsql-escape-value thing)))
+                                 (emacsql-escape-scalar thing)))
                         (otherwise
                          (emacsql-error "Invalid var type %S" kind))))))))
 
@@ -162,10 +162,10 @@ symbol is returned."
 
 (defun emacsql-escape-format (thing &optional kind)
   "Escape THING for use as a `format' spec, pre-escaping for KIND.
-KIND should be :value or :identifier."
+KIND should be :scalar or :identifier."
   (replace-regexp-in-string
    "%" "%%" (cl-case kind
-              (:value (emacsql-escape-value thing))
+              (:scalar (emacsql-escape-scalar thing))
               (:identifier (emacsql-escape-identifier thing))
               (:vector (emacsql-escape-vector thing))
               (otherwise thing))))
@@ -181,9 +181,9 @@ KIND should be :value or :identifier."
         (prog1 "%s"
           (setf emacsql--vars (nconc emacsql--vars (list (cons var kind)))))
       (cl-case kind
-        ((:identifier :value :vector) (emacsql-escape-format thing kind))
+        ((:identifier :scalar :vector) (emacsql-escape-format thing kind))
         (:auto (emacsql-escape-format
-                thing (if (and thing (symbolp thing)) :identifier :value)))
+                thing (if (and thing (symbolp thing)) :identifier :scalar)))
         (otherwise (emacsql-error "Invalid var type: %S" kind))))))
 
 (defun emacsql--vars-combine (expanded)
@@ -221,7 +221,7 @@ definitions for return from a `emacsql-defexpander'."
             (:non-nil (push "NOT NULL" output))
             (:unique  (push "UNIQUE" output))
             (:default (push "DEFAULT" output)
-                      (push (var (pop column) :value) output))
+                      (push (var (pop column) :scalar) output))
             (:check   (push "CHECK" output)
                       (push (format "(%s)" (expr (pop column))) output))
             (:references
@@ -301,7 +301,7 @@ definitions for return from a `emacsql-defexpander'."
       (list
        (mapconcat (lambda (v) (combine (emacsql--vector v))) vector ", "))
       (vector
-       (format "(%s)" (mapconcat (lambda (x) (var x :value)) vector ", ")))
+       (format "(%s)" (mapconcat (lambda (x) (var x :scalar)) vector ", ")))
       (otherwise (emacsql-error "Invalid vector: %S" vector)))))
 
 (defun emacsql--expr (expr)
@@ -355,7 +355,7 @@ definitions for return from a `emacsql-defexpander'."
              ;; quote special case
              ((quote)
               (cl-case (length args)
-                (1 (var (nth 0 args) :value))
+                (1 (var (nth 0 args) :scalar))
                 (otherwise (nops op))))
              ;; funcall special case
              ((funcall)
