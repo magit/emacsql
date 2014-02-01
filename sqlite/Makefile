@@ -1,12 +1,12 @@
 ifeq ($(OS),Windows_NT)
-    OSTUPLE = x86-windows
-    BINARY  = emacsql-sqlite-$(OSTUPLE).exe
+    OSTUPLE ?= x86-windows
+    BINARY   = emacsql-sqlite-$(OSTUPLE).exe
 else
-    PART_ARCH = $(shell uname -m)
-    PART_OS   = $(shell uname -s | tr '[A-Z]' '[a-z]')
-    OSTUPLE   = $(PART_ARCH)-$(PART_OS)
-    BINARY    = emacsql-sqlite-$(OSTUPLE)
-    LDLIBS    = -ldl
+    PART_ARCH  = $(shell uname -m)
+    PART_OS    = $(shell uname -s | tr '[A-Z]' '[a-z]')
+    OSTUPLE   ?= $(PART_ARCH)-$(PART_OS)
+    BINARY     = emacsql-sqlite-$(OSTUPLE)
+    LDLIBS     = -ldl
 endif
 
 CFLAGS  = -O2 --std=c99 -W -Wall -Wextra
