@@ -6,28 +6,30 @@
 #define TRUE 1
 #define FALSE 0
 
-char *dup(const char *s) {
-    char *copy = malloc(strlen(s));
-    while (*s) {
-        *copy = *s;
-        copy++;
-        s++;
+char* escape(const char *message) {
+    int count = 0, length_orig = strlen(message);
+    for (int i = 0; i < length_orig; i++) {
+        if (message[i] == '"') {
+            count++;
+        }
     }
+    char *copy = malloc(length_orig + count + 1);
+    char *p = copy;
+    while (*message) {
+        if (*message == '"') {
+            *p = '\\';
+            p++;
+        }
+        *p = *message;
+        message++;
+        p++;
+    }
+    *p = '\0';
     return copy;
 }
 
-char *escape(char *message) {
-    while (*message) {
-        if (*message == '"') {
-            *message = '\'';
-        }
-        message++;
-    }
-    return message;
-}
-
 void send_error(int code, const char *message) {
-    char *escaped = escape(dup(message));
+    char *escaped = escape(message);
     printf("error %d \"%s\"\n", code, escaped);
     free(escaped);
 }
