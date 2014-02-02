@@ -22,6 +22,7 @@
                       (nil "LONGTEXT")))))
 
 (defun emacsql-mysql (dbname)
+  "Connect to a MySQL server using the mysql command line program."
   (let* ((process-connection-type t)
          (buffer (generate-new-buffer " *emacsql-mysql*"))
          (mysql emacsql-mysql-executable)
