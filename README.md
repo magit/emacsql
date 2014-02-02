@@ -19,8 +19,9 @@ database.
 This package includes custom native binaries for communicating with a
 SQLite database. When linked with GNU Readline, or when run in
 Windows, the official sqlite3 command shell is incapable of correct
-interaction. If your package depends on Emacsql it also means you
-don't have to rely on the user having particular software installed.
+interaction. If your own package depends on Emacsql as a database it
+also means you don't have to rely on the user having particular
+software installed.
 
 Requires Emacs 24 or later.
 
@@ -36,7 +37,7 @@ test suite from the Makefile.
 (defvar db (emacsql-connect "~/company.db"))
 
 ;; Create a table. Table and column identifiers are symbols.
-(emacsql db [:create-table people [name id salary]])
+(emacsql db [:create-table people ([name id salary])])
 
 ;; Or optionally provide column constraints.
 (emacsql db [:create-table people
@@ -117,11 +118,11 @@ several operators are special.
 The `<=` and `>=` operators accept 2 or 3 operands, transforming into
 a SQL `_ BETWEEN _ AND _` operator as appropriate.
 
-For function-like "operators" like `count` and `ave` use the `funcall`
+For function-like "operators" like `count` and `max` use the `funcall`
 "operator."
 
 ```el
-[:select (funcall ave age) :from people]
+[:select (funcall max age) :from people]
 ```
 
 Inside expressions, Emacsql cannot tell the difference between symbol
@@ -165,42 +166,51 @@ Emacsql statement are literally just that: lisp keywords. Emacsql only
 understands a very small amount of SQL's syntax. The compiler follows
 some simple rules to convert an s-expression into SQL.
 
- * All prepared statements are vectors.
+#### All prepared statements are vectors.
 
 A prepared s-expression statement is a vector beginning with a keyword
-followed by a series of keywords and special values.
+followed by a series of keywords and special values. This includes
+most kinds of sub-queries.
 
 ```el
 [:select ... :from ...]
+[:select tag :from tags
+ :where (in tag [:select ...])]
 ```
 
- * Keywords are split and capitalized.
+#### Keywords are split and capitalized.
 
 Dashes are converted into spaces and the keyword gets capitalized. For
 example, `:if-not-exists` becomes `IF NOT EXISTS`. How you choose to
 combine keywords is up to your personal taste (e.g. `:drop :table` vs.
 `:drop-table`).
 
- * Standalone symbols are identifiers.
+#### Standalone symbols are identifiers.
 
 Emacsql doesn't know what symbols refer to identifiers and what
 symbols should be treated as values. Use quotes to mark a symbol as a
-value. For example, `people` here will become an identifier.
+value. For example, `people` here will be treated as an identifier.
 
 ```el
 [:insert-into people :values ...]
 ```
 
- * Row-oriented information is stored as vectors.
+#### Row-oriented information is always represented as vectors.
 
-This includes rows being inserted and sets of columns. If you're
-talking about a raw, put it in a vector.
+This includes rows being inserted, and sets of columns in a query. If
+you're talking about a row-like thing then put it in a vector.
 
 ```el
 [:select [id name] :from people]
 ```
 
- * Lists are treated as expressions.
+Note that `*` is actually a SQL keyword, so don't put it in a vector.
+
+```el
+[:select * :from ...]
+```
+
+#### Lists are treated as expressions.
 
 This is true even within row-oriented vectors.
 
@@ -209,30 +219,30 @@ This is true even within row-oriented vectors.
 [:select [(/ seconds 60) count] :from ...]
 ```
 
-Some things that are are traditionally keywords, particularly those
-that are mixed in with expressions, have been converted into
-operators.
+Some things that are traditionally keywords -- particularly those that
+are mixed in with expressions -- have been converted into operators
+(`AS`, `ASC`, `DESC`).
 
 ```el
-[... :order-by [(asc b), (desc a)]]  ; "ORDER BY b ASC, a DESC"
+[... :order-by [(asc b), (desc a)]]   ; "ORDER BY b ASC, a DESC"
+[:select p:name :from (as people p)]  ; "SELECT p.name FROM people AS p"
 ```
 
- * The `:values` keyword is special.
+#### The `:values` keyword is special.
 
 What follows `:values` is always treated like a vector or list of
-vectors. Normally this would appear to be a column reference.
+vectors. Normally this sort of thing would appear to be a column
+reference.
 
 ```el
 [... :values [1 2 3]]
 [... :values ([1 2 3] [4 5 6])]  ; insert multiple rows
 ```
 
- * Schemas are always lists at the top level.
+#### A list whose first element is a vector is a table schema.
 
-This is to distinguish schemas from everything else. They are lists
-whose first element is a vector (column specifications). With the
-exception of what follows `:values`, nothing else would be shaped like
-this.
+This is to distinguish schemas from everything else. With the
+exception of what follows `:values`, nothing else is shaped like this.
 
 ```el
 [:create-table people ([(id :primary-key) name])]
@@ -261,7 +271,7 @@ When combined with `:values`, the vector type can refer to lists of
 rows.
 
 ```el
-(emacsql db [:insert-into people :values $v1]
+(emacsql db [:insert-into favorite-characters :values $v1]
             '([0 "Calvin"] [1 "Hobbes"] [3 "Susie"]))
 ```
 
