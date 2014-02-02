@@ -1,7 +1,7 @@
 # Emacsql
 
 Emacsql is a high-level Emacs Lisp front-end for SQLite (primarily),
-PostgreSQL, and potentially other SQL databases.
+PostgreSQL, MySQL, and potentially other SQL databases.
 
 It is currently a work-in-progress (around 90% complete).
 
