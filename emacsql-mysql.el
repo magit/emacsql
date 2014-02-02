@@ -35,6 +35,7 @@
                                     :dbname dbname)))
     (setf (process-sentinel process)
           (lambda (proc _) (kill-buffer (process-buffer proc))))
+    (emacsql connection [:set-session (= sql-mode 'NO_BACKSLASH_ESCAPES)])
     (emacsql-register connection)))
 
 (defmethod emacsql-close ((connection emacsql-mysql-connection))
