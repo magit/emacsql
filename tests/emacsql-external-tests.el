@@ -41,23 +41,28 @@
   (let ((emacsql-global-timeout emacsql-tests-timeout))
     (dolist (factory emacsql-tests-connection-factories)
       (emacsql-with-connection (db (funcall (cdr factory)))
-        (emacsql-thread db
-          [:create-temporary-table person ([(id integer :primary-key) name])]
-          [:create-temporary-table likes
-           ([(personid integer) color]
-            (:foreign-key [personid] :references person [id]
-                          :on-delete :cascade))]
-          [:insert :into person :values ([0 "Chris"] [1 "Brian"])])
-        (should (equal (emacsql db [:select * :from person :order-by id])
-                       '((0 "Chris") (1 "Brian"))))
-        (emacsql db [:insert :into likes
-                             :values ([0 red] [0 yellow] [1 yellow])])
-        (should (equal (emacsql db [:select * :from likes
-                                            :order-by [personid color]])
-                       '((0 red) (0 yellow) (1 yellow))))
-        (emacsql db [:delete :from person :where (= id 0)])
-        (should (equal (emacsql db [:select * :from likes])
-                       '((1 yellow))))))))
+        (unwind-protect
+            (progn
+              (emacsql-thread db
+                [:create-table person ([(id integer :primary-key) name])]
+                [:create-table likes
+                 ([(personid integer) color]
+                  (:foreign-key [personid] :references person [id]
+                                :on-delete :cascade))]
+                [:insert :into person :values ([0 "Chris"] [1 "Brian"])])
+              (should (equal (emacsql db [:select * :from person :order-by id])
+                             '((0 "Chris") (1 "Brian"))))
+              (emacsql db [:insert :into likes
+                           :values ([0 red] [0 yellow] [1 yellow])])
+              (should (equal (emacsql db [:select * :from likes
+                                          :order-by [personid color]])
+                             '((0 red) (0 yellow) (1 yellow))))
+              (emacsql db [:delete :from person :where (= id 0)])
+              (should (equal (emacsql db [:select * :from likes])
+                             '((1 yellow)))))
+          (emacsql-thread db
+            [:drop-table likes]
+            [:drop-table person]))))))
 
 (ert-deftest emacsql-error ()
   "Check that we're getting expected conditions."
