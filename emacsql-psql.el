@@ -49,7 +49,7 @@
       (push "-h" args)
       (push hostname args))
     (setf args (nreverse args))
-    (let* ((buffer (generate-new-buffer "*emacsql-psql*"))
+    (let* ((buffer (generate-new-buffer " *emacsql-psql*"))
            (psql emacsql-psql-executable)
            (command (mapconcat #'shell-quote-argument (cons psql args) " "))
            (process (start-process-shell-command
@@ -59,10 +59,9 @@
                                       :dbname dbname)))
       (setf (process-sentinel process)
             (lambda (proc _) (kill-buffer (process-buffer proc))))
-      (buffer-disable-undo buffer)
       (when debug
         (setf (emacsql-log-buffer connection)
-              (generate-new-buffer "*emacsql-log*")))
+              (generate-new-buffer " *emacsql-log*")))
       (mapc (apply-partially #'emacsql-send-message connection)
             '("\\pset pager off"
               "\\pset null nil"

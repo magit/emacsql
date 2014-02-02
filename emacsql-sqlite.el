@@ -31,7 +31,7 @@ If FILE is nil use an in-memory database.
 :debug LOG -- When non-nil, log all SQLite commands to a log
 buffer. This is for debugging purposes."
   (let* ((process-connection-type nil)  ; use a pipe
-         (buffer (generate-new-buffer "*emacsql-sqlite*"))
+         (buffer (generate-new-buffer " *emacsql-sqlite*"))
          (fullfile (if file (expand-file-name file) ":memory:"))
          (process (start-process
                    "emacsql-sqlite" buffer emacsql-sqlite-executable fullfile))
@@ -45,7 +45,7 @@ buffer. This is for debugging purposes."
              (/ (* emacsql-global-timeout 1000) 2))
     (when debug
       (setf (emacsql-log-buffer connection)
-            (generate-new-buffer "*emacsql-log*")))
+            (generate-new-buffer " *emacsql-log*")))
     (emacsql-register connection)))
 
 (defmethod emacsql-close ((connection emacsql-sqlite-connection))
