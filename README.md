@@ -321,6 +321,7 @@ inherits from `emacsql-connection`.
  * Provide `emacsql-types` if needed (hint: use a class-allocated slot).
  * Ensure that you properly read NULL as nil (hint: ask your back-end
    to print it that way).
+ * Preferably provide `emacsql-reconnect` if possible.
 
 The provided implementations should serve as useful examples. If your
 back-end outputs data in a clean, standard way you may be able to use

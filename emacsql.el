@@ -70,7 +70,7 @@ If nil, wait forever.")
 (defclass emacsql-connection ()
   ((process :type process
             :initarg :process
-            :reader emacsql-process)
+            :accessor emacsql-process)
    (log-buffer :type (or null buffer)
                :initarg :log-buffer
                :accessor emacsql-log-buffer
@@ -84,6 +84,13 @@ If nil, wait forever.")
 
 (defgeneric emacsql-close (connection)
   "Close CONNECTION and free all resources.")
+
+(defgeneric emacsql-reconnect (connection)
+  "Re-establish CONNECTION with the same parameters.")
+
+(defmethod emacsql-live-p ((connection emacsql-connection))
+  "Return non-nil if CONNECTION is still alive and ready."
+  (not (null (process-live-p (emacsql-process connection)))))
 
 (defgeneric emacsql-types (connection)
   "Return an alist mapping Emacsql types to database types.
