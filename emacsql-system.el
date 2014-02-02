@@ -39,6 +39,11 @@
   "Determine an executable name for PREFIX."
   (concat prefix "-" (mapconcat #'symbol-name (emacsql-system-tuple) "-")))
 
+(defun emacsql-system-print-tuple ()
+  "This is for calling from a Makefile."
+  (princ (mapconcat #'symbol-name (emacsql-system-tuple) "-"))
+  (princ "\n"))
+
 (provide 'emacsql-system)
 
 ;;; emacsql-system.el ends here

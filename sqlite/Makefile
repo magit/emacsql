@@ -1,11 +1,11 @@
+EMACS    ?= emacs
+GETTUPLE  = -l ../emacsql-system.el -f emacsql-system-print-tuple
+OSTUPLE   = $(shell $(EMACS) -Q -batch $(GETTUPLE))
+BINARY    = emacsql-sqlite-$(OSTUPLE)
+
 ifeq ($(OS),Windows_NT)
-    OSTUPLE ?= x86-windows
-    BINARY   = emacsql-sqlite-$(OSTUPLE).exe
+    OSTUPLE += .exe
 else
-    PART_ARCH  = $(shell uname -m)
-    PART_OS    = $(shell uname -s | tr '[A-Z]' '[a-z]')
-    OSTUPLE   ?= $(PART_ARCH)-$(PART_OS)
-    BINARY     = emacsql-sqlite-$(OSTUPLE)
     LDLIBS     = -ldl
 endif
 
