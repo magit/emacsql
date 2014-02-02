@@ -22,10 +22,14 @@
                       (nil "LONGTEXT")))))
 
 (defun emacsql-mysql (dbname)
-  (let* ((buffer (generate-new-buffer " *emacsql-mysql*"))
+  (let* ((process-connection-type t)
+         (buffer (generate-new-buffer " *emacsql-mysql*"))
          (mysql emacsql-mysql-executable)
-         (process (start-process "emacsql-mysql" buffer mysql
-                                 "-rfBNL" "--skip-pager" dbname))
+         (command (mapconcat #'shell-quote-argument
+                             (list mysql "-rfBNL" "--skip-pager" dbname)
+                             " "))
+         (process (start-process-shell-command
+                   "emacsql-mysql" buffer (concat "stty raw &&" command)))
          (connection (make-instance 'emacsql-mysql-connection
                                     :process process
                                     :dbname dbname)))
