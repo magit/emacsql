@@ -279,44 +279,56 @@ which will be combined with variable definitions."
     (setf emacsql--vars (nconc emacsql--vars vars))
     string))
 
+(defun emacsql-prepare--string (string)
+  "Create a prepared statement from STRING."
+  (emacsql-with-params ""
+    (replace-regexp-in-string
+     "\\$[isv][0-9]+" (lambda (v) (param (intern v))) string)))
+
+(defun emacsql-prepare--sexp (sexp)
+  "Create a prepared statement from SEXP."
+  (emacsql-with-params ""
+    (cl-loop with items = (cl-coerce sexp 'list)
+             and last = nil
+             while (not (null items))
+             for item = (pop items)
+             collect
+             (cl-typecase item
+               (keyword (if (eq :values item)
+                            (concat "VALUES " (svector (pop items)))
+                          (emacsql--from-keyword item)))
+               (symbolp (if (eq item '*)
+                            "*"
+                          (param item)))
+               (vector (if (emacsql-sql-p item)
+                           (subsql item)
+                         (let ((idents (combine
+                                        (emacsql--*idents item))))
+                           (if (keywordp last)
+                               idents
+                             (format "(%s)" idents)))))
+               (list (if (vectorp (car item))
+                         (emacsql-escape-format
+                          (format "(%s)"
+                                  (emacsql-prepare-schema item)))
+                       (combine (emacsql--*expr item))))
+               (otherwise
+                (emacsql-escape-format
+                 (emacsql-escape-scalar item))))
+             into parts
+             do (setf last item)
+             finally (cl-return
+                      (mapconcat #'identity parts " ")))))
+
 (defun emacsql-prepare (sql)
-  "Expand SQL into a SQL-consumable string, with parameters."
+  "Expand SQL (string or sexp) into a prepared statement."
   (let* ((cache emacsql-prepare-cache)
          (key (cons emacsql-type-map sql)))
     (or (gethash key cache)
         (setf (gethash key cache)
-              (emacsql-with-params ""
-                (cl-loop with items = (cl-coerce sql 'list)
-                         and last = nil
-                         while (not (null items))
-                         for item = (pop items)
-                         collect
-                         (cl-typecase item
-                           (keyword (if (eq :values item)
-                                        (concat "VALUES " (svector (pop items)))
-                                      (emacsql--from-keyword item)))
-                           (symbolp (if (eq item '*)
-                                        "*"
-                                      (param item)))
-                           (vector (if (emacsql-sql-p item)
-                                       (subsql item)
-                                     (let ((idents (combine
-                                                    (emacsql--*idents item))))
-                                       (if (keywordp last)
-                                           idents
-                                         (format "(%s)" idents)))))
-                           (list (if (vectorp (car item))
-                                     (emacsql-escape-format
-                                      (format "(%s)"
-                                              (emacsql-prepare-schema item)))
-                                   (combine (emacsql--*expr item))))
-                           (otherwise
-                            (emacsql-escape-format
-                             (emacsql-escape-scalar item))))
-                         into parts
-                         do (setf last item)
-                         finally (cl-return
-                                  (mapconcat #'identity parts " "))))))))
+              (if (stringp sql)
+                  (emacsql-prepare--string sql)
+                (emacsql-prepare--sexp sql))))))
 
 (defun emacsql-format (expansion &rest args)
   "Fill in the variables EXPANSION with ARGS."
