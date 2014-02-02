@@ -5,6 +5,7 @@
 (require 'emacsql)
 (require 'emacsql-sqlite)
 (require 'emacsql-psql)
+(require 'emacsql-mysql)
 
 (defvar emacsql-tests-timeout 4
   "Be aggressive about not waiting on subprocesses in unit tests.")
@@ -35,7 +36,7 @@
         (should (equal (emacsql db [:select * :from foo])
                        '((1) (2) (3))))))))
 
-(ert-deftest emacsql-foreign-system ()
+(ert-deftest emacsql-foreign-key ()
   "Tests that foreign keys work properly through Emacsql."
   (let ((emacsql-global-timeout emacsql-tests-timeout))
     (dolist (factory emacsql-tests-connection-factories)
