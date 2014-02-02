@@ -310,8 +310,13 @@ and unit testing.
     make test
 
 If the environment variable `PGDATABASE` is present then the unit
-tests will also be run with PostgreSQL in addition to SQLite. Also
-provide `PGHOST`, `PGPORT`, and `PGUSER` if needed.
+tests will also be run with PostgreSQL. Also provide `PGHOST`,
+`PGPORT`, and `PGUSER` if needed.
+
+If the environment variable `MYSQL_DBNAME` is present then the unit
+tests will also be run with MySQL in the named database. Note that
+this is not an official MySQL variable, just something made up for
+Emacsql.
 
 ### Creating a New Front-end
 

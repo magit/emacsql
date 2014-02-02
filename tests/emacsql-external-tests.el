@@ -12,10 +12,14 @@
 
 (defvar emacsql-tests-connection-factories
   (let ((factories ())
-        (pgdatabase (getenv "PGDATABASE")))
+        (pgdatabase (getenv "PGDATABASE"))
+        (mysql-dbname (getenv "MYSQL_DBNAME")))
     (push (cons "sqlite" (apply-partially #'emacsql-sqlite nil)) factories)
     (when pgdatabase
       (push (cons "psql" (apply-partially #'emacsql-psql pgdatabase))
+            factories))
+    (when mysql-dbname
+      (push (cons "mysql" (apply-partially #'emacsql-mysql mysql-dbname))
             factories))
     (nreverse factories))
   "List of connection factories to use in unit tests.")
