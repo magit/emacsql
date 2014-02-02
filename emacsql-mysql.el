@@ -55,9 +55,9 @@
     (let ((standard-input (current-buffer)))
       (setf (point) (point-min))
       (when (looking-at "ERROR")
-        (let ((beg (line-beginning-position))
-              (end (line-end-position)))
-          (signal 'emacsql-error (list (buffer-substring beg end)))))
+        (search-forward ": ")
+        (signal 'emacsql-error
+                (list (buffer-substring (point) (line-end-position)))))
       (cl-loop until (looking-at emacsql-mysql-sentinel)
                collect (read) into row
                when (looking-at "\n")
