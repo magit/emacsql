@@ -18,7 +18,9 @@ CLFAGS += -DSQLITE_SOUNDEX
 
 .PHONY : clean install
 
-install : $(BINARY)
+install : ../bin/$(BINARY)
+
+../bin/$(BINARY) : $(BINARY)
 	mkdir -p ../bin/
 	cp $< ../bin/
 
