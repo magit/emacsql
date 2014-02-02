@@ -27,12 +27,12 @@ binary :
 
 compile: .cask $(ELC) binary
 
-package : $(PACKAGE)-$(VERSION).tar
+package : compile $(PACKAGE)-$(VERSION).tar
 
 $(PACKAGE)-pkg.el : Cask
 	$(CASK) package
 
-$(PACKAGE)-$(VERSION).tar : $(EL) $(PACKAGE)-pkg.el $(EXTRA_DIST)
+$(PACKAGE)-$(VERSION).tar : $(PACKAGE)-pkg.el $(EL) bin/ $(EXTRA_DIST)
 	tar -cf $@ --transform "s,^,$(PACKAGE)-$(VERSION)/," $^
 
 test: compile $(TEST_ELC)
