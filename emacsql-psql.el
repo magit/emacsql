@@ -59,9 +59,7 @@
                                       :dbname dbname)))
       (setf (process-sentinel process)
             (lambda (proc _) (kill-buffer (process-buffer proc))))
-      (when debug
-        (setf (emacsql-log-buffer connection)
-              (generate-new-buffer " *emacsql-log*")))
+      (when debug (emacsql-enable-debugging connection))
       (mapc (apply-partially #'emacsql-send-message connection)
             '("\\pset pager off"
               "\\pset null nil"

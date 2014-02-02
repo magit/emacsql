@@ -73,6 +73,7 @@ If nil, wait forever.")
             :accessor emacsql-process)
    (log-buffer :type (or null buffer)
                :initarg :log-buffer
+               :initform nil
                :accessor emacsql-log-buffer
                :documentation "Output log (debug).")
    (types :allocation :class
@@ -102,6 +103,12 @@ SQL expression.")
 (defmethod emacsql-buffer ((connection emacsql-connection))
   "Get proccess buffer for CONNECTION."
   (process-buffer (emacsql-process connection)))
+
+(defmethod emacsql-enable-debugging ((connection emacsql-connection))
+  "Enable debugging on this"
+  (unless (buffer-live-p (emacsql-log-buffer connection))
+    (setf (emacsql-log-buffer connection)
+          (generate-new-buffer " *emacsql-log*"))))
 
 (defmethod emacsql-log ((connection emacsql-connection) message)
   "Log MESSAGE into CONNECTION's log.

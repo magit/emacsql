@@ -43,9 +43,7 @@ buffer. This is for debugging purposes."
     (emacsql-wait connection)
     (emacsql connection [:pragma (= busy-timeout $s1)]
              (/ (* emacsql-global-timeout 1000) 2))
-    (when debug
-      (setf (emacsql-log-buffer connection)
-            (generate-new-buffer " *emacsql-log*")))
+    (when debug (emacsql-enable-debugging connection))
     (emacsql-register connection)))
 
 (defmethod emacsql-close ((connection emacsql-sqlite-connection))

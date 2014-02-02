@@ -21,23 +21,27 @@
                       (object "LONGTEXT")
                       (nil "LONGTEXT")))))
 
-(defun emacsql-mysql (dbname)
+(cl-defun emacsql-mysql (database &key user password host port debug)
   "Connect to a MySQL server using the mysql command line program."
-  (let* ((process-connection-type t)
-         (buffer (generate-new-buffer " *emacsql-mysql*"))
-         (mysql emacsql-mysql-executable)
-         (command (mapconcat #'shell-quote-argument
-                             (list mysql "-rfBNL" "--skip-pager" dbname)
-                             " "))
-         (process (start-process-shell-command
-                   "emacsql-mysql" buffer (concat "stty raw &&" command)))
-         (connection (make-instance 'emacsql-mysql-connection
-                                    :process process
-                                    :dbname dbname)))
-    (setf (process-sentinel process)
-          (lambda (proc _) (kill-buffer (process-buffer proc))))
-    (emacsql connection [:set-session (= sql-mode 'NO_BACKSLASH_ESCAPES)])
-    (emacsql-register connection)))
+  (let* ((mysql (executable-find emacsql-mysql-executable))
+         (command (list database "--skip-pager" "-rfBNL" mysql)))
+    (when user     (push (format "--user=%s" user) command))
+    (when password (push (format "--password=%s" password) command))
+    (when host     (push (format "--host=%s" host) command))
+    (when port     (push (format "--port=%s" port) command))
+    (let* ((process-connection-type t)
+           (buffer (generate-new-buffer " *emacsql-mysql*"))
+           (command (mapconcat #'shell-quote-argument (nreverse command) " "))
+           (process (start-process-shell-command
+                     "emacsql-mysql" buffer (concat "stty raw &&" command)))
+           (connection (make-instance 'emacsql-mysql-connection
+                                      :process process
+                                      :dbname database)))
+      (setf (process-sentinel process)
+            (lambda (proc _) (kill-buffer (process-buffer proc))))
+      (when debug (emacsql-enable-debugging connection))
+      (emacsql connection [:set-session (= sql-mode 'NO_BACKSLASH_ESCAPES)])
+      (emacsql-register connection))))
 
 (defmethod emacsql-close ((connection emacsql-mysql-connection))
   (let ((process (emacsql-process connection)))
