@@ -315,7 +315,8 @@ Emacsql uses EIEIO so that interactions with a connection occur
 through generic functions. You need to define a new class that
 inherits from `emacsql-connection`.
 
- * Implement `emacsql-waiting-p`, `emacsql-parse`, and `emacsql-close`.
+ * Implement `emacsql-send-message`, `emacsql-waiting-p`,
+   `emacsql-parse`, and `emacsql-close`.
  * Provide a constructor that initializes the connection and calls
    `emacsql-register` (for automatic connection cleanup).
  * Provide `emacsql-types` if needed (hint: use a class-allocated slot).

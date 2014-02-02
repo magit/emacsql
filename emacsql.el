@@ -203,6 +203,8 @@ specific error conditions."
 
 (require 'emacsql-sqlite) ; for `emacsql-connect'
 
+(defalias 'emacsql-connect 'emacsql-sqlite)
+
 (defmacro emacsql-with-connection (connection-spec &rest body)
   "Open an Emacsql connection, evaluate BODY, and close the connection.
 CONNECTION-SPEC establishes a single binding.

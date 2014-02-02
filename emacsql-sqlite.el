@@ -48,8 +48,6 @@ buffer. This is for debugging purposes."
             (generate-new-buffer "*emacsql-log*")))
     (emacsql-register connection)))
 
-(defalias 'emacsql-connect 'emacsql-sqlite)
-
 (defmethod emacsql-close ((connection emacsql-sqlite-connection))
   "Gracefully exits the SQLite subprocess."
   (let ((process (emacsql-process connection)))
