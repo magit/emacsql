@@ -297,7 +297,7 @@ which will be combined with variable definitions."
                (keyword (if (eq :values item)
                             (concat "VALUES " (svector (pop items)))
                           (emacsql--from-keyword item)))
-               (symbolp (if (eq item '*)
+               (symbol (if (eq item '*)
                             "*"
                           (param item)))
                (vector (if (emacsql-sql-p item)
