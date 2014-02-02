@@ -27,11 +27,11 @@
 ;; database. Identifiers for tables and columns are symbols. SQL
 ;; keywords are lisp keywords. Anything else is data.
 
-;;     (emacsql db [:create-table people [name id salary]])
+;;     (emacsql db [:create-table people ([name id salary])])
 
 ;; Column constraints can optionally be provided in the schema.
 
-;;     (emacsql db [:create-table people [name (id integer :unique) salary]])
+;;     (emacsql db [:create-table people ([name (id integer :unique) salary])])
 
 ;; Insert some values.
 
@@ -46,11 +46,11 @@
 ;;     (emacsql db [:select [name id] :from employees :where (> salary 60000)])
 ;;     ;; => (("Susan" 1001))
 
-;; Queries can be templates -- $1, $2, etc. -- so they don't need to
+;; Queries can be templates -- $i1, $s2, etc. -- so they don't need to
 ;; be built up dynamically:
 
 ;;     (emacsql db
-;;              [:select [name id] :from employees :where (> salary $1)]
+;;              [:select [name id] :from employees :where (> salary $s1)]
 ;;              50000)
 ;;     ;; => (("Jeff" 1000) ("Susan" 1001))
 
