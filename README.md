@@ -279,18 +279,16 @@ This is why rows must be vectors and not lists.
 
 ## Ignored Features
 
-Emacsql doesn't cover all of SQLite's features, focusing on the most
-important syntax. Here are a list of things that aren't supported, and
-probably will never be.
+Emacsql doesn't cover all of SQLite's features. Here are a list of
+things that aren't supported, and probably will never be.
 
  * Collating. SQLite has three built-in collation functions: BINARY
    (default), NOCASE, and RTRIM. Emacsql values never have right-hand
    whitespace, so RTRIM won't be of any use. NOCASE is broken
    (ASCII-only) and there's little reason to use it.
 
- * Databases attachments. I don't expect any program using Emacsql to
-   become so complex as to warrant multiple databases. Ignoring this
-   removes unneeded complexity.
+ * Text manipulation functions. Like collating this is incompatible
+   with Emacsql s-expression storage.
 
  * Date and time. These are incompatible with the printed values
    stored by Emacsql and therefore have little use.
