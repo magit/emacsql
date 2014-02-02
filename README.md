@@ -309,7 +309,7 @@ and unit testing.
 
     make test
 
-If the environmental variable `PGDATABASE` is present then the unit
+If the environment variable `PGDATABASE` is present then the unit
 tests will also be run with PostgreSQL in addition to SQLite. Also
 provide `PGHOST`, `PGPORT`, and `PGUSER` if needed.
 
