@@ -87,6 +87,7 @@ buffer. This is for debugging purposes."
 ;; SQLite compilation
 
 (defun emacsql-sqlite-compile-switches ()
+  "Return the compilation switches from the Makefile under sqlite/."
   (let ((makefile (expand-file-name "sqlite/Makefile" emacsql-data-root))
         (case-fold-search nil))
     (with-temp-buffer
@@ -119,6 +120,8 @@ If called with non-nil ASYNC the return value is meaningless."
             (insert (mapconcat #'identity (cons cc arguments) " ") "\n")
             (eql 0 (apply #'call-process cc nil (if async 0 t) t
                           arguments))))))))
+
+;; SQLite binary fetching
 
 (defvar emacsql-sqlite-user-prompted nil
   "To avoid prompting for fetch multiple times.")
@@ -156,6 +159,8 @@ This works like `url-copy-file' but actually checks for errors."
             (when (emacsql-sqlite-download url emacsql-sqlite-executable)
               (emacsql-sqlite-mark-exec emacsql-sqlite-executable)
               :success)))))))
+
+;; Ensure the SQLite binary is available
 
 (defun emacsql-sqlite-ensure-binary ()
   "Ensure the EmacSQL SQLite binary is available, signaling an error if not."
