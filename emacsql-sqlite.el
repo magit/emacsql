@@ -96,7 +96,8 @@ buffer. This is for debugging purposes."
                collect (match-string 0)))))
 
 (defun emacsql-sqlite-compile (&optional o-level async)
-  "Compile the SQLite back-end for EmacSQL, returning non-nil on success."
+  "Compile the SQLite back-end for EmacSQL, returning non-nil on success.
+If called with non-nil ASYNC the return value is meaningless."
   (let* ((cc (executable-find "cc"))
          (src (expand-file-name "sqlite" emacsql-data-root))
          (files (mapcar (lambda (f) (expand-file-name f src))
@@ -116,8 +117,7 @@ buffer. This is for debugging purposes."
         (with-current-buffer log
           (let ((inhibit-read-only t))
             (insert (mapconcat #'identity (cons cc arguments) " ") "\n")
-            (apply #'call-process cc nil (if async 0 t) t arguments))))
-      :success)))
+            (= 0 (apply #'call-process cc nil (if async 0 t) t arguments))))))))
 
 (defvar emacsql-sqlite-user-prompted nil
   "To avoid prompting for fetch multiple times.")
