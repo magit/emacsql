@@ -8,7 +8,7 @@
 (require 'emacsql-system)
 
 (defvar emacsql-sqlite-executable
-  (expand-file-name (emacsql-system-binary "bin/emacsql-sqlite")
+  (expand-file-name (concat "bin/emacsql-sqlite-" (emacsql-system-tuple))
                     (file-name-directory load-file-name))
   "Path to the Emacsql backend (this is not the sqlite3 shell).")
 
