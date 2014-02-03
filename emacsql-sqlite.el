@@ -117,7 +117,8 @@ If called with non-nil ASYNC the return value is meaningless."
         (with-current-buffer log
           (let ((inhibit-read-only t))
             (insert (mapconcat #'identity (cons cc arguments) " ") "\n")
-            (= 0 (apply #'call-process cc nil (if async 0 t) t arguments))))))))
+            (eql 0 (apply #'call-process cc nil (if async 0 t) t
+                          arguments))))))))
 
 (defvar emacsql-sqlite-user-prompted nil
   "To avoid prompting for fetch multiple times.")
