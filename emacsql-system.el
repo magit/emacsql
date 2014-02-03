@@ -19,6 +19,7 @@ Unfortunately config.guess has lots of names for Windows."
         ((string-match-p "^ming" os) "windows")
         ((string-match-p "^cygwin" os) "windows")
         ((string-match-p "^linux" os) "linux")
+        ((string-match-p "^darwin" os) "darwin")
         (os)))
 
 (defun emacsql-system-tuple ()
