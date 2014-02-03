@@ -3,8 +3,6 @@
 Emacsql is a high-level Emacs Lisp front-end for SQLite (primarily),
 PostgreSQL, MySQL, and potentially other SQL databases.
 
-It is currently a work-in-progress (around 90% complete).
-
 It works by maintaining a inferior process running (a "connection")
 for interacting with the back-end database. Connections are
 automatically cleaned up if they are garbage collected. All requests
@@ -105,7 +103,7 @@ Here's an example using foreign keys.
                :on-delete :cascade))
 ```
 
-Foreign keys are enabled by default in Emacsql.
+Foreign key constraints are enabled by default in Emacsql.
 
 ## Operators
 
@@ -277,7 +275,24 @@ rows.
 
 This is why rows must be vectors and not lists.
 
-## Ignored Features
+## SQLite Support
+
+The included SQLite binary is compiled with [Soundex][soundex] and
+[full-text search][fts] (FTS4) enabled. These are disabled by the
+default SQLite build. Currently binaries are included for the
+following platforms:
+
+ * Linux x86 and x86_64
+ * OS X x86_64
+ * Windows x86 and x86_64, including Cygwin
+ * Linux armv6l (Raspberry Pi + Raspbian)
+
+Emacsql will run the binary matching Emacs, not necessarily the best
+one for the OS, so 32-bit Emacs will run the 32-bit back-end. More
+platforms could be supported in the future, but this is currently all
+I'm able to target and test at the moment.
+
+### Ignored Features
 
 Emacsql doesn't cover all of SQLite's features. Here are a list of
 things that aren't supported, and probably will never be.
@@ -332,6 +347,8 @@ inherits from `emacsql-connection`.
  * Ensure that you properly read NULL as nil (hint: ask your back-end
    to print it that way).
  * Preferably provide `emacsql-reconnect` if possible.
+ * If available, ensure foreign key constraints are enabled by
+   default.
 
 The provided implementations should serve as useful examples. If your
 back-end outputs data in a clean, standard way you may be able to use
@@ -347,3 +364,5 @@ the emacsql-protocol-mixin class to do most of the work.
 [foreign]: http://www.sqlite.org/foreignkeys.html
 [batch]: http://lists.gnu.org/archive/html/emacs-pretest-bug/2005-11/msg00320.html
 [cask]: http://cask.github.io/
+[fts]: http://www.sqlite.org/fts3.html
+[soundex]: http://www.sqlite.org/compile.html#soundex
