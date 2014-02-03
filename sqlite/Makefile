@@ -3,9 +3,11 @@ GETTUPLE  = -l ../emacsql-system.el -f emacsql-system-print-tuple
 OSTUPLE  ?= $(shell $(EMACS) -Q -batch $(GETTUPLE))
 BINARY    = emacsql-sqlite-$(OSTUPLE)
 
-ifeq ($(OS),Windows_NT)
+ifneq (,$(findstring windows, $(OSTUPLE)))
+    ## Windows
     BINARY := $(BINARY).exe
 else
+    ## Unix-like
     LDLIBS  = -ldl
 endif
 
