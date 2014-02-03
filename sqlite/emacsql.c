@@ -9,14 +9,14 @@
 char* escape(const char *message) {
     int i, count = 0, length_orig = strlen(message);
     for (i = 0; i < length_orig; i++) {
-        if (message[i] == '"') {
+        if (strchr("\"\\", message[i])) {
             count++;
         }
     }
     char *copy = malloc(length_orig + count + 1);
     char *p = copy;
     while (*message) {
-        if (*message == '"') {
+        if (strchr("\"\\", *message)) {
             *p = '\\';
             p++;
         }
