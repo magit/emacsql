@@ -32,7 +32,7 @@ Unfortunately config.guess has lots of names for Windows."
 
 (defun emacsql-system-print-tuple ()
   "This is for calling from a Makefile."
-  (emacsql-system-tuple)
+  (princ (emacsql-system-tuple))
   (princ "\n"))
 
 (provide 'emacsql-system)
