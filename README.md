@@ -14,12 +14,15 @@ closures. EmacSQL has no concept of "TEXT" values; it's all just lisp
 objects. The lisp object `nil` corresponds 1:1 with `NULL` in the
 database.
 
-This package includes custom native binaries for communicating with a
-SQLite database. When linked with GNU Readline, or when run in
-Windows, the official sqlite3 command shell is incapable of correct
-interaction. If your own package depends on EmacSQL as a database it
-also means you don't have to rely on the user having particular
-software installed.
+During package installation EmacSQL will attempt to compile a custom
+native binary for communicating with a SQLite database. If this fails
+(a C compiler is not available), it will attempt to download, with
+permission, a pre-built binary when the first database connection is
+attempted. The official sqlite3 command shell is incapable of correct
+interaction when linked with GNU Readline, or when run in Windows, so
+a custom built tool is required. If your own package depends on
+EmacSQL as a database this means it doesn't have to rely on the user
+having any particular software installed.
 
 Requires Emacs 24 or later.
 
@@ -278,20 +281,17 @@ This is why rows must be vectors and not lists.
 
 ## SQLite Support
 
-The included SQLite binary is compiled with [Soundex][soundex] and
-[full-text search][fts] (FTS4) enabled. These are disabled by the
-default SQLite build. Currently binaries are included for the
-following platforms:
+The custom EmacSQL SQLite binary is compiled with [Soundex][soundex]
+and [full-text search][fts] (FTS4) enabled -- features disabled by the
+default SQLite build. This backend should work on any system with a
+compliant C compiler installed as `cc`. If you don't have a C compiler
+installed the following platforms will be able to fetch a pre-built
+SQLite binary:
 
  * Linux x86 and x86_64
  * OS X x86_64
  * Windows x86 and x86_64, including Cygwin
  * Linux armv6l (Raspberry Pi + Raspbian)
-
-EmacSQL will run the binary matching Emacs, not necessarily the best
-one for the OS, so 32-bit Emacs will run the 32-bit back-end. More
-platforms could be supported in the future, but this is currently all
-I'm able to target and test at the moment.
 
 ### Ignored Features
 
