@@ -41,7 +41,7 @@ test suite from the Makefile.
 
 ;; Or optionally provide column constraints.
 (emacsql db [:create-table people
-             ([name (id integer :primary-key) (salary float)]]))
+             ([name (id integer :primary-key) (salary float)])])
 
 ;; Insert some data:
 (emacsql db [:insert :into people
