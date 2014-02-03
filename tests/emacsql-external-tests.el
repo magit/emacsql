@@ -24,11 +24,6 @@
     (nreverse factories))
   "List of connection factories to use in unit tests.")
 
-;; Print testing information
-(princ (format "\nTesting %d database(s): %S\n"
-               (length emacsql-tests-connection-factories)
-               (mapcar #'car emacsql-tests-connection-factories)))
-
 (ert-deftest emacsql-basic ()
   "A short test that fully interacts with SQLite."
   (let ((emacsql-global-timeout emacsql-tests-timeout))
