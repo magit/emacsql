@@ -7,8 +7,8 @@
 #define FALSE 0
 
 char* escape(const char *message) {
-    int count = 0, length_orig = strlen(message);
-    for (int i = 0; i < length_orig; i++) {
+    int i, count = 0, length_orig = strlen(message);
+    for (i = 0; i < length_orig; i++) {
         if (message[i] == '"') {
             count++;
         }
@@ -136,7 +136,8 @@ int main(int argc, char **argv) {
             } else {
                 printf("\n (");
             }
-            for (int i = 0; i < ncolumns; i++) {
+            int i;
+            for (i = 0; i < ncolumns; i++) {
                 if (i > 0) {
                     printf(" ");
                 }

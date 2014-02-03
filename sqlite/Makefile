@@ -9,7 +9,7 @@ else
     LDLIBS  = -ldl
 endif
 
-CFLAGS  = -O2 --std=c99 -W -Wall -Wextra
+CFLAGS  = -O2 -W -Wall -Wextra
 CFLAGS += -DSQLITE_THREADSAFE=0
 CFLAGS += -DSQLITE_DEFAULT_FOREIGN_KEYS=1
 CFLAGS += -DSQLITE_ENABLE_FTS4
