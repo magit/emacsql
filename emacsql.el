@@ -9,11 +9,18 @@
 
 ;;; Commentary:
 
-;; The purpose of this package is to provide a high-level Elisp
-;; interface to a high-performance database back-end. Not every feature
-;; of SQL will be exposed, but the important parts should be.
+;; EmacSQL is a high-level Emacs Lisp front-end for SQLite
+;; (primarily), PostgreSQL, MySQL, and potentially other SQL
+;; databases.
 
-;; Most emacsql functions operate on a database connection. A
+;; Notice: this package is bundled with custom SQLite native binaries
+;; for a number of platforms. This means you do *not* need to install
+;; any sort of SQLite software on your system for EmacSQL to work.
+;; Unless you're on an unusual platform, in which case you'll need to
+;; compile your own. This is not the case for any other SQL database,
+;; however.
+
+;; Most EmacSQL functions operate on a database connection. A
 ;; connection to SQLite is established with `emacsql-connect'. For
 ;; each such connection a sqlite3 inferior process is kept alive in
 ;; the background. Connections are closed with `emacsql-close'.
@@ -53,6 +60,9 @@
 ;;              [:select [name id] :from employees :where (> salary $s1)]
 ;;              50000)
 ;;     ;; => (("Jeff" 1000) ("Susan" 1001))
+
+;; The letter declares the type (identifier, scalar, vector, Schema)
+;; and the number declares the argument position.
 
 ;; See README.md for much more complete documentation.
 
