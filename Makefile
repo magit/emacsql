@@ -41,7 +41,7 @@ test: compile $(TEST_ELC)
 clean :
 	$(RM) *.tar *.elc tests/*.elc $(PACKAGE)-pkg.el
 
-distclean :
+distclean : clean
 	$(MAKE) -C sqlite clean
 
 %.elc : %.el
