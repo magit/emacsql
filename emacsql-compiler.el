@@ -5,7 +5,7 @@
 (require 'cl-lib)
 
 (defmacro emacsql-deferror (symbol parents message)
-  "Defines a new error symbol  for Emacsql."
+  "Defines a new error symbol  for EmacSQL."
   (declare (indent 2))
   (let ((conditions (cl-remove-duplicates
                      (append parents (list symbol 'emacsql-error 'error)))))
@@ -14,7 +14,7 @@
              (get ',symbol 'error-message) ,message))))
 
 (emacsql-deferror emacsql-error () ;; parent condition for all others
-  "Emacsql had an unhandled condition")
+  "EmacSQL had an unhandled condition")
 
 (emacsql-deferror emacsql-syntax () "Invalid SQL statement")
 (emacsql-deferror emacsql-internal () "Internal error")
@@ -89,7 +89,7 @@ KIND should be :scalar or :identifier."
     (float "&REAL")
     (object "&TEXT")
     (nil "&NONE"))
-  "An alist mapping Emacsql types to SQL types.")
+  "An alist mapping EmacSQL types to SQL types.")
 
 (defun emacsql--from-keyword (keyword)
   "Convert KEYWORD into SQL."

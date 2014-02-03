@@ -79,7 +79,7 @@ If nil, wait forever.")
    (types :allocation :class
           :initform nil
           :reader emacsql-types
-          :documentation "Maps Emacsql types to SQL types."))
+          :documentation "Maps EmacSQL types to SQL types."))
   (:documentation "A connection to a SQL database.")
   :abstract t)
 
@@ -94,7 +94,7 @@ If nil, wait forever.")
   (not (null (process-live-p (emacsql-process connection)))))
 
 (defgeneric emacsql-types (connection)
-  "Return an alist mapping Emacsql types to database types.
+  "Return an alist mapping EmacSQL types to database types.
 This will mask `emacsql-type-map' during expression compilation.
 This alist should have four key symbols: integer, float, object,
 nil (default type). The values are strings to be inserted into a
@@ -168,7 +168,7 @@ MESSAGE should not have a newline on the end."
 (defclass emacsql-protocol-mixin ()
   ()
   (:documentation
-   "A mixin for back-ends following the Emacsql protocol.
+   "A mixin for back-ends following the EmacSQL protocol.
 The back-end prompt must be a single \"]\" character. This prompt
 value was chosen because it is unreadable. Output must have
 exactly one row per line, fields separated by whitespace. NULL
@@ -213,7 +213,7 @@ specific error conditions."
 (defalias 'emacsql-connect 'emacsql-sqlite)
 
 (defmacro emacsql-with-connection (connection-spec &rest body)
-  "Open an Emacsql connection, evaluate BODY, and close the connection.
+  "Open an EmacSQL connection, evaluate BODY, and close the connection.
 CONNECTION-SPEC establishes a single binding.
 
   (emacsql-with-connection (db (emacsql-sqlite \"company.db\"))

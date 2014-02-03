@@ -1,4 +1,4 @@
-;; emacsql-sqlite.el --- SQLite front-end for Emacsql -*- lexical-binding: t; -*-
+;; emacsql-sqlite.el --- SQLite front-end for EmacSQL -*- lexical-binding: t; -*-
 
 ;;; Code:
 
@@ -10,7 +10,7 @@
 (defvar emacsql-sqlite-executable
   (expand-file-name (concat "bin/emacsql-sqlite-" (emacsql-system-tuple))
                     (file-name-directory load-file-name))
-  "Path to the Emacsql backend (this is not the sqlite3 shell).")
+  "Path to the EmacSQL backend (this is not the sqlite3 shell).")
 
 (defclass emacsql-sqlite-connection (emacsql-connection emacsql-protocol-mixin)
   ((file :initarg :file

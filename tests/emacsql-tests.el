@@ -1,4 +1,4 @@
-;;; emacsql-tests.el --- test suite for Emacsql -*- lexical-binding: t; -*-
+;;; emacsql-tests.el --- test suite for EmacSQL -*- lexical-binding: t; -*-
 
 (require 'emacsql-compiler-tests)
 (require 'emacsql-external-tests)

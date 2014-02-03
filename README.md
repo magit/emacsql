@@ -1,6 +1,6 @@
-# Emacsql
+# EmacSQL
 
-Emacsql is a high-level Emacs Lisp front-end for SQLite (primarily),
+EmacSQL is a high-level Emacs Lisp front-end for SQLite (primarily),
 PostgreSQL, MySQL, and potentially other SQL databases.
 
 It works by maintaining a inferior process running (a "connection")
@@ -9,15 +9,15 @@ automatically cleaned up if they are garbage collected. All requests
 are synchronous.
 
 Any [readable lisp value][readable] can be stored as a value in
-Emacsql, including numbers, strings, symbols, lists, vectors, and
-closures. Emacsql has no concept of "TEXT" values; it's all just lisp
+EmacSQL, including numbers, strings, symbols, lists, vectors, and
+closures. EmacSQL has no concept of "TEXT" values; it's all just lisp
 objects. The lisp object `nil` corresponds 1:1 with `NULL` in the
 database.
 
 This package includes custom native binaries for communicating with a
 SQLite database. When linked with GNU Readline, or when run in
 Windows, the official sqlite3 command shell is incapable of correct
-interaction. If your own package depends on Emacsql as a database it
+interaction. If your own package depends on EmacSQL as a database it
 also means you don't have to rely on the user having particular
 software installed.
 
@@ -25,8 +25,8 @@ Requires Emacs 24 or later.
 
 ### Windows Issue
 
-Due to a [long-standing Emacs bug][batch], Emacsql cannot be used in
-Emacs' "-batch" mode on Windows, which includes running the Emacsql
+Due to a [long-standing Emacs bug][batch], EmacSQL cannot be used in
+Emacs' "-batch" mode on Windows, which includes running the EmacSQL
 test suite from the Makefile.
 
 ## Example Usage
@@ -69,7 +69,7 @@ A table schema is a list whose first element is a vector of column
 specifications. The rest of the list specifies table constraints. A
 column identifier is a symbol and a column's specification can either
 be just this symbol or it can include constraints as a list. Because
-Emacsql stores entire lisp objects as values, the only relevant (and
+EmacSQL stores entire lisp objects as values, the only relevant (and
 allowed) types are `integer`, `float`, and `object` (default).
 
     ([(<column>) ...] (<table-constraint> ...) ...])
@@ -103,12 +103,12 @@ Here's an example using foreign keys.
                :on-delete :cascade))
 ```
 
-Foreign key constraints are enabled by default in Emacsql.
+Foreign key constraints are enabled by default in EmacSQL.
 
 ## Operators
 
 Expressions are written lisp-style, with the operator first. If it
-looks like an operator Emacsql treats it like an operator. However,
+looks like an operator EmacSQL treats it like an operator. However,
 several operators are special.
 
     <=    >=    funcall    quote
@@ -123,7 +123,7 @@ For function-like "operators" like `count` and `max` use the `funcall`
 [:select (funcall max age) :from people]
 ```
 
-Inside expressions, Emacsql cannot tell the difference between symbol
+Inside expressions, EmacSQL cannot tell the difference between symbol
 literals and column references. If you're talking about the symbol
 itself, just quote it as you would in normal Elisp. Note that this
 does not "escape" `$tn` parameter symbols.
@@ -151,7 +151,7 @@ own. (And it leaves out any possibility of a SQL injection!) See the
 "Usage" section above for examples. A statement is a vector of
 keywords and other lisp object.
 
-Prepared Emacsql s-expression statements are compiled into SQL
+Prepared EmacSQL s-expression statements are compiled into SQL
 statements. The statement compiler is memoized so that using the same
 statement multiple times is fast. To assist in this, the statement can
 act as a template -- using `$i1`, `$s2`, etc. -- working like the
@@ -160,7 +160,7 @@ Elisp `format` function.
 ### Compilation Rules
 
 Rather than the typical uppercase SQL keywords, keywords in a prepared
-Emacsql statement are literally just that: lisp keywords. Emacsql only
+EmacSQL statement are literally just that: lisp keywords. EmacSQL only
 understands a very small amount of SQL's syntax. The compiler follows
 some simple rules to convert an s-expression into SQL.
 
@@ -185,7 +185,7 @@ combine keywords is up to your personal taste (e.g. `:drop :table` vs.
 
 #### Standalone symbols are identifiers.
 
-Emacsql doesn't know what symbols refer to identifiers and what
+EmacSQL doesn't know what symbols refer to identifiers and what
 symbols should be treated as values. Use quotes to mark a symbol as a
 value. For example, `people` here will be treated as an identifier.
 
@@ -287,30 +287,30 @@ following platforms:
  * Windows x86 and x86_64, including Cygwin
  * Linux armv6l (Raspberry Pi + Raspbian)
 
-Emacsql will run the binary matching Emacs, not necessarily the best
+EmacSQL will run the binary matching Emacs, not necessarily the best
 one for the OS, so 32-bit Emacs will run the 32-bit back-end. More
 platforms could be supported in the future, but this is currently all
 I'm able to target and test at the moment.
 
 ### Ignored Features
 
-Emacsql doesn't cover all of SQLite's features. Here are a list of
+EmacSQL doesn't cover all of SQLite's features. Here are a list of
 things that aren't supported, and probably will never be.
 
  * Collating. SQLite has three built-in collation functions: BINARY
-   (default), NOCASE, and RTRIM. Emacsql values never have right-hand
+   (default), NOCASE, and RTRIM. EmacSQL values never have right-hand
    whitespace, so RTRIM won't be of any use. NOCASE is broken
    (ASCII-only) and there's little reason to use it.
 
  * Text manipulation functions. Like collating this is incompatible
-   with Emacsql s-expression storage.
+   with EmacSQL s-expression storage.
 
  * Date and time. These are incompatible with the printed values
-   stored by Emacsql and therefore have little use.
+   stored by EmacSQL and therefore have little use.
 
 ## Limitations
 
-Emacsql is *not* intended to play well with other programs accessing
+EmacSQL is *not* intended to play well with other programs accessing
 the SQLite database. Non-numeric values are are stored encoded as
 s-expressions TEXT values. This avoids ambiguities in parsing output
 from the command line and allows for storage of Emacs richer data
@@ -331,11 +331,11 @@ tests will also be run with PostgreSQL. Also provide `PGHOST`,
 If the environment variable `MYSQL_DBNAME` is present then the unit
 tests will also be run with MySQL in the named database. Note that
 this is not an official MySQL variable, just something made up for
-Emacsql.
+EmacSQL.
 
 ### Creating a New Front-end
 
-Emacsql uses EIEIO so that interactions with a connection occur
+EmacSQL uses EIEIO so that interactions with a connection occur
 through generic functions. You need to define a new class that
 inherits from `emacsql-connection`.
 

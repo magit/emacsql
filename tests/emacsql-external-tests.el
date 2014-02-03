@@ -41,7 +41,7 @@
                        '((1) (2) (3))))))))
 
 (ert-deftest emacsql-foreign-key ()
-  "Tests that foreign keys work properly through Emacsql."
+  "Tests that foreign keys work properly through EmacSQL."
   (let ((emacsql-global-timeout emacsql-tests-timeout))
     (dolist (factory emacsql-tests-connection-factories)
       (emacsql-with-connection (db (funcall (cdr factory)))
