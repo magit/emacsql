@@ -25,21 +25,21 @@ all : test
 binary :
 	$(MAKE) -C sqlite
 
-compile: .cask $(ELC) binary
+compile: .cask $(ELC)
 
-package : compile $(PACKAGE)-$(VERSION).tar
+package : $(PACKAGE)-$(VERSION).tar
 
 $(PACKAGE)-pkg.el : Cask
 	$(CASK) package
 
-$(PACKAGE)-$(VERSION).tar : $(PACKAGE)-pkg.el $(EL) bin/ $(EXTRA_DIST)
+$(PACKAGE)-$(VERSION).tar : $(PACKAGE)-pkg.el $(EL) sqlite/ $(EXTRA_DIST)
 	tar -cf $@ --transform "s,^,$(PACKAGE)-$(VERSION)/," $^
 
 test: compile $(TEST_ELC)
 	$(BATCH) -l tests/$(PACKAGE)-tests.elc -f ert-run-tests-batch
 
 clean :
-	$(RM) *.tar *.elc tests/*.elc $(PACKAGE)-pkg.el
+	$(RM) *.tar *.elc tests/*.elc $(PACKAGE)-pkg.el bin/*
 
 distclean : clean
 	$(MAKE) -C sqlite clean

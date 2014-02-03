@@ -73,9 +73,14 @@
 (require 'finalize)
 (require 'emacsql-compiler)
 
+(defvar emacsql-version "1.0.0")
+
 (defvar emacsql-global-timeout 30
   "Maximum number of seconds to wait before bailing out on a SQL command.
 If nil, wait forever.")
+
+(defvar emacsql-data-root (file-name-directory load-file-name)
+  "Directory where EmacSQL is installed.")
 
 (defclass emacsql-connection ()
   ((process :type process
