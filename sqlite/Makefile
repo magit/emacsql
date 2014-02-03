@@ -28,4 +28,4 @@ $(BINARY) : emacsql.o sqlite3.o
 	$(CC) $(LDLIBS) $(LDFLAGS) -o $@ $^
 
 clean :
-	$(RM) *.o $(BINARY) ../bin/$(BINARY)
+	$(RM) *.o $(BINARY) emacsql-sqlite-* ../bin/$(BINARY)
