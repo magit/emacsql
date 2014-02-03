@@ -39,9 +39,10 @@ test: compile $(TEST_ELC)
 	$(BATCH) -l tests/$(PACKAGE)-tests.elc -f ert-run-tests-batch
 
 clean :
-	$(RM) *.tar *.elc tests/*.elc $(PACKAGE)-pkg.el bin/*
+	$(RM) *.tar *.elc tests/*.elc $(PACKAGE)-pkg.el
 
 distclean : clean
+	$(RM) bin/*
 	$(MAKE) -C sqlite clean
 
 %.elc : %.el
