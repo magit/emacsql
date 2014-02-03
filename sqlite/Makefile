@@ -1,12 +1,12 @@
 EMACS    ?= emacs
 GETTUPLE  = -l ../emacsql-system.el -f emacsql-system-print-tuple
-OSTUPLE   = $(shell $(EMACS) -Q -batch $(GETTUPLE))
+OSTUPLE  ?= $(shell $(EMACS) -Q -batch $(GETTUPLE))
 BINARY    = emacsql-sqlite-$(OSTUPLE)
 
 ifeq ($(OS),Windows_NT)
-    OSTUPLE += .exe
+    BINARY := $(BINARY).exe
 else
-    LDLIBS     = -ldl
+    LDLIBS  = -ldl
 endif
 
 CFLAGS  = -O2 --std=c99 -W -Wall -Wextra
