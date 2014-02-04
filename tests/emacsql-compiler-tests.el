@@ -175,7 +175,11 @@
     ([:where (or a $i1)] '(b)
      "WHERE a OR b;")
     ([:where (and $i1 $i2 $i3)] '(a b c)
-     "WHERE a AND b AND c;")))
+     "WHERE a AND b AND c;")
+    ([:where (is foo (not nil))] '()
+     "WHERE foo IS NOT NULL;")
+    ([:where (= attrib :name)] '()
+     "WHERE attrib = ':name';")))
 
 (ert-deftest emacsql-transaction ()
   (emacsql-tests-with-queries
