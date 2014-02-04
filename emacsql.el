@@ -240,17 +240,6 @@ CONNECTION-SPEC establishes a single binding.
          (progn ,@body)
        (emacsql-close ,(car connection-spec)))))
 
-(defmacro emacsql-thread (connection &rest statements)
-  "Thread CONNECTION through STATEMENTS.
-A statement can be a list, containing a statement with its arguments."
-  (declare (indent 1))
-  `(let ((emacsql--conn ,connection))
-     ,@(cl-loop for statement in statements
-               when (vectorp statement)
-               collect (list 'emacsql 'emacsql--conn statement)
-               else
-               collect (append (list 'emacsql 'emacsql--conn) statement))))
-
 (defvar emacsql--transaction-level 0
   "Keeps track of nested transactions in `emacsql-with-transaction'.")
 
@@ -274,6 +263,18 @@ single transaction at the lowest level."
        (when (and (= 1 emacsql--transaction-level)
                   (not emacsql--completed))
          (emacsql emacsql--connection [:rollback])))))
+
+(defmacro emacsql-thread (connection &rest statements)
+  "Thread CONNECTION through STATEMENTS.
+A statement can be a list, containing a statement with its arguments."
+  (declare (indent 1))
+  `(let ((emacsql--conn ,connection))
+     (emacsql-with-transaction emacsql--conn
+       ,@(cl-loop for statement in statements
+                  when (vectorp statement)
+                  collect (list 'emacsql 'emacsql--conn statement)
+                  else
+                  collect (append (list 'emacsql 'emacsql--conn) statement)))))
 
 (defmacro emacsql-with-bind (connection sql-and-args &rest body)
   "For each result row bind the column names for each returned row.
