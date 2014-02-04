@@ -247,6 +247,9 @@ which will be combined with variable definitions."
                (1 (format "-(%s)" (recur 0)))
                (2 (format "%s - %s" (recur 0) (recur 1)))
                (otherwise (nops op))))
+            ;; Unary
+            ((not)
+             (format "NOT %s" (recur 0)))
             ;; Ordering
             ((asc desc)
              (format "%s %s" (recur 0) (upcase (symbol-name op))))
