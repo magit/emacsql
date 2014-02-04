@@ -336,8 +336,6 @@ which will be combined with variable definitions."
 (defun emacsql-format (expansion &rest args)
   "Fill in the variables EXPANSION with ARGS."
   (cl-destructuring-bind (format . vars) expansion
-    (unless (= (length args) (length vars))
-      (emacsql-error "Wrong number of arguments for SQL template."))
     (apply #'format format
            (cl-loop for (i . kind) in vars collect
                     (let ((thing (nth i args)))
