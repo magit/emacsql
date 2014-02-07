@@ -349,8 +349,8 @@ Each column must be a plain symbol, no expressions allowed here."
   "Convert a s-expression SQL into a flat string for display."
   (cl-destructuring-bind (string . vars) (emacsql-prepare sql)
     (concat
-     (apply #'format string (cl-loop for i from 1 to (length vars)
-                                     collect (intern (format "$%d" i))))
+     (apply #'format string (cl-loop for i in (mapcar #'car vars)
+                                     collect (intern (format "$%d" (1+ i)))))
      ";")))
 
 ;;;###autoload
