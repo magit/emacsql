@@ -252,20 +252,28 @@ CONNECTION-SPEC establishes a single binding.
 (defmacro emacsql-with-transaction (connection &rest body)
   "Evaluate BODY inside a single transaction, issuing a rollback on error.
 This macro can be nested indefinitely, wrapping everything in a
-single transaction at the lowest level."
+single transaction at the lowest level.
+
+Warning: BODY should *not* have any side effects besides making
+changes to the database behind CONNECTION. Body may be evaluated
+multiple times before the changes are committed."
   (declare (indent 1))
   `(let ((emacsql--connection ,connection)
          (emacsql--completed nil)
          (emacsql--transaction-level (1+ emacsql--transaction-level)))
      (unwind-protect
-         (progn
-           (when (= 1 emacsql--transaction-level)
-             (emacsql emacsql--connection [:begin :transaction]))
-           (let ((result (progn ,@body)))
-             (prog1 result
-               (when (= 1 emacsql--transaction-level)
-                 (emacsql emacsql--connection [:commit]))
-               (setf emacsql--completed t))))
+         (while (not emacsql--completed)
+           (condition-case nil
+               (progn
+                 (when (= 1 emacsql--transaction-level)
+                   (emacsql emacsql--connection [:begin :transaction]))
+                 (let ((result (progn ,@body)))
+                   (prog1 result
+                     (when (= 1 emacsql--transaction-level)
+                       (emacsql emacsql--connection [:commit]))
+                     (setf emacsql--completed t))))
+             (emacsql-locked (emacsql emacsql--connection [:rollback])
+                             (sleep-for 0.05))))
        (when (and (= 1 emacsql--transaction-level)
                   (not emacsql--completed))
          (emacsql emacsql--connection [:rollback])))))
