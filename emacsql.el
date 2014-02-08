@@ -72,6 +72,10 @@
 (require 'finalize)
 (require 'emacsql-compiler)
 
+(defgroup emacsql nil
+  "The EmacSQL SQL database front-end."
+  :group 'comm)
+
 (defvar emacsql-version "1.0.0")
 
 (defvar emacsql-global-timeout 30

@@ -9,6 +9,13 @@
 (require 'emacsql)
 (require 'emacsql-system)
 
+(defcustom emacsql-sqlite-automatic-fetch nil
+  "If non-nil, the user will not be prompted to download the
+pre-built SQLite binary. A value of `yes' will always approve the
+download. A value of `no' will always deny the download."
+  :group 'emacsql
+  :type '(choice (const nil) (const yes) (const no)))
+
 (defvar emacsql-sqlite-executable
   (expand-file-name (format "bin/emacsql-sqlite-%s%s" (emacsql-system-tuple)
                             (if (memq system-type '(windows-nt cygwin ms-dos))
@@ -146,18 +153,28 @@ This works like `url-copy-file' but actually checks for errors."
   "Set executable bits on FILE's mode."
   (set-file-modes file (logior (file-modes file) #o111)))
 
-(defun emacsql-sqlite-fetch-binary ()
+(defun emacsql-sqlite-prompt ()
+  "Ask the user if it's ok to download the SQLite binary."
   (let ((query "EmacSQL binary could not be built. Fetch from the Internet?"))
-    (unless emacsql-sqlite-user-prompted
-      (let ((prompt (y-or-n-p query)))
-        (setf emacsql-sqlite-user-prompted t)
-        (when prompt
-          (let* ((file (file-name-nondirectory emacsql-sqlite-executable))
-                 (url (format "%s%s/%s"
-                              emacsql-sqlite-host emacsql-version file)))
-            (when (emacsql-sqlite-download url emacsql-sqlite-executable)
-              (emacsql-sqlite-mark-exec emacsql-sqlite-executable)
-              :success)))))))
+    (if emacsql-sqlite-automatic-fetch
+        (not (eq emacsql-sqlite-automatic-fetch 'no))
+      (unless emacsql-sqlite-user-prompted
+        (let ((result (y-or-n-p query)))
+          (setf emacsql-sqlite-user-prompted t)
+          (when result
+            (customize-save-variable 'emacsql-sqlite-automatic-fetch 'yes))
+          result)))))
+
+(defun emacsql-sqlite-fetch-binary ()
+  "Fetch the SQLite binary from remote host."
+  (let ((prompt (emacsql-sqlite-prompt)))
+    (when prompt
+      (let* ((file (file-name-nondirectory emacsql-sqlite-executable))
+             (url (format "%s%s/%s"
+                          emacsql-sqlite-host emacsql-version file)))
+        (when (emacsql-sqlite-download url emacsql-sqlite-executable)
+          (emacsql-sqlite-mark-exec emacsql-sqlite-executable)
+          :success)))))
 
 ;; Ensure the SQLite binary is available
 
