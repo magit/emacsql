@@ -16,6 +16,16 @@ download. A value of `no' will always deny the download."
   :group 'emacsql
   :type '(choice (const nil) (const yes) (const no)))
 
+(defcustom emacsql-sqlite-automatic-build t
+  "When non-nil, attempt to automatically build the SQLite binary locally.
+When enabled, the C compiler build will be attempted on every
+EmacSQL update, when the Elisp files are built. If it takes your
+computer a long time to build the binary (e.g. 10 minutes on a
+Raspberry Pi) it may be worth always fetching the pre-built
+version."
+  :group 'emacsql
+  :type 'boolean)
+
 (defvar emacsql-sqlite-executable
   (expand-file-name (format "bin/emacsql-sqlite-%s%s" (emacsql-system-tuple)
                             (if (memq system-type '(windows-nt cygwin ms-dos))
@@ -115,17 +125,20 @@ If called with non-nil ASYNC the return value is meaningless."
          (options (emacsql-sqlite-compile-switches))
          (output (list "-o" emacsql-sqlite-executable))
          (arguments (nconc ldlibs cflags options files output)))
-    (if (not cc)
-        (prog1 nil
-          (message "Could not find C compiler, skipping SQLite compilation"))
-      (mkdir (expand-file-name "bin" emacsql-data-root) t)
-      (message "Compiling EmacSQL SQLite binary ...")
-      (let ((log (get-buffer-create byte-compile-log-buffer)))
-        (with-current-buffer log
-          (let ((inhibit-read-only t))
-            (insert (mapconcat #'identity (cons cc arguments) " ") "\n")
-            (eql 0 (apply #'call-process cc nil (if async 0 t) t
-                          arguments))))))))
+    (cond ((not cc)
+           (prog1 nil
+             (message "Could not find C compiler, skipping SQLite build")))
+          ((not emacsql-sqlite-automatic-build)
+           (prog1 nil
+             (message "Local SQLite build disabled, skipping")))
+          (t (mkdir (expand-file-name "bin" emacsql-data-root) t)
+             (message "Compiling EmacSQL SQLite binary ...")
+             (let ((log (get-buffer-create byte-compile-log-buffer)))
+               (with-current-buffer log
+                 (let ((inhibit-read-only t))
+                   (insert (mapconcat #'identity (cons cc arguments) " ") "\n")
+                   (eql 0 (apply #'call-process cc nil (if async 0 t) t
+                                 arguments)))))))))
 
 ;; SQLite binary fetching
 

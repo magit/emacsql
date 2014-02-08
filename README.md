@@ -291,9 +291,11 @@ SQLite binary:
  * Linux x86 and x86_64
  * OS X x86_64
  * Windows x86 and x86_64, including Cygwin
+ * Linux armv6l (Raspberry Pi + Raspbian)
 
 The customization variable `emacsql-sqlite-automatic-fetch` controls
-the behavior of SQLite binary fetching.
+the behavior of SQLite binary fetching, and the variable
+`emacsql-sqlite-automatic-build` enables/disables local builds.
 
 ### Ignored Features
 
