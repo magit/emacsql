@@ -18,7 +18,7 @@
 
 (emacsql-deferror emacsql-syntax () "Invalid SQL statement")
 (emacsql-deferror emacsql-internal () "Internal error")
-(emacsql-deferror emacsql-lock () "Database locked")
+(emacsql-deferror emacsql-locked () "Database locked")
 (emacsql-deferror emacsql-fatal () "Fatal error")
 (emacsql-deferror emacsql-memory () "Out of memory")
 (emacsql-deferror emacsql-corruption () "Database corrupted")
