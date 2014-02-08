@@ -213,7 +213,9 @@ specific error conditions."
            (value (read)))
       (if (eql value 'error)
           (emacsql-handle connection (read) (read))
-        value))))
+        (prog1 value
+          (unless (eq 'success (read))
+            (emacsql-handle connection (read) (read))))))))
 
 (provide 'emacsql) ; end of generic function declarations
 

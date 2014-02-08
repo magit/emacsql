@@ -165,9 +165,12 @@ int main(int argc, char **argv) {
         }
         printf(")\n");
         if (sqlite3_finalize(stmt) != SQLITE_OK) {
-            fprintf(stderr, "error %d: %s\n",
-                    sqlite3_errcode(db), sqlite3_errmsg(db));
-            exit(EXIT_FAILURE);
+            /* Despite any error code, the statement is still freed.
+             * http://stackoverflow.com/a/8391872
+             */
+            send_error(sqlite3_errcode(db), sqlite3_errmsg(db));
+        } else {
+            printf("success\n");
         }
     }
     buffer_free(input);
