@@ -124,7 +124,7 @@ If called with non-nil ASYNC the return value is meaningless."
          (ldlibs (if (eq system-type 'windows-nt) () (list "-ldl")))
          (options (emacsql-sqlite-compile-switches))
          (output (list "-o" emacsql-sqlite-executable))
-         (arguments (nconc ldlibs cflags options files output)))
+         (arguments (nconc cflags options files ldlibs output)))
     (cond ((not cc)
            (prog1 nil
              (message "Could not find C compiler, skipping SQLite build")))
