@@ -260,7 +260,8 @@ multiple times before the changes are committed."
   (declare (indent 1))
   `(let ((emacsql--connection ,connection)
          (emacsql--completed nil)
-         (emacsql--transaction-level (1+ emacsql--transaction-level)))
+         (emacsql--transaction-level (1+ emacsql--transaction-level))
+         (emacsql--result))
      (unwind-protect
          (while (not emacsql--completed)
            (condition-case nil
@@ -268,15 +269,16 @@ multiple times before the changes are committed."
                  (when (= 1 emacsql--transaction-level)
                    (emacsql emacsql--connection [:begin :transaction]))
                  (let ((result (progn ,@body)))
-                   (prog1 result
-                     (when (= 1 emacsql--transaction-level)
-                       (emacsql emacsql--connection [:commit]))
-                     (setf emacsql--completed t))))
+                   (setf emacsql--result result)
+                   (when (= 1 emacsql--transaction-level)
+                     (emacsql emacsql--connection [:commit]))
+                   (setf emacsql--completed t)))
              (emacsql-locked (emacsql emacsql--connection [:rollback])
                              (sleep-for 0.05))))
        (when (and (= 1 emacsql--transaction-level)
                   (not emacsql--completed))
-         (emacsql emacsql--connection [:rollback])))))
+         (emacsql emacsql--connection [:rollback])))
+     emacsql--result))
 
 (defmacro emacsql-thread (connection &rest statements)
   "Thread CONNECTION through STATEMENTS.
