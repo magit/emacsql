@@ -322,6 +322,28 @@ from the command line and allows for storage of Emacs richer data
 types. This is an efficient, ACID-compliant database specifically for
 Emacs.
 
+## Emacs Lisp Indentation Annoyance
+
+By default, `emacs-lisp-mode` indents vectors as if they were regular
+function calls.
+
+```el
+;; Ugly indentation!
+(emacsql db [:select *
+                     :from people
+                     :where (> age 60)])
+```
+
+Calling the function `emacsql-fix-vector-indentation` (interactive)
+advises the major mode to fix this annoyance.
+
+```el
+;; Such indent!
+(emacsql db [:select *
+             :from people
+             :where (> age 60)])
+```
+
 ## Contributing and Extending
 
 You'll need to install [Cask][cask], which is required for compilation

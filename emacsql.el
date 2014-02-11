@@ -380,4 +380,30 @@ A prefix argument causes the SQL to be printed into the current buffer."
             (emacsql-show-sql sql)))
       (user-error "Invalid SQL: %S" sexp))))
 
+;; Fix Emacs' broken vector indentation:
+
+(defun emacsql--inside-vector-p ()
+  "Return non-nil if point is inside a vector expression."
+  (let ((start (point)))
+    (save-excursion
+      (backward-paragraph)
+      (let ((containing-sexp (elt (parse-partial-sexp (point) start) 1)))
+        (when containing-sexp
+          (setf (point) containing-sexp)
+          (looking-at "\\["))))))
+
+(defadvice calculate-lisp-indent (around emacsql-vector-indent disable)
+  "Don't indent vectors in `emacs-lisp-mode' like lists."
+  (if (emacsql--inside-vector-p)
+      (let ((lisp-indent-offset 1))
+        ad-do-it)
+      ad-do-it))
+
+(defun emacsql-fix-vector-indentation ()
+  "When called, advise `calculate-lisp-indent' to stop indenting vectors.
+Once activate, vector contents no longer indent like lists."
+  (interactive)
+  (ad-enable-advice 'calculate-lisp-indent 'around 'emacsql-vector-indent)
+  (ad-activate 'calculate-lisp-indent))
+
 ;;; emacsql.el ends here
