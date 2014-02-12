@@ -200,8 +200,12 @@ This works like `url-copy-file' but actually checks for errors."
         (error "No EmacSQL SQLite binary available, aborting")))))
 
 (cl-eval-when (compile)
-  (unless (file-exists-p emacsql-sqlite-executable)
-    (ignore-errors (emacsql-sqlite-compile 2))))
+  (let* ((bin-name (file-name-nondirectory emacsql-sqlite-executable))
+         (new-root (file-name-directory byte-compile-current-file))
+         (emacsql-sqlite-executable
+          (expand-file-name bin-name (concat new-root "bin/"))))
+    (unless (file-exists-p emacsql-sqlite-executable)
+      (ignore-errors (emacsql-sqlite-compile 2)))))
 
 (provide 'emacsql-sqlite)
 
