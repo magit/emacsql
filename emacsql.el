@@ -388,7 +388,7 @@ A prefix argument causes the SQL to be printed into the current buffer."
   "Return non-nil if point is inside a vector expression."
   (let ((start (point)))
     (save-excursion
-      (backward-paragraph)
+      (beginning-of-defun)
       (let ((containing-sexp (elt (parse-partial-sexp (point) start) 1)))
         (when containing-sexp
           (setf (point) containing-sexp)
