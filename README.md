@@ -373,6 +373,7 @@ inherits from `emacsql-connection`.
  * Provide `emacsql-types` if needed (hint: use a class-allocated slot).
  * Ensure that you properly read NULL as nil (hint: ask your back-end
    to print it that way).
+ * Register all reserved words with `emacsql-register-reserved`.
  * Preferably provide `emacsql-reconnect` if possible.
  * If available, ensure foreign key constraints are enabled by
    default.

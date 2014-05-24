@@ -32,6 +32,19 @@
 
 ;; Escaping functions:
 
+(defvar emacsql-reserved (make-hash-table :test 'equal)
+  "Collection of all known reserved words, used for escaping.")
+
+(defun emacsql-register-reserved (seq)
+  "Register sequence of keywords as reserved words, returning SEQ."
+  (cl-loop for word being the elements of seq
+           do (setf (gethash (upcase (format "%s" word)) emacsql-reserved) t)
+           finally (cl-return seq)))
+
+(defun emacsql-reserved-p (name)
+  "Returns non-nil if string NAME is a SQL keyword."
+  (gethash (upcase name) emacsql-reserved))
+
 (defun emacsql-quote-scalar (string)
   "Single-quote (scalar) STRING for use in a SQL expression."
   (format "'%s'" (replace-regexp-in-string "'" "''" string)))
@@ -53,7 +66,8 @@
       (let ((print (replace-regexp-in-string "-" "_" (format "%S" identifier)))
             (special "[]-\000-\040!\"#%&'()*+,./:;<=>?@[\\^`{|}~\177]"))
         (if (or (string-match-p special print)
-                (string-match-p "^[0-9$]" print))
+                (string-match-p "^[0-9$]" print)
+                (emacsql-reserved-p print))
             (emacsql-quote-identifier print)
           print)))))
 
