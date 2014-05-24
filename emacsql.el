@@ -267,7 +267,7 @@ multiple times before the changes are committed."
            (condition-case nil
                (progn
                  (when (= 1 emacsql--transaction-level)
-                   (emacsql emacsql--connection [:begin :transaction]))
+                   (emacsql emacsql--connection [:begin]))
                  (let ((result (progn ,@body)))
                    (setf emacsql--result result)
                    (when (= 1 emacsql--transaction-level)
