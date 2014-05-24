@@ -10,6 +10,7 @@
   (should (string= (emacsql-escape-identifier 'foo) "foo"))
   (should (string= (emacsql-escape-identifier 'a\ b) "\"a\\ b\""))
   (should (string= (emacsql-escape-identifier '$foo) "\"$foo\""))
+  (should (string= (emacsql-escape-identifier 'select) "\"select\""))
   (should-error (emacsql-escape-identifier 10))
   (should-error (emacsql-escape-identifier nil))
   (should (string= (emacsql-escape-identifier 'person-id) "person_id"))
