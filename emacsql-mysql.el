@@ -75,7 +75,8 @@ http://dev.mysql.com/doc/refman/5.5/en/reserved-words.html")
       (setf (process-sentinel process)
             (lambda (proc _) (kill-buffer (process-buffer proc))))
       (when debug (emacsql-enable-debugging connection))
-      (emacsql connection [:set-session (= sql-mode 'NO_BACKSLASH_ESCAPES)])
+      (emacsql connection
+               [:set-session (= sql-mode 'NO_BACKSLASH_ESCAPES\,ANSI_QUOTES)])
       (emacsql-register connection))))
 
 (defmethod emacsql-close ((connection emacsql-mysql-connection))
