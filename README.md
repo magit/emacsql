@@ -378,7 +378,13 @@ inherits from `emacsql-connection`.
  * Preferably provide `emacsql-reconnect` if possible.
  * Set the default isolation level to *serializable*.
  * Enable autocommit mode by default.
+ * Prefer ANSI syntax (value escapes, identifier escapes, etc.).
  * Enable foreign key constraints by default.
+
+The goal of the autocommit, isolation, parsing, and foreign key
+configuration settings is to normalize the interface as much as
+possible. The connection's user should have the option to be agnostic
+about which back-end is actually in use.
 
 The provided implementations should serve as useful examples. If your
 back-end outputs data in a clean, standard way you may be able to use
