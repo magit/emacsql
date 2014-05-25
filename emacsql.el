@@ -123,7 +123,7 @@ SQL expression.")
   (process-buffer (emacsql-process connection)))
 
 (defmethod emacsql-enable-debugging ((connection emacsql-connection))
-  "Enable debugging on this"
+  "Enable debugging on CONNECTION."
   (unless (buffer-live-p (emacsql-log-buffer connection))
     (setf (emacsql-log-buffer connection)
           (generate-new-buffer " *emacsql-log*"))))
