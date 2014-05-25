@@ -85,6 +85,8 @@ http://www.postgresql.org/docs/7.3/static/sql-keywords-appendix.html")
               "\\set PROMPT1 ]"
               "EMACSQL;")) ; error message flush
       (emacsql-wait connection)
+      (emacsql connection
+               [:set (= default-transaction-isolation 'SERIALIZABLE)])
       (emacsql-register connection))))
 
 (defmethod emacsql-close ((connection emacsql-psql-connection))
