@@ -6,6 +6,7 @@
 (require 'emacsql-sqlite)
 (require 'emacsql-psql)
 (require 'emacsql-mysql)
+(require 'emacsql-pg)
 
 (defvar emacsql-tests-timeout 4
   "Be aggressive about not waiting on subprocesses in unit tests.")
@@ -13,14 +14,17 @@
 (defvar emacsql-tests-connection-factories
   (let ((factories ())
         (pgdatabase (getenv "PGDATABASE"))
+        (pguser (getenv "PGUSER"))
         (mysql-dbname (getenv "MYSQL_DBNAME")))
-    (push (cons "sqlite" (apply-partially #'emacsql-sqlite nil)) factories)
-    (when pgdatabase
-      (push (cons "psql" (apply-partially #'emacsql-psql pgdatabase))
-            factories))
-    (when mysql-dbname
-      (push (cons "mysql" (apply-partially #'emacsql-mysql mysql-dbname))
-            factories))
+    (cl-labels ((reg (name &rest args)
+                  (push (cons name (apply #'apply-partially args)) factories)))
+      (reg "sqlite" #'emacsql-sqlite nil)
+      (when pgdatabase
+        (reg "psql" #'emacsql-psql pgdatabase))
+      (when (and pgdatabase pguser)
+        (reg "pg" #'emacsql-pg pgdatabase pguser))
+      (when mysql-dbname
+        (reg "mysql" #'emacsql-mysql mysql-dbname)))
     (nreverse factories))
   "List of connection factories to use in unit tests.")
 

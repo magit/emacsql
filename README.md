@@ -352,8 +352,9 @@ and unit testing.
     make test
 
 If the environment variable `PGDATABASE` is present then the unit
-tests will also be run with PostgreSQL. Also provide `PGHOST`,
-`PGPORT`, and `PGUSER` if needed.
+tests will also be run with PostgreSQL (emacsql-psql). Provide
+`PGHOST`, `PGPORT`, and `PGUSER` if needed. If `PGUSER` is provided,
+the pg.el backend (emacsql-pg) will also be tested.
 
 If the environment variable `MYSQL_DBNAME` is present then the unit
 tests will also be run with MySQL in the named database. Note that
