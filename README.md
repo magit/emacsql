@@ -375,8 +375,9 @@ inherits from `emacsql-connection`.
    to print it that way).
  * Register all reserved words with `emacsql-register-reserved`.
  * Preferably provide `emacsql-reconnect` if possible.
- * If available, ensure foreign key constraints are enabled by
-   default.
+ * Set the default isolation level to *serializable*.
+ * Enable autocommit mode by default.
+ * Enable foreign key constraints by default.
 
 The provided implementations should serve as useful examples. If your
 back-end outputs data in a clean, standard way you may be able to use
