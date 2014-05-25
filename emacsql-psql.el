@@ -1,4 +1,4 @@
-;;; emacsql-psql.el --- PostgreSQL front-end for EmacSQL -*- lexical-binding: t; -*-
+;;; emacsql-psql.el --- back-end for PostgreSQL via psql -*- lexical-binding: t; -*-
 
 ;;; Code:
 

@@ -1,4 +1,4 @@
-;;; emacsql-mysql.el --- front-end for MySQL -*- lexical-binding: t; -*-
+;;; emacsql-mysql.el --- back-end for MySQL -*- lexical-binding: t; -*-
 
 ;;; Code:
 

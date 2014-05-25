@@ -1,4 +1,4 @@
-;;; emacsql-pg.el --- PostgreSQL (pg.el) back-end -*- lexical-binding: t; -*-
+;;; emacsql-pg.el --- back-end for PostgreSQL via pg -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 

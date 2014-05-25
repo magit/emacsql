@@ -1,4 +1,4 @@
-;; emacsql-sqlite.el --- SQLite front-end for EmacSQL -*- lexical-binding: t; -*-
+;; emacsql-sqlite.el --- back-end for SQLite -*- lexical-binding: t; -*-
 
 ;;; Code:
 
