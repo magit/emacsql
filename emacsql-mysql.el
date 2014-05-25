@@ -77,6 +77,8 @@ http://dev.mysql.com/doc/refman/5.5/en/reserved-words.html")
       (when debug (emacsql-enable-debugging connection))
       (emacsql connection
                [:set-session (= sql-mode 'NO_BACKSLASH_ESCAPES\,ANSI_QUOTES)])
+      (emacsql connection
+               [:set-transaction-isolation-level :serializable])
       (emacsql-register connection))))
 
 (defmethod emacsql-close ((connection emacsql-mysql-connection))
