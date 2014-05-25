@@ -7,7 +7,7 @@ PACKAGE := emacsql
 VERSION := $(shell $(CASK) version)
 
 EL = emacsql-compiler.el emacsql-system.el emacsql.el \
-     emacsql-sqlite.el emacsql-psql.el emacsql-mysql.el
+     emacsql-sqlite.el emacsql-psql.el emacsql-mysql.el emacsql-pg.el
 ELC = $(EL:.el=.elc)
 EXTRA_DIST = README.md UNLICENSE
 
