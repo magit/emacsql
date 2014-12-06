@@ -120,7 +120,7 @@ nil (default type). The values are strings to be inserted into a
 SQL expression.")
 
 (defmethod emacsql-buffer ((connection emacsql-connection))
-  "Get proccess buffer for CONNECTION."
+  "Get process buffer for CONNECTION."
   (process-buffer (emacsql-process connection)))
 
 (defmethod emacsql-enable-debugging ((connection emacsql-connection))
