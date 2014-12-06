@@ -223,7 +223,9 @@ This works like `url-copy-file' but actually checks for errors."
          (new-root (file-name-directory byte-compile-current-file))
          (emacsql-sqlite-executable
           (expand-file-name bin-name (concat new-root "bin/"))))
-    (unless (file-exists-p emacsql-sqlite-executable)
+    (when (and (not (file-exists-p emacsql-sqlite-executable))
+               (equal (file-name-nondirectory byte-compile-current-file)
+                      "emacsql-sqlite.el"))
       (ignore-errors (emacsql-sqlite-compile 2)))))
 
 (provide 'emacsql-sqlite)
