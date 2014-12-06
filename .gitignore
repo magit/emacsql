@@ -3,3 +3,4 @@
 .cask
 *-pkg.el
 *.o
+bin/emacsql-sqlite-*
