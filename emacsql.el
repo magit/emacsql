@@ -82,7 +82,8 @@
   "Maximum number of seconds to wait before bailing out on a SQL command.
 If nil, wait forever.")
 
-(defvar emacsql-data-root (file-name-directory load-file-name)
+(defvar emacsql-data-root
+  (file-name-directory (or load-file-name buffer-file-name))
   "Directory where EmacSQL is installed.")
 
 (defclass emacsql-connection ()
