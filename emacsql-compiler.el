@@ -4,6 +4,8 @@
 
 (require 'cl-lib)
 
+;;; Error symbols
+
 (defmacro emacsql-deferror (symbol parents message)
   "Defines a new error symbol  for EmacSQL."
   (declare (indent 2))
@@ -30,7 +32,7 @@
   "Like `error', but signal an emacsql-syntax condition."
   (signal 'emacsql-syntax (list (apply #'format format args))))
 
-;; Escaping functions:
+;;; Escaping functions
 
 (defvar emacsql-reserved (make-hash-table :test 'equal)
   "Collection of all known reserved words, used for escaping.")
@@ -96,7 +98,7 @@ KIND should be :scalar or :identifier."
               (:vector (emacsql-escape-vector thing))
               (otherwise thing))))
 
-;; Schema compiler:
+;;; Schema compiler
 
 (defvar emacsql-type-map
   '((integer "&INTEGER")
@@ -159,7 +161,7 @@ KIND should be :scalar or :identifier."
         (mapcar #'emacsql--prepare-constraints constraints))
        ", "))))
 
-;; Statement compilation:
+;;; Statement compilation
 
 (defvar emacsql-prepare-cache (make-hash-table :test 'equal :weakness 'key)
   "Cache used to memoize `emacsql-prepare'.")

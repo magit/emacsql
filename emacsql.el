@@ -86,6 +86,8 @@ If nil, wait forever.")
   (file-name-directory (or load-file-name buffer-file-name))
   "Directory where EmacSQL is installed.")
 
+;;; Database connection
+
 (defclass emacsql-connection ()
   ((process :type process
             :initarg :process
@@ -138,7 +140,7 @@ MESSAGE should not have a newline on the end."
         (setf (point) (point-max))
         (princ (concat message "\n") log)))))
 
-;; Sending and receiving:
+;;; Sending and receiving
 
 (defgeneric emacsql-send-message ((connection emacsql-connection) message)
   "Send MESSAGE to CONNECTION.")
@@ -182,7 +184,7 @@ MESSAGE should not have a newline on the end."
     (emacsql-wait connection)
     (emacsql-parse connection)))
 
-;; Helper mixin class:
+;;; Helper mixin class
 
 (defclass emacsql-protocol-mixin ()
   ()
@@ -220,14 +222,14 @@ specific error conditions."
 
 (provide 'emacsql) ; end of generic function declarations
 
-;; Automatic connection cleanup:
+;;; Automatic connection cleanup
 
 (defun emacsql-register (connection)
   "Register CONNECTION for automatic cleanup and return CONNECTION."
   (finalize-register connection #'emacsql-close (copy-sequence connection))
   connection)
 
-;; Useful macros:
+;;; Useful macros
 
 (require 'emacsql-sqlite) ; for `emacsql-connect'
 
@@ -326,7 +328,7 @@ Each column must be a plain symbol, no expressions allowed here."
                  (cl-destructuring-bind ,(cl-coerce vars 'list) emacsql--result
                    ,@body)))))))
 
-;; User interaction functions:
+;;; User interaction functions
 
 (defvar emacsql-show-buffer-name "*emacsql-show*"
   "Name of the buffer for displaying intermediate SQL.")
@@ -383,7 +385,7 @@ A prefix argument causes the SQL to be printed into the current buffer."
             (emacsql-show-sql sql)))
       (user-error "Invalid SQL: %S" sexp))))
 
-;; Fix Emacs' broken vector indentation:
+;;; Fix Emacs' broken vector indentation
 
 (defun emacsql--inside-vector-p ()
   "Return non-nil if point is inside a vector expression."

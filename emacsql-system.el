@@ -1,7 +1,5 @@
 ;;; emacsql-system.el --- detect OS and machine -*- lexical-binding: t; -*-
 
-;;; Commentary:
-
 ;;; Code:
 
 (require 'cl-lib)

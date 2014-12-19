@@ -9,6 +9,8 @@
 (require 'emacsql)
 (require 'emacsql-system)
 
+;;; Options
+
 (defcustom emacsql-sqlite-automatic-fetch nil
   "If non-nil, the user will not be prompted to download the
 pre-built SQLite binary. A value of `yes' will always approve the
@@ -25,6 +27,8 @@ Raspberry Pi) it may be worth always fetching the pre-built
 version."
   :group 'emacsql
   :type 'boolean)
+
+;;; SQLite connection
 
 (defvar emacsql-sqlite-executable
   (expand-file-name (format "bin/emacsql-sqlite-%s%s" (emacsql-system-tuple)
@@ -120,7 +124,7 @@ buffer. This is for debugging purposes."
        'emacsql-error)
    (list message)))
 
-;; SQLite compilation
+;;; SQLite compilation
 
 (defun emacsql-sqlite-compile-switches ()
   "Return the compilation switches from the Makefile under sqlite/."
@@ -159,7 +163,7 @@ If called with non-nil ASYNC the return value is meaningless."
                    (eql 0 (apply #'call-process cc nil (if async 0 t) t
                                  arguments)))))))))
 
-;; SQLite binary fetching
+;;; SQLite binary fetching
 
 (defvar emacsql-sqlite-user-prompted nil
   "To avoid prompting for fetch multiple times.")
@@ -208,7 +212,7 @@ This works like `url-copy-file' but actually checks for errors."
           (emacsql-sqlite-mark-exec emacsql-sqlite-executable)
           :success)))))
 
-;; Ensure the SQLite binary is available
+;;; Ensure the SQLite binary is available
 
 (defun emacsql-sqlite-ensure-binary ()
   "Ensure the EmacSQL SQLite binary is available, signaling an error if not."
