@@ -26,13 +26,6 @@ having any particular software installed.
 
 Requires Emacs 24 or later.
 
-### Windows Issue
-
-Due to a [long-standing Emacs bug][batch], EmacSQL cannot be used in
-Emacs' "-batch" mode on Windows, which includes running the EmacSQL
-test suite from the Makefile. However, it will still work properly
-within Cygwin.
-
 ## Example Usage
 
 ```el
