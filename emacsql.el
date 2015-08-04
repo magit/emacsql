@@ -197,7 +197,7 @@ must display as \"nil\".")
   :abstract t)
 
 (defmethod emacsql-waiting-p ((connection emacsql-protocol-mixin))
-  "Return true of the end of the buffer has a properly-formatted prompt."
+  "Return true if the end of the buffer has a properly-formatted prompt."
   (with-current-buffer (emacsql-buffer connection)
     (and (>= (buffer-size) 2)
          (string= "#\n" (buffer-substring (- (point-max) 2) (point-max))))))
