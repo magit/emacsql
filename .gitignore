@@ -4,3 +4,4 @@
 *-pkg.el
 *.o
 bin/emacsql-sqlite-*
+var/
