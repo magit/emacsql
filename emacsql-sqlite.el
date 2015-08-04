@@ -174,7 +174,7 @@ If called with non-nil ASYNC the return value is meaningless."
 (defun emacsql-sqlite-download (url filename)
   "Downlod URL to FILENAME, clobbering returning nil on failure.
 This works like `url-copy-file' but actually checks for errors."
-  (cl-declare (special url-http-end-of-headers))
+  (require 'url)
   (let ((buffer (url-retrieve-synchronously url)))
     (when buffer
       (with-current-buffer buffer
@@ -182,7 +182,8 @@ This works like `url-copy-file' but actually checks for errors."
           (when (and (>= 200 response) (< response 300))
             (mkdir (file-name-directory filename) t)
             (let ((buffer-file-coding-system 'no-conversion))
-              (write-region (1+ url-http-end-of-headers) (point-max) filename)
+              (write-region (1+ (with-no-warnings url-http-end-of-headers))
+			    (point-max) filename)
               :success)))))))
 
 (defun emacsql-sqlite-mark-exec (file)
