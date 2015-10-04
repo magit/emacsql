@@ -237,17 +237,10 @@ This works like `url-copy-file' but actually checks for errors."
 (defun emacsql-sqlite-ensure-binary ()
   "Ensure the EmacSQL SQLite binary is available, signaling an error if not."
   (unless (file-exists-p emacsql-sqlite-executable)
-    ;; try compiling again at the last minute
-    (unless (ignore-errors (emacsql-sqlite-compile 0))
+    ;; try compiling at the last minute
+    (unless (ignore-errors (emacsql-sqlite-compile 2))
       (unless (emacsql-sqlite-fetch-binary)
         (error "No EmacSQL SQLite binary available, aborting")))))
-
-(let* ((bin-name (file-name-nondirectory emacsql-sqlite-executable))
-       (emacsql-sqlite-executable
-        (expand-file-name bin-name
-                          (expand-file-name "bin" emacsql-sqlite-data-root))))
-  (unless (file-exists-p emacsql-sqlite-executable)
-    (ignore-errors (emacsql-sqlite-compile 2))))
 
 (provide 'emacsql-sqlite)
 
