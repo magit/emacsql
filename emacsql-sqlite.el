@@ -46,12 +46,17 @@ version."
 ;;; SQLite connection
 
 (cl-eval-when (load compile)
+  (defvar emacsql-sqlite-data-root
+    (file-name-directory (or load-file-name buffer-file-name))
+    "Directory where EmacSQL is installed."))
+
+(cl-eval-when (load compile)
   (defvar emacsql-sqlite-executable
     (expand-file-name (format "bin/emacsql-sqlite-%s%s" (emacsql-system-tuple)
                               (if (memq system-type '(windows-nt cygwin ms-dos))
                                   ".exe"
                                 ""))
-                      emacsql-data-root)
+                      emacsql-sqlite-data-root)
     "Path to the EmacSQL backend (this is not the sqlite3 shell)."))
 
 (defvar emacsql-sqlite-reserved
@@ -144,7 +149,7 @@ buffer. This is for debugging purposes."
 
 (defun emacsql-sqlite-compile-switches ()
   "Return the compilation switches from the Makefile under sqlite/."
-  (let ((makefile (expand-file-name "sqlite/Makefile" emacsql-data-root))
+  (let ((makefile (expand-file-name "sqlite/Makefile" emacsql-sqlite-data-root))
         (case-fold-search nil))
     (with-temp-buffer
       (insert-file-contents makefile)
@@ -156,7 +161,7 @@ buffer. This is for debugging purposes."
   "Compile the SQLite back-end for EmacSQL, returning non-nil on success.
 If called with non-nil ASYNC the return value is meaningless."
   (let* ((cc (executable-find "cc"))
-         (src (expand-file-name "sqlite" emacsql-data-root))
+         (src (expand-file-name "sqlite" emacsql-sqlite-data-root))
          (files (mapcar (lambda (f) (expand-file-name f src))
                         '("sqlite3.c" "emacsql.c")))
          (cflags (list (format "-I%s" src) (format "-O%d" (or o-level 2))))
@@ -170,7 +175,7 @@ If called with non-nil ASYNC the return value is meaningless."
           ((not emacsql-sqlite-automatic-build)
            (prog1 nil
              (message "Local SQLite build disabled, skipping")))
-          (t (mkdir (expand-file-name "bin" emacsql-data-root) t)
+          (t (mkdir (expand-file-name "bin" emacsql-sqlite-data-root) t)
              (message "Compiling EmacSQL SQLite binary ...")
              (let ((log (get-buffer-create byte-compile-log-buffer)))
                (with-current-buffer log
