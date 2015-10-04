@@ -24,12 +24,12 @@ a custom built tool is required. If your own package depends on
 EmacSQL as a database this means it doesn't have to rely on the user
 having any particular software installed.
 
-Requires Emacs 24 or later.
+Requires Emacs 24.3 or later.
 
 ## Example Usage
 
 ```el
-(defvar db (emacsql-connect "~/company.db"))
+(defvar db (emacsql-sqlite "~/company.db"))
 
 ;; Create a table. Table and column identifiers are symbols.
 (emacsql db [:create-table people ([name id salary])])

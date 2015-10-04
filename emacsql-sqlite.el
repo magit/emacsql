@@ -1,5 +1,20 @@
 ;; emacsql-sqlite.el --- back-end for SQLite -*- lexical-binding: t; -*-
 
+;; This is free and unencumbered software released into the public domain.
+
+;; Author: Christopher Wellons <wellons@nullprogram.com>
+;; URL: https://github.com/skeeto/emacsql
+;; Version: 1.0.0
+;; Package-Requires: ((emacs "24.3") (cl-lib "0.3") (emacsql "1.0.2"))
+
+;;; Commentary:
+
+;; During package installation EmacSQL will attempt to compile a
+;; custom native binary for communicating with a SQLite database. If
+;; this fails (a C compiler is not available), it will attempt to
+;; download, with permission, a pre-built binary when the first
+;; database connection is attempted.
+
 ;;; Code:
 
 (require 'cl-lib)

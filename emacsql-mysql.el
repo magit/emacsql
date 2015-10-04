@@ -1,5 +1,16 @@
 ;;; emacsql-mysql.el --- back-end for MySQL -*- lexical-binding: t; -*-
 
+;; This is free and unencumbered software released into the public domain.
+
+;; Author: Christopher Wellons <wellons@nullprogram.com>
+;; URL: https://github.com/skeeto/emacsql
+;; Version: 1.0.0
+;; Package-Requires: ((emacs "24.3") (cl-lib "0.3") (emacsql "1.0.2"))
+
+;;; Commentary:
+
+;; This backend uses the standard "mysql" command line program.
+
 ;;; Code:
 
 (require 'cl-lib)

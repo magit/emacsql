@@ -5,29 +5,22 @@
 ;; Author: Christopher Wellons <wellons@nullprogram.com>
 ;; URL: https://github.com/skeeto/emacsql
 ;; Version: 1.0.2
-;; Package-Requires: ((emacs "24.3") (cl-lib "0.3") (finalize "1.0.0") (pg "0.12"))
+;; Package-Requires: ((emacs "24.3") (cl-lib "0.3") (finalize "1.0.0"))
 
 ;;; Commentary:
 
 ;; EmacSQL is a high-level Emacs Lisp front-end for SQLite
 ;; (primarily), PostgreSQL, MySQL, and potentially other SQL
-;; databases.
+;; databases. On MELPA, each of the backends is provided through
+;; separate packages: emacsql-sqlite, emacsql-psql, emacsql-mysql.
 
-;; During package installation EmacSQL will attempt to compile a
-;; custom native binary for communicating with a SQLite database. If
-;; this fails (a C compiler is not available), it will attempt to
-;; download, with permission, a pre-built binary when the first
-;; database connection is attempted.
+;; Most EmacSQL functions operate on a database connection. For
+;; example, a connection to SQLite is established with
+;; `emacsql-sqlite'. For each such connection a sqlite3 inferior
+;; process is kept alive in the background. Connections are closed
+;; with `emacsql-close'.
 
-;; Most EmacSQL functions operate on a database connection. A
-;; connection to SQLite is established with `emacsql-connect'. For
-;; each such connection a sqlite3 inferior process is kept alive in
-;; the background. Connections are closed with `emacsql-close'.
-
-;;     (defvar db (emacsql-connect "company.db"))
-
-;; Other types of database connections are available (PostgreSQL via
-;; `emacsql-psql').
+;;     (defvar db (emacsql-sqlite "company.db"))
 
 ;; Use `emacsql' to send an s-expression SQL statements to a connected
 ;; database. Identifiers for tables and columns are symbols. SQL
@@ -230,10 +223,6 @@ specific error conditions."
   connection)
 
 ;;; Useful macros
-
-(require 'emacsql-sqlite) ; for `emacsql-connect'
-
-(defalias 'emacsql-connect 'emacsql-sqlite)
 
 (defmacro emacsql-with-connection (connection-spec &rest body)
   "Open an EmacSQL connection, evaluate BODY, and close the connection.

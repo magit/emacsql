@@ -1,5 +1,19 @@
 ;;; emacsql-psql.el --- back-end for PostgreSQL via psql -*- lexical-binding: t; -*-
 
+;; This is free and unencumbered software released into the public domain.
+
+;; Author: Christopher Wellons <wellons@nullprogram.com>
+;; URL: https://github.com/skeeto/emacsql
+;; Version: 1.0.0
+;; Package-Requires: ((emacs "24.3") (cl-lib "0.3") (emacsql "1.0.2") (pg "0.12"))
+
+;;; Commentary:
+
+;; This backend uses the standard "psql" command line program.
+
+;; This package also includes the emacsql-pg backend, which is written
+;; in in pure Emacs Lisp and requires no command line program.
+
 ;;; Code:
 
 (require 'cl-lib)
