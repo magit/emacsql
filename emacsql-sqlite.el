@@ -45,19 +45,17 @@ version."
 
 ;;; SQLite connection
 
-(cl-eval-when (load compile)
-  (defvar emacsql-sqlite-data-root
-    (file-name-directory (or load-file-name buffer-file-name))
-    "Directory where EmacSQL is installed."))
+(defvar emacsql-sqlite-data-root
+  (file-name-directory (or load-file-name buffer-file-name))
+  "Directory where EmacSQL is installed.")
 
-(cl-eval-when (load compile)
-  (defvar emacsql-sqlite-executable
-    (expand-file-name (format "bin/emacsql-sqlite-%s%s" (emacsql-system-tuple)
-                              (if (memq system-type '(windows-nt cygwin ms-dos))
-                                  ".exe"
-                                ""))
-                      emacsql-sqlite-data-root)
-    "Path to the EmacSQL backend (this is not the sqlite3 shell)."))
+(defvar emacsql-sqlite-executable
+  (expand-file-name (format "bin/emacsql-sqlite-%s%s" (emacsql-system-tuple)
+                            (if (memq system-type '(windows-nt cygwin ms-dos))
+                                ".exe"
+                              ""))
+                    emacsql-sqlite-data-root)
+  "Path to the EmacSQL backend (this is not the sqlite3 shell).")
 
 (defvar emacsql-sqlite-reserved
   (emacsql-register-reserved
@@ -244,15 +242,12 @@ This works like `url-copy-file' but actually checks for errors."
       (unless (emacsql-sqlite-fetch-binary)
         (error "No EmacSQL SQLite binary available, aborting")))))
 
-(cl-eval-when (compile)
-  (let* ((bin-name (file-name-nondirectory emacsql-sqlite-executable))
-         (new-root (file-name-directory byte-compile-current-file))
-         (emacsql-sqlite-executable
-          (expand-file-name bin-name (concat new-root "bin/"))))
-    (when (and (not (file-exists-p emacsql-sqlite-executable))
-               (equal (file-name-nondirectory byte-compile-current-file)
-                      "emacsql-sqlite.el"))
-      (ignore-errors (emacsql-sqlite-compile 2)))))
+(let* ((bin-name (file-name-nondirectory emacsql-sqlite-executable))
+       (emacsql-sqlite-executable
+        (expand-file-name bin-name
+                          (expand-file-name "bin" emacsql-sqlite-data-root))))
+  (unless (file-exists-p emacsql-sqlite-executable)
+    (ignore-errors (emacsql-sqlite-compile 2))))
 
 (provide 'emacsql-sqlite)
 
