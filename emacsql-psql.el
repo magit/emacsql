@@ -1,4 +1,4 @@
-;;; emacsql-psql.el --- back-end for PostgreSQL via psql -*- lexical-binding: t; -*-
+;;; emacsql-psql.el --- EmacSQL back-end for PostgreSQL via psql and pg -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 

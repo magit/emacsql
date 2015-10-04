@@ -1,4 +1,4 @@
-;;; emacsql-mysql.el --- back-end for MySQL -*- lexical-binding: t; -*-
+;;; emacsql-mysql.el --- EmacSQL back-end for MySQL -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
