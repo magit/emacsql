@@ -14,15 +14,17 @@ closures. EmacSQL has no concept of "TEXT" values; it's all just lisp
 objects. The lisp object `nil` corresponds 1:1 with `NULL` in the
 database.
 
-During package installation EmacSQL will attempt to compile a custom
-native binary for communicating with a SQLite database. If this fails
-(a C compiler is not available), it will attempt to download, with
-permission, a pre-built binary when the first database connection is
-attempted. The official sqlite3 command shell is incapable of correct
-interaction when linked with GNU Readline, or when run in Windows, so
-a custom built tool is required. If your own package depends on
-EmacSQL as a database this means it doesn't have to rely on the user
-having any particular software installed.
+On MELPA, each backend is provided as a separate package, suffixed
+with the database name. In the case of `emacsql-sqlite`, on first use
+EmacSQL will attempt to compile a custom native binary for
+communicating with a SQLite database. If this fails (a C compiler is
+not available), it will attempt to download, with permission, a
+pre-built binary when the first database connection is attempted. The
+official sqlite3 command shell is incapable of correct interaction
+when linked with GNU Readline, or when run in Windows, so a custom
+build tool is required. If your own package depends on EmacSQL as a
+database, this means it doesn't have to rely on the user having any
+particular software installed.
 
 Requires Emacs 24.3 or later.
 
