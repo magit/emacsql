@@ -45,13 +45,14 @@ version."
 
 ;;; SQLite connection
 
-(defvar emacsql-sqlite-executable
-  (expand-file-name (format "bin/emacsql-sqlite-%s%s" (emacsql-system-tuple)
-                            (if (memq system-type '(windows-nt cygwin ms-dos))
-                                ".exe"
-                              ""))
-                    emacsql-data-root)
-  "Path to the EmacSQL backend (this is not the sqlite3 shell).")
+(cl-eval-when (load compile)
+  (defvar emacsql-sqlite-executable
+    (expand-file-name (format "bin/emacsql-sqlite-%s%s" (emacsql-system-tuple)
+                              (if (memq system-type '(windows-nt cygwin ms-dos))
+                                  ".exe"
+                                ""))
+                      emacsql-data-root)
+    "Path to the EmacSQL backend (this is not the sqlite3 shell)."))
 
 (defvar emacsql-sqlite-reserved
   (emacsql-register-reserved
