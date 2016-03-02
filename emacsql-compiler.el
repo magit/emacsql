@@ -268,6 +268,10 @@ which will be combined with variable definitions."
             ;; Unary
             ((not)
              (format "NOT %s" (recur 0)))
+            ((notnull)
+             (format "%s NOTNULL" (recur 0)))
+            ((isnull)
+             (format "%s ISNULL" (recur 0)))
             ;; Ordering
             ((asc desc)
              (format "%s %s" (recur 0) (upcase (symbol-name op))))
