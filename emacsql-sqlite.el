@@ -88,12 +88,15 @@ http://www.sqlite.org/lang_keywords.html")
                       (nil nil))))
   (:documentation "A connection to a SQLite database."))
 
-(cl-defun emacsql-sqlite (file &key debug)
+(cl-defun emacsql-sqlite (file &key debug (class 'emacsql-sqlite-connection))
   "Open a connected to database stored in FILE.
 If FILE is nil use an in-memory database.
 
 :debug LOG -- When non-nil, log all SQLite commands to a log
-buffer. This is for debugging purposes."
+buffer. This is for debugging purposes.
+
+:class CLASS -- When non-nil, create an instance of CLASS
+instead of an `emacsql-sqlite-connection' instance."
   (emacsql-sqlite-ensure-binary)
   (let* ((process-connection-type nil)  ; use a pipe
          (coding-system-for-write 'utf-8-auto)
