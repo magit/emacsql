@@ -183,7 +183,7 @@ vector (v), schema (S)."
                 (?S :schema)))))))
 
 (defmacro emacsql-with-params (prefix &rest body)
-  "Evaluate BODY, collecting patameters.
+  "Evaluate BODY, collecting parameters.
 Provided local functions: `param', `identifier', `scalar',
 `svector', `expr', `subsql', and `combine'. BODY should return a string,
 which will be combined with variable definitions."
