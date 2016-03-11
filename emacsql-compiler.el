@@ -161,7 +161,7 @@
   "Cache used to memoize `emacsql-prepare'.")
 
 (defvar emacsql--vars ()
-  "For use with `emacsql-with-params'.")
+  "Used within `emacsql-with-params' to collect parameters.")
 
 (defun emacsql-sql-p (thing)
   "Return non-nil if THING looks like a prepared statement."
@@ -200,7 +200,9 @@ which will be combined with variable definitions."
        (cons (concat ,prefix (progn ,@body)) emacsql--vars))))
 
 (defun emacsql--!param (thing &optional kind)
-  "Only use within `emacsql-with-params'!"
+  "Parse, escape, and store THING.
+If optional KIND is not specified, then try to guess it.
+Only use within `emacsql-with-params'!"
   (cl-flet ((check (param)
                    (when (and kind (not (eq kind (cdr param))))
                      (emacsql-error
@@ -293,7 +295,8 @@ which will be combined with variable definitions."
     (mapconcat #'expr idents ", ")))
 
 (defun emacsql--*combine (prepared)
-  "Only use within `emacsql-with-params'!"
+  "Append parameters from PREPARED to `emacsql--vars', return the string.
+Only use within `emacsql-with-params'!"
   (cl-destructuring-bind (string . vars) prepared
     (setf emacsql--vars (nconc emacsql--vars vars))
     string))
