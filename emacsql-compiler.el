@@ -88,15 +88,9 @@
     (vector (concat "(" (mapconcat #'emacsql-escape-scalar vector ", ") ")"))
     (otherwise (emacsql-error "Invalid vector %S" vector))))
 
-(defun emacsql-escape-format (thing &optional kind)
-  "Escape THING for use as a `format' spec, pre-escaping for KIND.
-KIND should be :scalar or :identifier."
-  (replace-regexp-in-string
-   "%" "%%" (cl-case kind
-              (:scalar (emacsql-escape-scalar thing))
-              (:identifier (emacsql-escape-identifier thing))
-              (:vector (emacsql-escape-vector thing))
-              (otherwise thing))))
+(defun emacsql-escape-format (thing)
+  "Escape THING for use as a `format' spec."
+  (replace-regexp-in-string "%" "%%" thing))
 
 ;;; Schema compiler
 
