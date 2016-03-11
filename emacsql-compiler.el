@@ -161,7 +161,7 @@
   "Cache used to memoize `emacsql-prepare'.")
 
 (defvar emacsql--vars ()
-  "For use with `emacsql-with-vars'.")
+  "For use with `emacsql-with-params'.")
 
 (defun emacsql-sql-p (thing)
   "Return non-nil if THING looks like a prepared statement."
@@ -293,7 +293,7 @@ which will be combined with variable definitions."
     (mapconcat #'expr idents ", ")))
 
 (defun emacsql--*combine (prepared)
-  "Only use within `emacsql-with-vars'!"
+  "Only use within `emacsql-with-params'!"
   (cl-destructuring-bind (string . vars) prepared
     (setf emacsql--vars (nconc emacsql--vars vars))
     string))
