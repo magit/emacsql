@@ -88,30 +88,35 @@ http://www.sqlite.org/lang_keywords.html")
                       (nil nil))))
   (:documentation "A connection to a SQLite database."))
 
+(defmethod initialize-instance :after
+  ((connection emacsql-sqlite-connection) &key)
+  (emacsql-sqlite-ensure-binary)
+  (let* ((process-connection-type nil)  ; use a pipe
+         (coding-system-for-write 'utf-8-auto)
+         (coding-system-for-read 'utf-8-auto)
+         (file (slot-value connection 'file))
+         (buffer (generate-new-buffer " *emacsql-sqlite*"))
+         (fullfile (if file (expand-file-name file) ":memory:"))
+         (process (start-process
+                   "emacsql-sqlite" buffer emacsql-sqlite-executable fullfile)))
+    (setf (slot-value connection 'process) process)
+    (setf (process-sentinel process)
+          (lambda (proc _) (kill-buffer (process-buffer proc))))
+    (emacsql-wait connection)
+    (emacsql connection [:pragma (= busy-timeout $s1)]
+             (/ (* emacsql-global-timeout 1000) 2))
+    (emacsql-register connection)))
+
 (cl-defun emacsql-sqlite (file &key debug)
   "Open a connected to database stored in FILE.
 If FILE is nil use an in-memory database.
 
 :debug LOG -- When non-nil, log all SQLite commands to a log
 buffer. This is for debugging purposes."
-  (emacsql-sqlite-ensure-binary)
-  (let* ((process-connection-type nil)  ; use a pipe
-         (coding-system-for-write 'utf-8-auto)
-         (coding-system-for-read 'utf-8-auto)
-         (buffer (generate-new-buffer " *emacsql-sqlite*"))
-         (fullfile (if file (expand-file-name file) ":memory:"))
-         (process (start-process
-                   "emacsql-sqlite" buffer emacsql-sqlite-executable fullfile))
-         (connection (make-instance 'emacsql-sqlite-connection
-                                    :process process
-                                    :file (when file fullfile))))
-    (setf (process-sentinel process)
-          (lambda (proc _) (kill-buffer (process-buffer proc))))
-    (emacsql-wait connection)
-    (emacsql connection [:pragma (= busy-timeout $s1)]
-             (/ (* emacsql-global-timeout 1000) 2))
-    (when debug (emacsql-enable-debugging connection))
-    (emacsql-register connection)))
+  (let ((connection (make-instance 'emacsql-sqlite-connection :file file)))
+    (when debug
+      (emacsql-enable-debugging connection))
+    connection))
 
 (defmethod emacsql-close ((connection emacsql-sqlite-connection))
   "Gracefully exits the SQLite subprocess."
