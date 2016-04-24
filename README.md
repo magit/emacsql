@@ -28,6 +28,12 @@ particular software installed.
 
 Requires Emacs 24.3 or later.
 
+### Windows Issues
+
+Emacs `start-process-shell-command` function is not supported on
+Windows. Since both `emacsql-mysql` and `emacsql-psql` rely on this
+function, neither of these connection types are supported on Windows.
+
 ## Example Usage
 
 ```el
