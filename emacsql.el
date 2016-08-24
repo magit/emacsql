@@ -340,7 +340,14 @@ Each column must be a plain symbol, no expressions allowed here."
            (sql-mode)
            (with-no-warnings ;; autoloaded by previous line
              (sql-highlight-sqlite-keywords))
-           (font-lock-fontify-buffer)
+           (if (and (fboundp 'font-lock-flush)
+                    (fboundp 'font-lock-ensure))
+               (save-restriction
+                 (widen)
+                 (font-lock-flush)
+                 (font-lock-ensure))
+             (with-no-warnings
+               (font-lock-fontify-buffer)))
            (emacsql--indent)
            (buffer-string))))
     (with-current-buffer (get-buffer-create emacsql-show-buffer-name)
