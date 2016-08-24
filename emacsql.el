@@ -373,7 +373,10 @@ Each column must be a plain symbol, no expressions allowed here."
   "Display the compiled SQL of the s-expression SQL expression before point.
 A prefix argument causes the SQL to be printed into the current buffer."
   (interactive "P")
-  (let ((sexp (preceding-sexp)))
+  (let ((sexp (if (fboundp 'elisp--preceding-sexp)
+                  (elisp--preceding-sexp)
+                (with-no-warnings
+                  (preceding-sexp)))))
     (if (emacsql-sql-p sexp)
         (let ((sql (emacsql-flatten-sql sexp)))
           (if prefix
