@@ -156,7 +156,8 @@ MESSAGE should not have a newline on the end."
          (end (when real-timeout (+ (float-time) real-timeout))))
     (while (and (or (null real-timeout) (< (float-time) end))
                 (not (emacsql-waiting-p connection)))
-      (accept-process-output (emacsql-process connection) real-timeout))
+      (save-match-data
+        (accept-process-output (emacsql-process connection) real-timeout)))
     (unless (emacsql-waiting-p connection)
       (signal 'emacsql-timeout (list "Query timed out" real-timeout)))))
 
