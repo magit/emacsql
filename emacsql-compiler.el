@@ -83,6 +83,12 @@
           ((numberp value) (prin1-to-string value))
           ((emacsql-quote-scalar (prin1-to-string value))))))
 
+(defun emacsql-escape-raw (value)
+  "Escape VALUE for sending to SQLite."
+  (cond ((null value) "NULL")
+        ((stringp value) (emacsql-quote-scalar value))
+        ((error "Expected string or nil"))))
+
 (defun emacsql-escape-vector (vector)
   "Encode VECTOR into a SQL vector scalar."
   (cl-typecase vector
@@ -174,28 +180,30 @@
   "Return the index and type of THING, or nil if THING is not a parameter.
 A parameter is a symbol that looks like $i1, $s2, $v3, etc. The
 letter refers to the type: identifier (i), scalar (s),
-vector (v), schema (S)."
+vector (v), raw string (r), schema (S)."
   (when (symbolp thing)
     (let ((name (symbol-name thing)))
-      (when (string-match-p "^\\$[isvS][0-9]+$" name)
+      (when (string-match-p "^\\$[isvrS][0-9]+$" name)
         (cons (1- (read (substring name 2)))
               (cl-ecase (aref name 1)
                 (?i :identifier)
                 (?s :scalar)
                 (?v :vector)
+                (?r :raw)
                 (?S :schema)))))))
 
 (defmacro emacsql-with-params (prefix &rest body)
   "Evaluate BODY, collecting parameters.
-Provided local functions: `param', `identifier', `scalar',
-`svector', `expr', `subsql', and `combine'. BODY should return a string,
-which will be combined with variable definitions."
+Provided local functions: `param', `identifier', `scalar', `raw',
+`svector', `expr', `subsql', and `combine'. BODY should return a
+string, which will be combined with variable definitions."
   (declare (indent 1))
   `(let ((emacsql--vars ()))
      (cl-flet* ((combine (prepared) (emacsql--*combine prepared))
                 (param (thing) (emacsql--!param thing))
                 (identifier (thing) (emacsql--!param thing :identifier))
                 (scalar (thing) (emacsql--!param thing :scalar))
+                (raw (thing) (emacsql--!param thing :raw))
                 (svector (thing) (combine (emacsql--*vector thing)))
                 (expr (thing) (combine (emacsql--*expr thing)))
                 (subsql (thing)
@@ -218,6 +226,7 @@ Only use within `emacsql-with-params'!"
                  (:identifier (emacsql-escape-identifier thing))
                  (:scalar (emacsql-escape-scalar thing))
                  (:vector (emacsql-escape-vector thing))
+                 (:raw (emacsql-escape-raw thing))
                  (:schema (emacsql-prepare-schema thing)))
              (if (and (not (null thing))
                       (not (keywordp thing))
@@ -275,7 +284,10 @@ Only use within `emacsql-with-params'!"
             ((asc desc)
              (format "%s %s" (recur 0) (upcase (symbol-name op))))
             ;; Special case quote
-            ((quote) (scalar (nth 0 args)))
+            ((quote) (let ((arg (nth 0 args)))
+                       (if (stringp arg)
+                           (raw arg)
+                         (scalar arg))))
             ;; Special case funcall
             ((funcall)
              (format "%s(%s)" (recur 0)
@@ -365,6 +377,7 @@ Only use within `emacsql-with-params'!"
                         (:identifier (emacsql-escape-identifier thing))
                         (:scalar (emacsql-escape-scalar thing))
                         (:vector (emacsql-escape-vector thing))
+                        (:raw (emacsql-escape-raw thing))
                         (:schema (emacsql-prepare-schema thing))
                         (otherwise
                          (emacsql-error "Invalid var type %S" kind))))))))

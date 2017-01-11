@@ -137,6 +137,17 @@ does not "escape" `$tn` parameter symbols.
 (emacsql db [... :where (= category 'hiking)])
 ```
 
+Quoting a string makes EmacSQL handle it as a "raw string." These raw
+strings are not printed when being assembled into a query. These are
+intended for use in special circumstances like filenames (`ATTACH`) or
+pattern matching (`LIKE`). It is vital that raw strings are not
+returned as results.
+
+```el
+(emacsql db [... :where (like name '"%foo%")])
+(emacsql db [:attach '"/path/to/foo.db" :as foo])
+```
+
 Since template parameters include their type they never need to be
 quoted.
 
@@ -261,6 +272,8 @@ one-indexed.
 
 ```el
 (emacsql db [:select * :from $i1 :where (> salary $s2)] 'employees 50000)
+
+(emacsql db [:select * :from employees :where (like name $r1)] "%Smith%")
 ```
 
 The letter before the number is the type.
@@ -268,6 +281,7 @@ The letter before the number is the type.
  * `i` : identifier
  * `s` : scalar
  * `v` : vector (or multiple vectors)
+ * `r` : raw, unprinted strings
  * `S` : schema
 
 When combined with `:values`, the vector type can refer to lists of

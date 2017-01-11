@@ -33,6 +33,12 @@
   (should (string= (emacsql-escape-vector '([1 2 3] [4 5 6]))
                    "(1, 2, 3), (4, 5, 6)")))
 
+(ert-deftest emacsql-escape-raw ()
+  (should (string= (emacsql-escape-raw "/var/emacsql") "'/var/emacsql'"))
+  (should (string= (emacsql-escape-raw "a b c") "'a b c'"))
+  (should (string= (emacsql-escape-raw "a 'b' c") "'a ''b'' c'"))
+  (should (string= (emacsql-escape-raw nil) "NULL")))
+
 (ert-deftest emacsql-schema ()
   (should (string= (emacsql-prepare-schema [a]) "a &NONE"))
   (should (string= (emacsql-prepare-schema [a b c])
@@ -55,6 +61,7 @@
   (should (equal (emacsql-param '$1) nil))
   (should (equal (emacsql-param '$s5) '(4 . :scalar)))
   (should (equal (emacsql-param '$v10) '(9 . :vector)))
+  (should (equal (emacsql-param '$r2) '(1 . :raw)))
   (should (equal (emacsql-param '$a) nil))
   (should (equal (emacsql-param '$i10) '(9 . :identifier))))
 
@@ -85,6 +92,13 @@
      "SELECT name FROM people, accounts AS a;")
     ([:select p:name :from [(as [:select * :from people] p)]] '()
      "SELECT p.name FROM (SELECT * FROM people) AS p;")))
+
+(ert-deftest emacsql-attach ()
+  (emacsql-tests-with-queries
+    ([:attach $r1 :as $i2] '("/var/foo.db" foo)
+     "ATTACH '/var/foo.db' AS foo;")
+    ([:detach $i1] '(foo)
+     "DETACH foo;")))
 
 (ert-deftest emacsql-create-table ()
   (emacsql-tests-with-queries
