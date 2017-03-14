@@ -97,34 +97,34 @@ If nil, wait forever.")
   (:documentation "A connection to a SQL database.")
   :abstract t)
 
-(defgeneric emacsql-close (connection)
+(cl-defgeneric emacsql-close (connection)
   "Close CONNECTION and free all resources.")
 
-(defgeneric emacsql-reconnect (connection)
+(cl-defgeneric emacsql-reconnect (connection)
   "Re-establish CONNECTION with the same parameters.")
 
-(defmethod emacsql-live-p ((connection emacsql-connection))
+(cl-defmethod emacsql-live-p ((connection emacsql-connection))
   "Return non-nil if CONNECTION is still alive and ready."
   (not (null (process-live-p (emacsql-process connection)))))
 
-(defgeneric emacsql-types (connection)
+(cl-defgeneric emacsql-types (connection)
   "Return an alist mapping EmacSQL types to database types.
 This will mask `emacsql-type-map' during expression compilation.
 This alist should have four key symbols: integer, float, object,
 nil (default type). The values are strings to be inserted into a
 SQL expression.")
 
-(defmethod emacsql-buffer ((connection emacsql-connection))
+(cl-defmethod emacsql-buffer ((connection emacsql-connection))
   "Get process buffer for CONNECTION."
   (process-buffer (emacsql-process connection)))
 
-(defmethod emacsql-enable-debugging ((connection emacsql-connection))
+(cl-defmethod emacsql-enable-debugging ((connection emacsql-connection))
   "Enable debugging on CONNECTION."
   (unless (buffer-live-p (emacsql-log-buffer connection))
     (setf (emacsql-log-buffer connection)
           (generate-new-buffer " *emacsql-log*"))))
 
-(defmethod emacsql-log ((connection emacsql-connection) message)
+(cl-defmethod emacsql-log ((connection emacsql-connection) message)
   "Log MESSAGE into CONNECTION's log.
 MESSAGE should not have a newline on the end."
   (let ((log (emacsql-log-buffer connection)))
@@ -135,22 +135,22 @@ MESSAGE should not have a newline on the end."
 
 ;;; Sending and receiving
 
-(defgeneric emacsql-send-message ((connection emacsql-connection) message)
+(cl-defgeneric emacsql-send-message ((connection emacsql-connection) message)
   "Send MESSAGE to CONNECTION.")
 
-(defmethod emacsql-send-message :before
+(cl-defmethod emacsql-send-message :before
   ((connection emacsql-connection) message)
   (emacsql-log connection message))
 
-(defmethod emacsql-clear ((connection emacsql-connection))
+(cl-defmethod emacsql-clear ((connection emacsql-connection))
   "Clear the process buffer for CONNECTION-SPEC."
   (with-current-buffer (emacsql-buffer connection)
     (erase-buffer)))
 
-(defgeneric emacsql-waiting-p (connection)
+(cl-defgeneric emacsql-waiting-p (connection)
   "Return non-nil if CONNECTION is ready for more input.")
 
-(defmethod emacsql-wait ((connection emacsql-connection) &optional timeout)
+(cl-defmethod emacsql-wait ((connection emacsql-connection) &optional timeout)
   "Block until CONNECTION is waiting for further input."
   (let* ((real-timeout (or timeout emacsql-global-timeout))
          (end (when real-timeout (+ (float-time) real-timeout))))
@@ -161,7 +161,7 @@ MESSAGE should not have a newline on the end."
     (unless (emacsql-waiting-p connection)
       (signal 'emacsql-timeout (list "Query timed out" real-timeout)))))
 
-(defgeneric emacsql-parse (connection)
+(cl-defgeneric emacsql-parse (connection)
   "Return the results of parsing the latest output or signal an error.")
 
 (defun emacsql-compile (connection sql &rest args)
@@ -170,7 +170,7 @@ MESSAGE should not have a newline on the end."
          (emacsql-type-map (or mask emacsql-type-map)))
     (concat (apply #'emacsql-format (emacsql-prepare sql) args) ";")))
 
-(defmethod emacsql ((connection emacsql-connection) sql &rest args)
+(cl-defmethod emacsql ((connection emacsql-connection) sql &rest args)
   "Send SQL s-expression to CONNECTION and return the results."
   (let ((sql-string (apply #'emacsql-compile connection sql args)))
     (emacsql-clear connection)
@@ -190,19 +190,19 @@ exactly one row per line, fields separated by whitespace. NULL
 must display as \"nil\".")
   :abstract t)
 
-(defmethod emacsql-waiting-p ((connection emacsql-protocol-mixin))
+(cl-defmethod emacsql-waiting-p ((connection emacsql-protocol-mixin))
   "Return true if the end of the buffer has a properly-formatted prompt."
   (with-current-buffer (emacsql-buffer connection)
     (and (>= (buffer-size) 2)
          (string= "#\n" (buffer-substring (- (point-max) 2) (point-max))))))
 
-(defmethod emacsql-handle ((_ emacsql-protocol-mixin) code message)
+(cl-defmethod emacsql-handle ((_ emacsql-protocol-mixin) code message)
   "Signal a specific condition for CODE from CONNECTION.
 Subclasses should override this method in order to provide more
 specific error conditions."
   (signal 'emacsql-error (list code message)))
 
-(defmethod emacsql-parse ((connection emacsql-protocol-mixin))
+(cl-defmethod emacsql-parse ((connection emacsql-protocol-mixin))
   "Parse well-formed output into an s-expression."
   (with-current-buffer (emacsql-buffer connection)
     (setf (point) (point-min))
