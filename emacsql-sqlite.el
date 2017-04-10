@@ -5,7 +5,7 @@
 ;; Author: Christopher Wellons <wellons@nullprogram.com>
 ;; URL: https://github.com/skeeto/emacsql
 ;; Version: 1.0.0
-;; Package-Requires: ((emacs "24.3") (cl-lib "0.3") (emacsql "2.0.0"))
+;; Package-Requires: ((emacs "24.3") (cl-generic "0.3") (cl-lib "0.3") (emacsql "2.0.0"))
 
 ;;; Commentary:
 
@@ -18,6 +18,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'cl-generic)
 (require 'eieio)
 (require 'url)
 (require 'url-http)
@@ -88,7 +89,7 @@ http://www.sqlite.org/lang_keywords.html")
                       (nil nil))))
   (:documentation "A connection to a SQLite database."))
 
-(defmethod initialize-instance :after
+(cl-defmethod initialize-instance :after
   ((connection emacsql-sqlite-connection) &key)
   (emacsql-sqlite-ensure-binary)
   (let* ((process-connection-type nil)  ; use a pipe
@@ -118,13 +119,13 @@ buffer. This is for debugging purposes."
       (emacsql-enable-debugging connection))
     connection))
 
-(defmethod emacsql-close ((connection emacsql-sqlite-connection))
+(cl-defmethod emacsql-close ((connection emacsql-sqlite-connection))
   "Gracefully exits the SQLite subprocess."
   (let ((process (emacsql-process connection)))
     (when (process-live-p process)
       (process-send-eof process))))
 
-(defmethod emacsql-send-message ((connection emacsql-sqlite-connection) message)
+(cl-defmethod emacsql-send-message ((connection emacsql-sqlite-connection) message)
   (let ((process (emacsql-process connection)))
     (process-send-string process (format "%d " (string-bytes message)))
     (process-send-string process message)
@@ -141,7 +142,7 @@ buffer. This is for debugging purposes."
     ((27 28)                      emacsql-warning))
   "List of regexp's mapping sqlite3 output to conditions.")
 
-(defmethod emacsql-handle ((_ emacsql-sqlite-connection) code message)
+(cl-defmethod emacsql-handle ((_ emacsql-sqlite-connection) code message)
   "Get condition for MESSAGE provided from SQLite."
   (signal
    (or (cl-second (cl-assoc code emacsql-sqlite-condition-alist :test #'memql))

@@ -18,6 +18,7 @@
 (require 'pg)
 (require 'eieio)
 (require 'cl-lib)
+(require 'cl-generic)
 (require 'emacsql)
 (require 'emacsql-psql)  ; for reserved words
 
@@ -45,20 +46,20 @@
     (emacsql connection [:set (= default-transaction-isolation 'SERIALIZABLE)])
     (emacsql-register connection)))
 
-(defmethod emacsql-close ((connection emacsql-pg-connection))
+(cl-defmethod emacsql-close ((connection emacsql-pg-connection))
   (ignore-errors (pg:disconnect (emacsql-pg-pgcon connection))))
 
-(defmethod emacsql-send-message ((connection emacsql-pg-connection) message)
+(cl-defmethod emacsql-send-message ((connection emacsql-pg-connection) message)
   (condition-case error
       (setf (emacsql-pg-result connection)
             (pg:exec (emacsql-pg-pgcon connection) message))
     (error (signal 'emacsql-error error))))
 
-(defmethod emacsql-waiting-p ((_connection emacsql-pg-connection))
+(cl-defmethod emacsql-waiting-p ((_connection emacsql-pg-connection))
   ;; pg:exec will block
   t)
 
-(defmethod emacsql-parse ((connection emacsql-pg-connection))
+(cl-defmethod emacsql-parse ((connection emacsql-pg-connection))
   (let ((tuples (pg:result (emacsql-pg-result connection) :tuples)))
     (cl-loop for tuple in tuples collect
              (cl-loop for value in tuple

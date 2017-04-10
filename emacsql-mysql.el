@@ -5,7 +5,7 @@
 ;; Author: Christopher Wellons <wellons@nullprogram.com>
 ;; URL: https://github.com/skeeto/emacsql
 ;; Version: 1.0.0
-;; Package-Requires: ((emacs "24.3") (cl-lib "0.3") (emacsql "2.0.0"))
+;; Package-Requires: ((emacs "24.3") (cl-generic "0.3") (cl-lib "0.3") (emacsql "2.0.0"))
 
 ;;; Commentary:
 
@@ -14,6 +14,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'cl-generic)
 (require 'eieio)
 (require 'emacsql)
 
@@ -92,24 +93,24 @@ http://dev.mysql.com/doc/refman/5.5/en/reserved-words.html")
                [:set-transaction-isolation-level :serializable])
       (emacsql-register connection))))
 
-(defmethod emacsql-close ((connection emacsql-mysql-connection))
+(cl-defmethod emacsql-close ((connection emacsql-mysql-connection))
   (let ((process (emacsql-process connection)))
     (when (process-live-p process)
       (process-send-eof process))))
 
-(defmethod emacsql-send-message ((connection emacsql-mysql-connection) message)
+(cl-defmethod emacsql-send-message ((connection emacsql-mysql-connection) message)
   (let ((process (emacsql-process connection)))
     (process-send-string process message)
     (process-send-string process "\\c\\p\n")))
 
-(defmethod emacsql-waiting-p ((connection emacsql-mysql-connection))
+(cl-defmethod emacsql-waiting-p ((connection emacsql-mysql-connection))
   (let ((length (length emacsql-mysql-sentinel)))
     (with-current-buffer (emacsql-buffer connection)
       (and (>= (buffer-size) length)
            (progn (setf (point) (- (point-max) length))
                   (looking-at emacsql-mysql-sentinel))))))
 
-(defmethod emacsql-parse ((connection emacsql-mysql-connection))
+(cl-defmethod emacsql-parse ((connection emacsql-mysql-connection))
   (with-current-buffer (emacsql-buffer connection)
     (let ((standard-input (current-buffer)))
       (setf (point) (point-min))

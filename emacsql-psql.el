@@ -5,7 +5,7 @@
 ;; Author: Christopher Wellons <wellons@nullprogram.com>
 ;; URL: https://github.com/skeeto/emacsql
 ;; Version: 1.0.0
-;; Package-Requires: ((emacs "24.3") (cl-lib "0.3") (emacsql "2.0.0") (pg "0.12"))
+;; Package-Requires: ((emacs "24.3") (cl-generic "0.3") (cl-lib "0.3") (emacsql "2.0.0") (pg "0.12"))
 
 ;;; Commentary:
 
@@ -17,6 +17,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'cl-generic)
 (require 'eieio)
 (require 'emacsql)
 
@@ -103,24 +104,24 @@ http://www.postgresql.org/docs/7.3/static/sql-keywords-appendix.html")
                [:set (= default-transaction-isolation 'SERIALIZABLE)])
       (emacsql-register connection))))
 
-(defmethod emacsql-close ((connection emacsql-psql-connection))
+(cl-defmethod emacsql-close ((connection emacsql-psql-connection))
   (let ((process (emacsql-process connection)))
     (when (process-live-p process)
       (process-send-string process "\\q\n"))))
 
-(defmethod emacsql-send-message ((connection emacsql-psql-connection) message)
+(cl-defmethod emacsql-send-message ((connection emacsql-psql-connection) message)
   (let ((process (emacsql-process connection)))
     (process-send-string process message)
     (process-send-string process "\n")))
 
-(defmethod emacsql-waiting-p ((connection emacsql-psql-connection))
+(cl-defmethod emacsql-waiting-p ((connection emacsql-psql-connection))
   (with-current-buffer (emacsql-buffer connection)
     (cond ((= (buffer-size) 1) (string= "]" (buffer-string)))
           ((> (buffer-size) 1) (string= "\n]"
                                         (buffer-substring
                                          (- (point-max) 2) (point-max)))))))
 
-(defmethod emacsql-check-error ((connection emacsql-psql-connection))
+(cl-defmethod emacsql-check-error ((connection emacsql-psql-connection))
   (with-current-buffer (emacsql-buffer connection)
     (let ((case-fold-search t))
       (setf (point) (point-min))
@@ -129,7 +130,7 @@ http://www.postgresql.org/docs/7.3/static/sql-keywords-appendix.html")
                (end (line-end-position)))
           (signal 'emacsql-error (list (buffer-substring beg end))))))))
 
-(defmethod emacsql-parse ((connection emacsql-psql-connection))
+(cl-defmethod emacsql-parse ((connection emacsql-psql-connection))
   (emacsql-check-error connection)
   (with-current-buffer (emacsql-buffer connection)
     (let ((standard-input (current-buffer)))
