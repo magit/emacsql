@@ -61,6 +61,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'cl-generic)
 (require 'eieio)
 (require 'finalize)
 (require 'emacsql-compiler)
