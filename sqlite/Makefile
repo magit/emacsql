@@ -1,7 +1,7 @@
-EMACS    ?= emacs
-GETTUPLE  = -l ../emacsql-system.el -f emacsql-system-print-tuple
-OSTUPLE  ?= $(shell $(EMACS) -Q -batch $(GETTUPLE))
-BINARY    = emacsql-sqlite-$(OSTUPLE)
+EMACS    = emacs
+GETTUPLE = -l ../emacsql-system.el -f emacsql-system-print-tuple
+OSTUPLE  = $(shell $(EMACS) -Q -batch $(GETTUPLE))
+BINARY   = emacsql-sqlite-$(OSTUPLE)
 
 ifneq (,$(findstring windows, $(OSTUPLE)))
     ## Windows
@@ -11,23 +11,21 @@ else
     LDLIBS  = -ldl
 endif
 
-CFLAGS  = -O2 -W -Wall -Wextra
-CFLAGS += -DSQLITE_THREADSAFE=0
-CFLAGS += -DSQLITE_DEFAULT_FOREIGN_KEYS=1
-CFLAGS += -DSQLITE_ENABLE_FTS4
-CFLAGS += -DSQLITE_ENABLE_FTS3_PARENTHESIS
-CFLAGS += -DSQLITE_SOUNDEX
+CFLAGS = -O2 -W -Wall -Wextra \
+    -DSQLITE_THREADSAFE=0 \
+    -DSQLITE_DEFAULT_FOREIGN_KEYS=1 \
+    -DSQLITE_ENABLE_FTS4 \
+    -DSQLITE_ENABLE_FTS3_PARENTHESIS \
+    -DSQLITE_SOUNDEX
 
-.PHONY : clean install
+install: ../bin/$(BINARY)
 
-install : ../bin/$(BINARY)
-
-../bin/$(BINARY) : $(BINARY)
+../bin/$(BINARY): $(BINARY)
 	mkdir -p ../bin/
 	cp $< ../bin/
 
-$(BINARY) : emacsql.o sqlite3.o
+$(BINARY): emacsql.o sqlite3.o
 	$(CC) $(LDLIBS) $(LDFLAGS) -o $@ $^
 
-clean :
-	$(RM) *.o $(BINARY) emacsql-sqlite-* ../bin/$(BINARY)
+clean:
+	rm -f *.o $(BINARY) emacsql-sqlite-* ../bin/$(BINARY)
