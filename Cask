@@ -1,2 +1,7 @@
+(source gnu)
 (source melpa)
-(package-file "emacsql.el")
+(package "emacsql-cask" "0.0.0" "Dummy package for testing using Cask.")
+(depends-on "cl-generic" "0.3")
+(depends-on "cl-lib" "0.3")
+(depends-on "finalize" "1.0.0")
+(depends-on "pg" "0.12")
