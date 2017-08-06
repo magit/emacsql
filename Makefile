@@ -1,6 +1,18 @@
+# Clone the two dependencies of this package in sibling directories:
+#     $ cd ..
+#     $ git clone https://github.com/cbbrowne/pg.el pg
+#     $ git clone https://github.com/skeeto/elisp-finalize finalize
+#     $ cd -
+#     $ make
+#
+# Or set LDFLAGS to point at these packages elsewhere:
+#     $ make LDFLAGS='-L path/to/finalize -L path/to/pg'
+
+.POSIX:
+.SUFFIXES: .el .elc
 EMACS   = emacs
-CASK    = cask
-BATCH   = $(CASK) exec $(EMACS) -batch -Q -L . -L tests
+LDFLAGS = -L ../finalize -L ../pg
+BATCH   = $(EMACS) -batch -Q -L . -L tests $(LDFLAGS)
 
 EL = emacsql-compiler.el \
      emacsql-system.el \
@@ -19,14 +31,10 @@ EXTRA_DIST = README.md UNLICENSE
 
 all: test
 
-.cask: Cask
-	cask install
-	touch .cask
-
 binary:
 	$(MAKE) -C sqlite
 
-compile: .cask $(ELC)
+compile: $(ELC)
 
 package: emacsql-$(VERSION).tar
 
@@ -39,8 +47,6 @@ clean:
 distclean: clean
 	rm -f bin/*
 	$(MAKE) -C sqlite clean
-
-.SUFFIXES: .el .elc
 
 .el.elc:
 	$(BATCH) -f batch-byte-compile $<
