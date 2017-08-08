@@ -361,10 +361,18 @@ advises the major mode to fix this annoyance.
 
 ## Contributing and Extending
 
-You'll need to install [Cask][cask], which is required for compilation
-and unit testing.
+To run the test suite, clone the `pg` and `finalize` packages into
+sibling directories. The Makefile will automatically put these paths on
+the Emacs load path (override `LDFLAGS` if your situation is different).
 
-    make test
+    $ cd ..
+    $ git clone https://github.com/cbbrowne/pg.el pg
+    $ git clone https://github.com/skeeto/elisp-finalize finalize
+    $ cd -
+
+Then invoke make:
+
+    $ make test
 
 If the environment variable `PGDATABASE` is present then the unit
 tests will also be run with PostgreSQL (emacsql-psql). Provide
@@ -414,6 +422,5 @@ the emacsql-protocol-mixin class to do most of the work.
 [stderr]: http://thread.gmane.org/gmane.comp.db.sqlite.general/85824
 [foreign]: http://www.sqlite.org/foreignkeys.html
 [batch]: http://lists.gnu.org/archive/html/emacs-pretest-bug/2005-11/msg00320.html
-[cask]: http://cask.github.io/
 [fts]: http://www.sqlite.org/fts3.html
 [soundex]: http://www.sqlite.org/compile.html#soundex
