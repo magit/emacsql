@@ -90,7 +90,7 @@ http://www.sqlite.org/lang_keywords.html")
   (:documentation "A connection to a SQLite database."))
 
 (cl-defmethod initialize-instance :after
-  ((connection emacsql-sqlite-connection) &optional slots)
+  ((connection emacsql-sqlite-connection) &rest _)
   (emacsql-sqlite-ensure-binary)
   (let* ((process-connection-type nil)  ; use a pipe
          (coding-system-for-write 'utf-8-auto)
