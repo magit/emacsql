@@ -1,17 +1,16 @@
 # Clone the two dependencies of this package in sibling directories:
 #     $ cd ..
 #     $ git clone https://github.com/cbbrowne/pg.el pg
-#     $ git clone https://github.com/skeeto/elisp-finalize finalize
 #     $ cd -
 #     $ make
 #
 # Or set LDFLAGS to point at these packages elsewhere:
-#     $ make LDFLAGS='-L path/to/finalize -L path/to/pg'
+#     $ make LDFLAGS='-L path/to/pg'
 
 .POSIX:
 .SUFFIXES: .el .elc
 EMACS   = emacs
-LDFLAGS = -L ../finalize -L ../pg
+LDFLAGS = -L ../pg
 BATCH   = $(EMACS) -batch -Q -L . -L tests $(LDFLAGS)
 
 EL = emacsql-compiler.el \

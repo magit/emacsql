@@ -5,7 +5,7 @@
 ;; Author: Christopher Wellons <wellons@nullprogram.com>
 ;; URL: https://github.com/skeeto/emacsql
 ;; Version: 2.0.2
-;; Package-Requires: ((emacs "24.3") (cl-generic "0.3") (cl-lib "0.3") (finalize "1.0.0"))
+;; Package-Requires: ((emacs "25"))
 
 ;;; Commentary:
 
@@ -63,7 +63,6 @@
 (require 'cl-lib)
 (require 'cl-generic)
 (require 'eieio)
-(require 'finalize)
 (require 'emacsql-compiler)
 
 (defgroup emacsql nil
@@ -91,6 +90,7 @@ If nil, wait forever.")
                :initform nil
                :accessor emacsql-log-buffer
                :documentation "Output log (debug).")
+   (finalizer :documentation "Object returned from `make-finalizer'.")
    (types :allocation :class
           :initform nil
           :reader emacsql-types
@@ -221,8 +221,9 @@ specific error conditions."
 
 (defun emacsql-register (connection)
   "Register CONNECTION for automatic cleanup and return CONNECTION."
-  (finalize-register connection #'emacsql-close (copy-sequence connection))
-  connection)
+  (let ((finalizer (make-finalizer (lambda () (emacsql-close connection)))))
+    (prog1 connection
+      (setf (slot-value connection 'finalizer) finalizer))))
 
 ;;; Useful macros
 

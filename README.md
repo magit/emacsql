@@ -26,7 +26,7 @@ build tool is required. If your own package depends on EmacSQL as a
 database, this means it doesn't have to rely on the user having any
 particular software installed.
 
-Requires Emacs 24.3 or later.
+Requires Emacs 25 or later.
 
 ### Windows Issues
 
