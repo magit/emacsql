@@ -1,11 +1,11 @@
-;;; emacsql-psql.el --- EmacSQL back-end for PostgreSQL via psql and pg -*- lexical-binding: t; -*-
+;;; emacsql-psql.el --- EmacSQL back-end for PostgreSQL via psql -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Christopher Wellons <wellons@nullprogram.com>
 ;; URL: https://github.com/skeeto/emacsql
 ;; Version: 1.0.0
-;; Package-Requires: ((emacs "24.3") (cl-generic "0.3") (cl-lib "0.3") (emacsql "2.0.0") (pg "0.12"))
+;; Package-Requires: ((emacs "25.1") (emacsql "2.0.0"))
 
 ;;; Commentary:
 
