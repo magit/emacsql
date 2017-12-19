@@ -62,8 +62,11 @@
             (not (or (symbolp identifier)
                      (vectorp identifier))))
     (emacsql-error "Invalid identifier: %S" identifier))
-  (if (vectorp identifier)
-      (mapconcat #'emacsql-escape-identifier identifier ", ")
+  (cond
+   ((vectorp identifier)
+    (mapconcat #'emacsql-escape-identifier identifier ", "))
+   ((eq identifier '*) "*")
+   (t
     (let ((name (symbol-name identifier)))
       (if (string-match-p ":" name)
           (mapconcat #'emacsql-escape-identifier
@@ -74,7 +77,7 @@
                   (string-match-p "^[0-9$]" print)
                   (emacsql-reserved-p print))
               (emacsql-quote-identifier print)
-            print))))))
+            print)))))))
 
 (defun emacsql-escape-scalar (value)
   "Escape VALUE for sending to SQLite."
