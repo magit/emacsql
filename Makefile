@@ -1,8 +1,5 @@
-# Clone the two dependencies of this package in sibling directories:
-#     $ cd ..
-#     $ git clone https://github.com/cbbrowne/pg.el pg
-#     $ cd -
-#     $ make
+# Clone the dependencies of this package in sibling directories:
+#     $ git clone https://github.com/cbbrowne/pg.el ../pg
 #
 # Or set LDFLAGS to point at these packages elsewhere:
 #     $ make LDFLAGS='-L path/to/pg'
