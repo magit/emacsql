@@ -10,10 +10,7 @@
 ;;; Commentary:
 
 ;; During package installation EmacSQL will attempt to compile a
-;; custom native binary for communicating with a SQLite database. If
-;; this fails (a C compiler is not available), it will attempt to
-;; download, with permission, a pre-built binary when the first
-;; database connection is attempted.
+;; custom native binary for communicating with a SQLite database.
 
 ;;; Code:
 
@@ -23,26 +20,6 @@
 (require 'url)
 (require 'url-http)
 (require 'emacsql)
-(require 'emacsql-system)
-
-;;; Options
-
-(defcustom emacsql-sqlite-automatic-fetch nil
-  "If non-nil, the user will not be prompted to download the
-pre-built SQLite binary. A value of `yes' will always approve the
-download. A value of `no' will always deny the download."
-  :group 'emacsql
-  :type '(choice (const nil) (const yes) (const no)))
-
-(defcustom emacsql-sqlite-automatic-build t
-  "When non-nil, attempt to automatically build the SQLite binary locally.
-When enabled, the C compiler build will be attempted on every
-EmacSQL update, when the Elisp files are built. If it takes your
-computer a long time to build the binary (e.g. 10 minutes on a
-Raspberry Pi) it may be worth always fetching the pre-built
-version."
-  :group 'emacsql
-  :type 'boolean)
 
 ;;; SQLite connection
 
@@ -51,10 +28,9 @@ version."
   "Directory where EmacSQL is installed.")
 
 (defvar emacsql-sqlite-executable
-  (expand-file-name (format "bin/emacsql-sqlite-%s%s" (emacsql-system-tuple)
-                            (if (memq system-type '(windows-nt cygwin ms-dos))
-                                ".exe"
-                              ""))
+  (expand-file-name (if (memq system-type '(windows-nt cygwin ms-dos))
+                        "sqlite/emacsql-sqlite.exe"
+                      "sqlite/emacsql-sqlite")
                     emacsql-sqlite-data-root)
   "Path to the EmacSQL backend (this is not the sqlite3 shell).")
 
@@ -169,74 +145,22 @@ If called with non-nil ASYNC the return value is meaningless."
          (files (mapcar (lambda (f) (expand-file-name f src))
                         '("sqlite3.c" "emacsql.c")))
          (cflags (list (format "-I%s" src) (format "-O%d" (or o-level 2))))
-         (ldlibs (if (memq system-type '(windows-nt berkeley-unix)) () (list "-ldl")))
+         (ldlibs (if (memq system-type '(windows-nt berkeley-unix))
+                     (list "-lm")
+                   (list "-lm" "-ldl")))
          (options (emacsql-sqlite-compile-switches))
          (output (list "-o" emacsql-sqlite-executable))
          (arguments (nconc cflags options files ldlibs output)))
     (cond ((not cc)
            (prog1 nil
              (message "Could not find C compiler, skipping SQLite build")))
-          ((not emacsql-sqlite-automatic-build)
-           (prog1 nil
-             (message "Local SQLite build disabled, skipping")))
-          (t (mkdir (expand-file-name "bin" emacsql-sqlite-data-root) t)
-             (message "Compiling EmacSQL SQLite binary ...")
+          (t (message "Compiling EmacSQL SQLite binary ...")
              (let ((log (get-buffer-create byte-compile-log-buffer)))
                (with-current-buffer log
                  (let ((inhibit-read-only t))
                    (insert (mapconcat #'identity (cons cc arguments) " ") "\n")
                    (eql 0 (apply #'call-process cc nil (if async 0 t) t
                                  arguments)))))))))
-
-;;; SQLite binary fetching
-
-(defvar emacsql-sqlite-user-prompted nil
-  "To avoid prompting for fetch multiple times.")
-
-(defvar emacsql-sqlite-host "http://nullprogram.s3.amazonaws.com/emacsql/"
-  "Location where EmacSQL binaries can be found.")
-
-(defun emacsql-sqlite-download (url filename)
-  "Downlod URL to FILENAME, clobbering returning nil on failure.
-This works like `url-copy-file' but actually checks for errors."
-  (require 'url)
-  (let ((buffer (url-retrieve-synchronously url)))
-    (when buffer
-      (with-current-buffer buffer
-        (let ((response (url-http-parse-response)))
-          (when (and (>= 200 response) (< response 300))
-            (mkdir (file-name-directory filename) t)
-            (let ((buffer-file-coding-system 'no-conversion))
-              (write-region (1+ (with-no-warnings url-http-end-of-headers))
-                            (point-max) filename)
-              :success)))))))
-
-(defun emacsql-sqlite-mark-exec (file)
-  "Set executable bits on FILE's mode."
-  (set-file-modes file (logior (file-modes file) #o111)))
-
-(defun emacsql-sqlite-prompt ()
-  "Ask the user if it's ok to download the SQLite binary."
-  (let ((query "EmacSQL binary could not be built. Fetch from the Internet?"))
-    (if emacsql-sqlite-automatic-fetch
-        (not (eq emacsql-sqlite-automatic-fetch 'no))
-      (unless emacsql-sqlite-user-prompted
-        (let ((result (y-or-n-p query)))
-          (setf emacsql-sqlite-user-prompted t)
-          (when result
-            (customize-save-variable 'emacsql-sqlite-automatic-fetch 'yes))
-          result)))))
-
-(defun emacsql-sqlite-fetch-binary ()
-  "Fetch the SQLite binary from remote host."
-  (let ((prompt (emacsql-sqlite-prompt)))
-    (when prompt
-      (let* ((file (file-name-nondirectory emacsql-sqlite-executable))
-             (url (format "%s%s/%s"
-                          emacsql-sqlite-host emacsql-version file)))
-        (when (emacsql-sqlite-download url emacsql-sqlite-executable)
-          (emacsql-sqlite-mark-exec emacsql-sqlite-executable)
-          :success)))))
 
 ;;; Ensure the SQLite binary is available
 
@@ -245,8 +169,7 @@ This works like `url-copy-file' but actually checks for errors."
   (unless (file-exists-p emacsql-sqlite-executable)
     ;; try compiling at the last minute
     (unless (ignore-errors (emacsql-sqlite-compile 2))
-      (unless (emacsql-sqlite-fetch-binary)
-        (error "No EmacSQL SQLite binary available, aborting")))))
+      (error "No EmacSQL SQLite binary available, aborting"))))
 
 (provide 'emacsql-sqlite)
 

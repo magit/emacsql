@@ -1,7 +1,3 @@
 *.elc
 *.tar
-.cask
-*-pkg.el
-*.o
-bin/emacsql-sqlite-*
-var/
+sqlite/emacsql-sqlite

@@ -11,7 +11,6 @@ LDFLAGS = -L ../pg
 BATCH   = $(EMACS) -batch -Q -L . -L tests $(LDFLAGS)
 
 EL = emacsql-compiler.el \
-     emacsql-system.el \
      emacsql.el \
      emacsql-sqlite.el \
      emacsql-psql.el \
@@ -27,13 +26,13 @@ EXTRA_DIST = README.md UNLICENSE
 
 all: test
 
-binary:
+binary: sqlite/emacsql-sqlite
+sqlite/emacsql-sqlite:
 	$(MAKE) -C sqlite
 
 compile: $(ELC)
 
-package: emacsql-$(VERSION).tar
-
+check: test
 test: compile $(TEST_ELC)
 	$(BATCH) -l tests/emacsql-tests.elc -f ert-run-tests-batch
 
@@ -41,7 +40,6 @@ clean:
 	rm -f $(ELC) $(TEST_ELC)
 
 distclean: clean
-	rm -f bin/*
 	$(MAKE) -C sqlite clean
 
 .el.elc:
