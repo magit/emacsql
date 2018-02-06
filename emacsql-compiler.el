@@ -294,13 +294,17 @@ Only use within `emacsql-with-params'!"
             ;; Special case funcall
             ((funcall)
              (format "%s(%s)" (recur 0)
-                     (if (and (= 2 (length args))
-                              (eq '* (nth 1 args)))
-                         "*"
-                       (mapconcat
+                     (cond
+                      ((and (= 2 (length args))
+                            (eq '* (nth 1 args)))
+                       "*")
+                      ((and (= 3 (length args))
+                            (eq :distinct (nth 1 args))
+                            (format "DISTINCT %s" (recur 2))))
+                      ((mapconcat
                         #'recur (cl-loop for i from 1 below (length args)
                                          collect i)
-                        ", "))))
+                        ", ")))))
             ;; Guess
             (otherwise
              (mapconcat

@@ -216,6 +216,19 @@
    ([:alter-table foo :add-column size :integer :not-null] '()
     "ALTER TABLE foo ADD COLUMN size INTEGER NOT NULL;")))
 
+(ert-deftest emacsql-funcall ()
+  (emacsql-tests-with-queries
+   ([:select (funcall count x)] '()
+    "SELECT count(x);")
+   ([:select (funcall count *)] '()
+    "SELECT count(*);")
+   ([:select (funcall group-concat x y)] '()
+    "SELECT group_concat(x, y);")
+   ([:select (funcall foobar :distinct x y)] '()
+    "SELECT foobar(':distinct', x, y);")
+   ([:select (funcall count :distinct x)] '()
+    "SELECT count(DISTINCT x);")))
+
 (provide 'emacsql-compiler-tests)
 
 ;;; emacsql-tests.el ends here
