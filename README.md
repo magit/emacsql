@@ -296,12 +296,12 @@ This is why rows must be vectors and not lists.
 
 ## SQLite Support
 
-The custom EmacSQL SQLite binary is compiled with [Soundex][soundex]
-and [full-text search][fts] (FTS4) enabled -- features disabled by the
-default SQLite build. This backend should work on any system with a
-compliant C compiler installed as `cc`. If you don't have a C compiler
-installed the following platforms will be able to fetch a pre-built
-SQLite binary:
+The custom EmacSQL SQLite binary is compiled with [Soundex][soundex] and
+[full-text search][fts] (FTS3, FTS4, and FTS5) enabled -- features
+disabled by the default SQLite build. This backend should work on any
+system with a compliant C compiler installed as `cc`. If you don't have
+a C compiler installed the following platforms will be able to fetch a
+pre-built SQLite binary:
 
  * Linux x86 and x86_64
  * OS X x86_64
