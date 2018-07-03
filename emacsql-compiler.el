@@ -190,6 +190,7 @@ vector (v), raw string (r), schema (S)."
         (cons (1- (read (substring name 2)))
               (cl-ecase (aref name 1)
                 (?i :identifier)
+                (?V :id-vector)
                 (?s :scalar)
                 (?v :vector)
                 (?r :raw)
@@ -227,6 +228,7 @@ Only use within `emacsql-with-params'!"
            (if kind
                (cl-case kind
                  (:identifier (emacsql-escape-identifier thing))
+                 (:id-vector (emacsql-escape-vector thing))
                  (:scalar (emacsql-escape-scalar thing))
                  (:vector (emacsql-escape-vector thing))
                  (:raw (emacsql-escape-raw thing))
@@ -382,6 +384,7 @@ Only use within `emacsql-with-params'!"
                     (let ((thing (nth i args)))
                       (cl-case kind
                         (:identifier (emacsql-escape-identifier thing))
+                        (:id-vector (emacsql-escape-vector thing))
                         (:scalar (emacsql-escape-scalar thing))
                         (:vector (emacsql-escape-vector thing))
                         (:raw (emacsql-escape-raw thing))

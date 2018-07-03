@@ -86,6 +86,7 @@
                        (let ((thing (nth i args)))
                          (cl-case kind
                            (:identifier (emacsql-escape-identifier thing))
+                           (:id-vector  (emacsql-escape-vector thing))
                            (:scalar     (push thing params) "?")
                            (:vector     (dolist (thing (cl-coerce thing 'list))
                                           (push thing params))
