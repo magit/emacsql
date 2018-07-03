@@ -165,8 +165,10 @@ MESSAGE should not have a newline on the end."
 (cl-defgeneric emacsql-parse (connection)
   "Return the results of parsing the latest output or signal an error.")
 
-(defun emacsql-compile (connection sql &rest args)
-  "Compile s-expression SQL for CONNECTION into a string."
+(cl-defgeneric emacsql-compile (connection sql &rest args)
+  "Compile s-expression SQL for CONNECTION into a string.")
+
+(cl-defmethod emacsql-compile ((connection emacsql-connection) sql &rest args)
   (let* ((mask (when connection (emacsql-types connection)))
          (emacsql-type-map (or mask emacsql-type-map)))
     (concat (apply #'emacsql-format (emacsql-prepare sql) args) ";")))
