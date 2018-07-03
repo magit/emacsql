@@ -50,17 +50,58 @@
   (sqlite3-close (oref connection handle)))
 
 (cl-defmethod emacsql ((connection emacsql-sqlite3-connection) sql &rest args)
-  (let (ret)
-    (sqlite3-exec (oref connection handle)
-                  (apply #'emacsql-compile connection sql args)
-                  (lambda (_ncols data _names)
-                    (push (mapcar (lambda (s)
-                                    (if (stringp s)
-                                        (car (read-from-string s))
-                                      s))
-                                  data)
-                          ret)))
+  (pcase-let* ((`(,sql . ,params)
+                (apply #'emacsql-compile connection sql args))
+               (stmt (sqlite3-prepare (oref connection handle) sql))
+               (i 1)
+               (ret nil))
+    (dolist (param params)
+      (cl-typecase param
+        (null    (sqlite3-bind-null  stmt i))
+        (integer (sqlite3-bind-int64 stmt i param))
+        (string  (sqlite3-bind-text  stmt i (prin1-to-string param)))
+        (t       (sqlite3-bind-text  stmt i (prin1-to-string param))))
+      (cl-incf i))
+    (while (= (sqlite3-step stmt) sqlite-row)
+      (push (mapcar (lambda (s)
+                      (if (stringp s)
+                          (car (read-from-string s))
+                        s))
+                    (sqlite3-fetch stmt))
+            ret))
+    (sqlite3-finalize stmt)
     (nreverse ret)))
+
+(cl-defmethod emacsql-compile ((connection emacsql-sqlite3-connection) sql &rest args)
+  (let ((emacsql-type-map (or (and connection (emacsql-types connection))
+                              emacsql-type-map)))
+    (emacsql-format-partial (emacsql-prepare sql) args)))
+
+(defun emacsql-format-partial (expansion args)
+  (cl-destructuring-bind (format . vars) expansion
+    (let (params)
+      (cons
+       (apply #'format format
+              (cl-loop for (i . kind) in vars collect
+                       (let ((thing (nth i args)))
+                         (cl-case kind
+                           (:identifier (emacsql-escape-identifier thing))
+                           (:scalar     (push thing params) "?")
+                           (:vector     (dolist (thing (cl-coerce thing 'list))
+                                          (push thing params))
+                                        (emacsql-escape-vector-partial thing))
+                           (:raw        (emacsql-escape-raw thing))
+                           (:schema     (emacsql-prepare-schema thing))
+                           (otherwise
+                            (emacsql-error "Invalid var type %S" kind))))))
+       (nreverse params)))))
+
+(defun emacsql-escape-vector-partial (vector)
+  (cl-typecase vector
+    (null   (emacsql-error "Empty SQL vector expression."))
+    (list   (mapconcat #'emacsql-escape-vector-partial vector ", "))
+    (vector (concat "(" (mapconcat (lambda (_) "?") vector ", ")")"))
+    (otherwise (emacsql-error "Invalid vector %S" vector))))
 
 (provide 'emacsql-sqlite3)
 
