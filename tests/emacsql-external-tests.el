@@ -39,6 +39,16 @@
         (should (equal (emacsql db [:select * :from foo])
                        '((1) (2) (3))))))))
 
+(ert-deftest emacsql-nul-character ()
+  "Try inserting and retrieving strings with a NUL byte."
+  (let ((emacsql-global-timeout emacsql-tests-timeout))
+    (dolist (factory emacsql-tests-connection-factories)
+      (emacsql-with-connection (db (funcall (cdr factory)))
+        (emacsql db [:create-temporary-table foo ([x])])
+        (emacsql db [:insert :into foo :values (["a\0bc"])])
+        (should (equal (emacsql db [:select * :from foo])
+                       '(("a\0bc"))))))))
+
 (ert-deftest emacsql-foreign-key ()
   "Tests that foreign keys work properly through EmacSQL."
   (let ((emacsql-global-timeout emacsql-tests-timeout))

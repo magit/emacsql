@@ -49,7 +49,19 @@
 
 (defun emacsql-quote-scalar (string)
   "Single-quote (scalar) STRING for use in a SQL expression."
-  (format "'%s'" (replace-regexp-in-string "'" "''" string)))
+  (with-temp-buffer
+    (insert string)
+    (setf (point) (point-min))
+    (while (re-search-forward "'" nil t)
+      (replace-match "''"))
+    (setf (point) (point-min))
+    (while (re-search-forward "\0" nil t)
+      (replace-match "\\\\0"))
+    (setf (point) (point-min))
+    (insert "'")
+    (setf (point) (point-max))
+    (insert "'")
+    (buffer-string)))
 
 (defun emacsql-quote-identifier (string)
   "Double-quote (identifier) STRING for use in a SQL expression."
