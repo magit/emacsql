@@ -55,9 +55,6 @@
     (while (re-search-forward "'" nil t)
       (replace-match "''"))
     (setf (point) (point-min))
-    (while (re-search-forward "\0" nil t)
-      (replace-match "\\\\0"))
-    (setf (point) (point-min))
     (insert "'")
     (setf (point) (point-max))
     (insert "'")
@@ -93,7 +90,8 @@
 
 (defun emacsql-escape-scalar (value)
   "Escape VALUE for sending to SQLite."
-  (let ((print-escape-newlines t))
+  (let ((print-escape-newlines t)
+        (print-escape-control-characters t))
     (cond ((null value) "NULL")
           ((numberp value) (prin1-to-string value))
           ((emacsql-quote-scalar (prin1-to-string value))))))
