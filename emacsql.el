@@ -4,7 +4,7 @@
 
 ;; Author: Christopher Wellons <wellons@nullprogram.com>
 ;; URL: https://github.com/skeeto/emacsql
-;; Version: 2.0.2
+;; Version: 3.0.0
 ;; Package-Requires: ((emacs "25.1"))
 
 ;;; Commentary:
@@ -69,7 +69,7 @@
   "The EmacSQL SQL database front-end."
   :group 'comm)
 
-(defvar emacsql-version "2.0.2")
+(defvar emacsql-version "3.0.0")
 
 (defvar emacsql-global-timeout 30
   "Maximum number of seconds to wait before bailing out on a SQL command.
