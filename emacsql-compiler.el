@@ -88,6 +88,8 @@
               (emacsql-quote-identifier print)
             print)))))))
 
+(defvar print-escape-control-characters)
+
 (defun emacsql-escape-scalar (value)
   "Escape VALUE for sending to SQLite."
   (let ((print-escape-newlines t)
