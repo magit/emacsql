@@ -140,7 +140,7 @@ buffer. This is for debugging purposes."
 (defun emacsql-sqlite-compile (&optional o-level async)
   "Compile the SQLite back-end for EmacSQL, returning non-nil on success.
 If called with non-nil ASYNC the return value is meaningless."
-  (let* ((cc (executable-find "cc"))
+  (let* ((cc (or (executable-find "cc") (executable-find "gcc")))
          (src (expand-file-name "sqlite" emacsql-sqlite-data-root))
          (files (mapcar (lambda (f) (expand-file-name f src))
                         '("sqlite3.c" "emacsql.c")))
