@@ -53,6 +53,13 @@
   "List of all of SQLite's reserved words.
 http://www.sqlite.org/lang_keywords.html")
 
+(defvar emacsql-sqlite-c-compilers '("cc" "gcc" "clang")
+  "List of names to try when searching for a C compiler.
+
+Each is queried using `executable-find', so full paths are
+allowed. Only the first compiler which is successfully found will
+used.")
+
 (defclass emacsql-sqlite-connection (emacsql-connection emacsql-protocol-mixin)
   ((file :initarg :file
          :type (or null string)
@@ -140,7 +147,9 @@ buffer. This is for debugging purposes."
 (defun emacsql-sqlite-compile (&optional o-level async)
   "Compile the SQLite back-end for EmacSQL, returning non-nil on success.
 If called with non-nil ASYNC the return value is meaningless."
-  (let* ((cc (or (executable-find "cc") (executable-find "gcc")))
+  (let* ((cc (cl-loop for option in emacsql-sqlite-c-compilers
+                      for path = (executable-find option)
+                      if path return it))
          (src (expand-file-name "sqlite" emacsql-sqlite-data-root))
          (files (mapcar (lambda (f) (expand-file-name f src))
                         '("sqlite3.c" "emacsql.c")))
