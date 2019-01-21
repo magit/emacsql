@@ -299,18 +299,8 @@ This is why rows must be vectors and not lists.
 The custom EmacSQL SQLite binary is compiled with [Soundex][soundex] and
 [full-text search][fts] (FTS3, FTS4, and FTS5) enabled -- features
 disabled by the default SQLite build. This backend should work on any
-system with a compliant C compiler installed as `cc`. If you don't have
-a C compiler installed the following platforms will be able to fetch a
-pre-built SQLite binary:
-
- * Linux x86 and x86_64
- * OS X x86_64
- * Windows x86 and x86_64, including Cygwin
- * Linux armv6l (Raspberry Pi + Raspbian)
-
-The customization variable `emacsql-sqlite-automatic-fetch` controls
-the behavior of SQLite binary fetching, and the variable
-`emacsql-sqlite-automatic-build` enables/disables local builds.
+system with a conforming ANSI C compiler installed under a command name
+listed in `emacsql-sqlite-c-compilers`.
 
 ### Ignored Features
 
