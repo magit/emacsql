@@ -360,7 +360,10 @@ Only use within `emacsql-with-params'!"
               ((<= >=)
                (cl-case (length args)
                  (2 (format format-string (recur 0) (recur 1)))
-                 (3 (format "%s BETWEEN %s AND %s"
+                 (3 (format (if (>= (or parent-precedence-value 0)
+                                    precedence-value)
+                                "(%s BETWEEN %s AND %s)"
+                              "%s BETWEEN %s AND %s")
                             (recur 1)
                             (recur (if (eq op '>=) 2 0))
                             (recur (if (eq op '>=) 0 2))))

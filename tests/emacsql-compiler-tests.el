@@ -242,7 +242,9 @@
    ([:select (funcall length (|| (* x x) (* y y) (* z z)))] '()
     "SELECT length((x * x) || (y * y) || (z * z));")
    ([:select (and (+ (<= x y) 1) (>= y x))] '()
-    "SELECT (x <= y) + 1 AND y >= x;")))
+    "SELECT (x <= y) + 1 AND y >= x;")
+   ([:select (or (& (<= x (+ y 1) (- z)) 1) (>= x z y))] '()
+    "SELECT (y + 1 BETWEEN x AND -z) & 1 OR z BETWEEN y AND x;")))
 
 (provide 'emacsql-compiler-tests)
 
