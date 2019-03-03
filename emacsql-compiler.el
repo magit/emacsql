@@ -261,7 +261,85 @@ Only use within `emacsql-with-params'!"
       (vector (format "(%s)" (mapconcat #'scalar vector ", ")))
       (otherwise (emacsql-error "Invalid vector: %S" vector)))))
 
-(defun emacsql--*expr (expr)
+(defmacro emacsql--generate-op-lookup (operator-name
+                                       operator-argument-count
+                                       operator-precedence-groups)
+  `(cond
+    ,@(cl-loop
+       for precedence-value from 1
+       for precedence-group in (reverse operator-precedence-groups)
+       append (cl-loop
+               for (op-name arity sql-format-string) in precedence-group
+               for sql-name = (upcase (symbol-name op-name))
+               for format-string = (or sql-format-string
+                                       (pcase arity
+                                         (:unary (cl-concatenate 'string sql-name " %s"))
+                                         (:binary (cl-concatenate 'string
+                                                                  "%s " sql-name " %s"))))
+               collect (list `(and (eq ,operator-name (quote ,op-name))
+                                   ,(if (eq arity :unary)
+                                        `(eql ,operator-argument-count 1)
+                                      `(>= ,operator-argument-count 2)))
+                             `(list ,format-string ,arity ,precedence-value))))
+    (t (list nil nil nil))))
+
+
+(defun emacsql--get-op (op-name argument-count)
+  (emacsql--generate-op-lookup
+   op-name
+   argument-count
+   (((~ :unary "~%s"))
+    ((collate :binary))
+    ((|| :binary))
+    ((* :binary) (/ :binary) (% :binary))
+    ((+ :unary "+%s") (- :unary "-%s"))
+    ((+ :binary) (- :binary))
+    ((& :binary) (| :binary) (<< :binary) (>> :binary))
+    ((escape :unary "%s ESCAPE"))
+    ((< :binary) (<= :binary) (> :binary) (>= :binary))
+
+    (;;TODO? (between :binary) (not-between :binary)
+     (is :binary) (is-not :binary "%s IS NOT %s")
+     (match :binary) (not-match :binary "%s NOT MATCH %s")
+     (like :binary) (not-like :binary "%s NOT LIKE %s")
+     (in :binary) (not-in :binary "%s NOT IN %s")
+     (isnull :unary "%s ISNULL") (notnull :unary "%s NOTNULL")
+     (= :binary) (== :binary)
+     (!= :binary) (<> :binary)
+     (glob :binary) (not-glob :binary "%s NOT GLOB %s")
+     (regexp :binary) (not-regexp :binary "%s NOT REGEXP %s"))
+
+    ((not :unary))
+    ((and :binary))
+    ((or :binary)))))
+
+(defun emacsql--expand-format-string (op format-string arity argument-count)
+  (when format-string
+    (cond
+     ((and (eq arity :unary) (eql argument-count 1)) format-string)
+     ((and (eq arity :binary) (>= argument-count 2))
+      (cl-loop with acc = format-string
+               for i from 2 below argument-count
+               collect "%s" into rest-args
+               do (setf acc (apply #'format acc format-string rest-args))
+               finally (return acc)))
+     (t (emacsql-error "Wrong number of operands for %s" op)))))
+
+(defun emacsql--get-op-info (op argument-count parent-precedence-value)
+  (cl-destructuring-bind (format-string arity precedence-value)
+      (emacsql--get-op op argument-count)
+    (let ((expanded-format-string (emacsql--expand-format-string op
+                                                                 format-string
+                                                                 arity
+                                                                 argument-count)))
+      (cl-values (cond
+                  ((null format-string) nil)
+                  ((>= parent-precedence-value
+                       precedence-value) (format "(%s)" expanded-format-string))
+                  (t expanded-format-string))
+                 precedence-value))))
+
+(defun emacsql--*expr (expr &optional parent-precedence-value)
   "Expand EXPR recursively."
   (emacsql-with-params ""
     (cond
@@ -269,59 +347,54 @@ Only use within `emacsql-with-params'!"
      ((vectorp expr) (svector expr))
      ((atom expr) (param expr))
      ((cl-destructuring-bind (op . args) expr
-        (cl-flet ((recur (n) (combine (emacsql--*expr (nth n args))))
-                  (nops (op)
-                        (emacsql-error "Wrong number of operands for %s" op)))
-          (cl-case op
-            ;; Special cases <= >=
-            ((<= >=)
-             (cl-case (length args)
-               (2 (format "%s %s %s" (recur 0) op (recur 1)))
-               (3 (format "%s BETWEEN %s AND %s"
-                          (recur 1)
-                          (recur (if (eq op '>=) 2 0))
-                          (recur (if (eq op '>=) 0 2))))
-               (otherwise (nops op))))
-            ;; Special case -
-            ((-)
-             (cl-case (length args)
-               (1 (format "-(%s)" (recur 0)))
-               (2 (format "%s - %s" (recur 0) (recur 1)))
-               (otherwise (nops op))))
-            ;; Unary
-            ((not)
-             (format "NOT %s" (recur 0)))
-            ((notnull)
-             (format "%s NOTNULL" (recur 0)))
-            ((isnull)
-             (format "%s ISNULL" (recur 0)))
-            ;; Ordering
-            ((asc desc)
-             (format "%s %s" (recur 0) (upcase (symbol-name op))))
-            ;; Special case quote
-            ((quote) (let ((arg (nth 0 args)))
-                       (if (stringp arg)
-                           (raw arg)
-                         (scalar arg))))
-            ;; Special case funcall
-            ((funcall)
-             (format "%s(%s)" (recur 0)
-                     (cond
-                      ((and (= 2 (length args))
-                            (eq '* (nth 1 args)))
-                       "*")
-                      ((and (= 3 (length args))
-                            (eq :distinct (nth 1 args))
-                            (format "DISTINCT %s" (recur 2))))
-                      ((mapconcat
-                        #'recur (cl-loop for i from 1 below (length args)
-                                         collect i)
-                        ", ")))))
-            ;; Guess
-            (otherwise
-             (mapconcat
-              #'recur (cl-loop for i from 0 below (length args) collect i)
-              (format " %s " (upcase (symbol-name op))))))))))))
+        (cl-multiple-value-bind (format-string precedence-value)
+            (emacsql--get-op-info op
+                                  (length args)
+                                  (or parent-precedence-value 0))
+          (cl-flet ((recur (n) (combine (emacsql--*expr (nth n args)
+                                                        (or precedence-value 0))))
+                    (nops (op)
+                          (emacsql-error "Wrong number of operands for %s" op)))
+            (cl-case op
+              ;; Special cases <= >=
+              ((<= >=)
+               (cl-case (length args)
+                 (2 (format format-string (recur 0) (recur 1)))
+                 (3 (format "%s BETWEEN %s AND %s"
+                            (recur 1)
+                            (recur (if (eq op '>=) 2 0))
+                            (recur (if (eq op '>=) 0 2))))
+                 (otherwise (nops op))))
+              ;; Ordering
+              ((asc desc)
+               (format "%s %s" (recur 0) (upcase (symbol-name op))))
+              ;; Special case quote
+              ((quote) (let ((arg (nth 0 args)))
+                         (if (stringp arg)
+                             (raw arg)
+                           (scalar arg))))
+              ;; Special case funcall
+              ((funcall)
+               (format "%s(%s)" (recur 0)
+                       (cond
+                        ((and (= 2 (length args))
+                              (eq '* (nth 1 args)))
+                         "*")
+                        ((and (= 3 (length args))
+                              (eq :distinct (nth 1 args))
+                              (format "DISTINCT %s" (recur 2))))
+                        ((mapconcat
+                          #'recur (cl-loop for i from 1 below (length args)
+                                           collect i)
+                          ", ")))))
+              ;; Guess
+              (otherwise
+               (let ((arg-indices (cl-loop for i from 0 below (length args) collect i)))
+                 (if format-string
+                     (apply #'format format-string (mapcar #'recur arg-indices))
+                   (mapconcat
+                    #'recur (cl-loop for i from 0 below (length args) collect i)
+                    (format " %s " (upcase (symbol-name op)))))))))))))))
 
 (defun emacsql--*idents (idents)
   "Read in a vector of IDENTS identifiers, or just an single identifier."

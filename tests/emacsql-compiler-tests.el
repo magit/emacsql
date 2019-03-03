@@ -159,7 +159,7 @@
     ([:order-by [$i1]] '(bar)
      "ORDER BY bar;")
     ([:order-by (- foo)] '()
-     "ORDER BY -(foo);")
+     "ORDER BY -foo;")
     ([:order-by [(asc a) (desc (/ b 2))]] '()
      "ORDER BY a ASC, b / 2 DESC;")))
 
@@ -192,6 +192,8 @@
     ([:where (and $i1 $i2 $i3)] '(a b c)
      "WHERE a AND b AND c;")
     ([:where (is foo (not nil))] '()
+     "WHERE foo IS (NOT NULL);")
+    ([:where (is-not foo nil)] '()
      "WHERE foo IS NOT NULL;")
     ([:where (= attrib :name)] '()
      "WHERE attrib = ':name';")))
@@ -228,6 +230,19 @@
     "SELECT foobar(':distinct', x, y);")
    ([:select (funcall count :distinct x)] '()
     "SELECT count(DISTINCT x);")))
+
+(ert-deftest emacsql-precedence ()
+  (emacsql-tests-with-queries
+   ([:select (<< (not (is x nil)) 4)] '()
+    "SELECT (NOT x IS NULL) << 4;")
+   ([:select (* 3 (+ (/ 14 2) (- 5 3)))] '()
+    "SELECT 3 * (14 / 2 + (5 - 3));")
+   ([:select (- (|| (~ x) y))] '()
+    "SELECT -~x || y;")
+   ([:select (funcall length (|| (* x x) (* y y) (* z z)))] '()
+    "SELECT length((x * x) || (y * y) || (z * z));")
+   ([:select (and (+ (<= x y) 1) (>= y x))] '()
+    "SELECT (x <= y) + 1 AND y >= x;")))
 
 (provide 'emacsql-compiler-tests)
 
