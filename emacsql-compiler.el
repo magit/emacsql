@@ -261,71 +261,102 @@ Only use within `emacsql-with-params'!"
       (vector (format "(%s)" (mapconcat #'scalar vector ", ")))
       (otherwise (emacsql-error "Invalid vector: %S" vector)))))
 
-(defmacro emacsql--generate-op-lookup (operator-name
-                                       operator-argument-count
-                                       operator-precedence-groups)
-  `(cond
-    ,@(cl-loop
-       for precedence-value from 1
-       for precedence-group in (reverse operator-precedence-groups)
-       append (cl-loop
-               for (op-name arity sql-format-string) in precedence-group
-               for sql-name = (upcase (symbol-name op-name))
-               for format-string = (or sql-format-string
-                                       (pcase arity
-                                         (:unary (cl-concatenate 'string sql-name " %s"))
-                                         (:binary (cl-concatenate 'string
-                                                                  "%s " sql-name " %s"))))
-               collect (list `(and (eq ,operator-name (quote ,op-name))
-                                   ,(if (eq arity :unary)
-                                        `(eql ,operator-argument-count 1)
-                                      `(>= ,operator-argument-count 2)))
-                             `(list ,format-string ,arity ,precedence-value))))
-    (t (list nil nil nil))))
+(defmacro emacsql--generate-op-lookup-defun (name 
+                                             operator-precedence-groups)
+  "Generate function to look up predefined SQL operator metadata.
 
+The generated function is bound to NAME and accepts two
+arguments, OPERATOR-NAME and OPERATOR-ARGUMENT-COUNT.
+OPERATOR-PRECEDENCE-GROUPS should be a number of lists containing
+operators grouped by operator precedence (in order of precedence
+from highest to lowest). A single operator is represented by a
+list of at least two elements: operator name (symbol) and
+operator arity (:unary or :binary). Optionally a custom
+expression can be included, which defines how the operator is
+expanded into an SQL expression (there are two defaults, one for
+:unary and one for :binary operators).
 
-(defun emacsql--get-op (op-name argument-count)
-  (emacsql--generate-op-lookup
-   op-name
-   argument-count
-   (((~ :unary "~%s"))
-    ((collate :binary))
-    ((|| :binary))
-    ((* :binary) (/ :binary) (% :binary))
-    ((+ :unary "+%s") (- :unary "-%s"))
-    ((+ :binary) (- :binary))
-    ((& :binary) (| :binary) (<< :binary) (>> :binary))
-    ((escape :unary "%s ESCAPE"))
-    ((< :binary) (<= :binary) (> :binary) (>= :binary))
+An example for OPERATOR-PRECEDENCE-GROUPS:
+(((+ :unary (\"+\" :operand)) (- :unary (\"-\" :operand)))
+ ((+ :binary) (- :binary)))"
+  `(defun ,name (operator-name operator-argument-count)
+     "Look up predefined SQL operator metadata.
+See `emacsql--generate-op-lookup-defun' for details."
+     (cond
+      ,@(cl-loop
+         for precedence-value from 1
+         for precedence-group in (reverse operator-precedence-groups)
+         append (cl-loop
+                 for (op-name arity custom-expr) in precedence-group
+                 for sql-name = (upcase (symbol-name op-name))
+                 for sql-expr =
+                 (or custom-expr
+                     (pcase arity
+                       (:unary `(,sql-name " " :operand))
+                       (:binary `(:operand " " ,sql-name " " :operand))))
+                 
+                 collect (list `(and (eq operator-name
+                                         (quote ,op-name))
+                                     ,(if (eq arity :unary)
+                                          `(eql operator-argument-count 1)
+                                        `(>= operator-argument-count 2)))
+                               `(list ',sql-expr ,arity ,precedence-value))))
+      (t (list nil nil nil)))))
 
-    (;;TODO? (between :binary) (not-between :binary)
-     (is :binary) (is-not :binary "%s IS NOT %s")
-     (match :binary) (not-match :binary "%s NOT MATCH %s")
-     (like :binary) (not-like :binary "%s NOT LIKE %s")
-     (in :binary) (not-in :binary "%s NOT IN %s")
-     (isnull :unary "%s ISNULL") (notnull :unary "%s NOTNULL")
-     (= :binary) (== :binary)
-     (!= :binary) (<> :binary)
-     (glob :binary) (not-glob :binary "%s NOT GLOB %s")
-     (regexp :binary) (not-regexp :binary "%s NOT REGEXP %s"))
+(emacsql--generate-op-lookup-defun
+ emacsql--get-op
+ (((~ :unary ("~" :operand)))
+  ((collate :binary))
+  ((|| :binary))
+  ((* :binary) (/ :binary) (% :binary))
+  ((+ :unary ("+" :operand)) (- :unary ("-" :operand)))
+  ((+ :binary) (- :binary))
+  ((& :binary) (| :binary) (<< :binary) (>> :binary))
+  ((escape :binary (:operand " ESCAPE " :operand)))
+  ((< :binary) (<= :binary) (> :binary) (>= :binary))
 
-    ((not :unary))
-    ((and :binary))
-    ((or :binary)))))
+  (;;TODO? (between :binary) (not-between :binary)
+   (is :binary) (is-not :binary (:operand " IS NOT " :operand))
+   (match :binary) (not-match :binary (:operand " NOT MATCH " :operand))
+   (like :binary) (not-like :binary (:operand  " NOT LIKE " :operand))
+   (in :binary) (not-in :binary (:operand " NOT IN " :operand))
+   (isnull :unary (:operand " ISNULL"))
+   (notnull :unary (:operand " NOTNULL"))
+   (= :binary) (== :binary)
+   (!= :binary) (<> :binary)
+   (glob :binary) (not-glob :binary (:operand " NOT GLOB " :operand))
+   (regexp :binary) (not-regexp :binary (:operand " NOT REGEXP " :operand)))
 
-(defun emacsql--expand-format-string (op format-string arity argument-count)
-  (when format-string
-    (cond
-     ((and (eq arity :unary) (eql argument-count 1)) format-string)
-     ((and (eq arity :binary) (>= argument-count 2))
-      (cl-loop with acc = format-string
-               for i from 2 below argument-count
-               collect "%s" into rest-args
-               do (setf acc (apply #'format acc format-string rest-args))
-               finally (return acc)))
-     (t (emacsql-error "Wrong number of operands for %s" op)))))
+  ((not :unary))
+  ((and :binary))
+  ((or :binary))))
+
+(defun emacsql--expand-format-string (op expr arity argument-count)
+  "Create format-string for an SQL operator.
+The format-string returned is intended to be used with `format'
+to create an SQL expression."
+  (when expr
+    (cl-labels ((replace-operand (x) (if (eq x :operand)
+                                         "%s"
+                                       x))
+                (to-format-string (e) (mapconcat #'replace-operand e "")))
+      (cond
+       ((and (eq arity :unary) (eql argument-count 1))
+        (to-format-string expr))
+       ((and (eq arity :binary) (>= argument-count 2))
+        (let ((result (reverse expr)))
+          (dotimes (_ (- argument-count 2))
+            (setf result (nconc (reverse expr) (cdr result))))
+          (to-format-string (nreverse result))))
+       (t (emacsql-error "Wrong number of operands for %s" op))))))
 
 (defun emacsql--get-op-info (op argument-count parent-precedence-value)
+  "Lookup SQL operator information for generating an SQL expression.
+Returns the following multiple values when an operator can be
+identified: a format string (see `emacsql--expand-format-string')
+and a precedence value. If PARENT-PRECEDENCE-VALUE is greater or
+equal to the identified operator's precedence, then the format
+string returned is wrapped with parentheses."
   (cl-destructuring-bind (format-string arity precedence-value)
       (emacsql--get-op op argument-count)
     (let ((expanded-format-string (emacsql--expand-format-string op
