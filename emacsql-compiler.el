@@ -60,6 +60,12 @@
     (insert "'")
     (buffer-string)))
 
+(defun emacsql-quote-character (c)
+  "Single-quote character C for use in a SQL expression."
+  (if (char-equal c ?')
+      "''''"
+    (format "'%c'" c)))
+
 (defun emacsql-quote-identifier (string)
   "Double-quote (identifier) STRING for use in a SQL expression."
   (format "\"%s\"" (replace-regexp-in-string "\"" "\"\"" string)))
@@ -399,6 +405,18 @@ string returned is wrapped with parentheses."
                             (recur (if (eq op '>=) 2 0))
                             (recur (if (eq op '>=) 0 2))))
                  (otherwise (nops op))))
+              ;; enforce second argument to be a character
+              ((escape)
+               (let ((second-arg (cadr args)))
+                 (cond
+                  ((not (= 2 (length args))) (nops op))
+                  ((not (characterp second-arg))
+                   (emacsql-error
+                    "Second operand of escape has to be a character, got %s"
+                    second-arg))
+                  (t (format format-string
+                             (recur 0)
+                             (emacsql-quote-character second-arg))))))
               ;; Ordering
               ((asc desc)
                (format "%s %s" (recur 0) (upcase (symbol-name op))))

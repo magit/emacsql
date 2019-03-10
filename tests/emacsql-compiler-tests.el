@@ -181,7 +181,9 @@
     ([:where (= name 'foo)] '()
      "WHERE name = 'foo';")
     ([:where (= name '$s1)] '(qux)
-     "WHERE name = 'qux';")))
+     "WHERE name = 'qux';")
+    ([:where (like url (escape "%`%%" ?`))] '()
+     "WHERE url LIKE '\"%`%%\"' ESCAPE '`';")))
 
 (ert-deftest emacsql-expr ()
   (emacsql-tests-with-queries
