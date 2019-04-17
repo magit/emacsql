@@ -27,11 +27,19 @@
   (file-name-directory (or load-file-name buffer-file-name))
   "Directory where EmacSQL is installed.")
 
+(defvar emacsql-sqlite-executable-path
+  (if (memq system-type '(windows-nt cygwin ms-dos))
+      "sqlite/emacsql-sqlite.exe"
+    "sqlite/emacsql-sqlite")
+  "Relative path to emacsql executable.")
+
 (defvar emacsql-sqlite-executable
-  (expand-file-name (if (memq system-type '(windows-nt cygwin ms-dos))
-                        "sqlite/emacsql-sqlite.exe"
-                      "sqlite/emacsql-sqlite")
-                    emacsql-sqlite-data-root)
+  (expand-file-name emacsql-sqlite-executable-path
+                    (if (or (file-writable-p emacsql-sqlite-data-root)
+                            (file-exists-p (expand-file-name
+                                            emacsql-sqlite-executable-path
+                                            emacsql-sqlite-data-root)))
+                        emacsql-sqlite-data-root user-emacs-directory))
   "Path to the EmacSQL backend (this is not the sqlite3 shell).")
 
 (defvar emacsql-sqlite-reserved
@@ -164,6 +172,7 @@ If called with non-nil ASYNC the return value is meaningless."
            (prog1 nil
              (message "Could not find C compiler, skipping SQLite build")))
           (t (message "Compiling EmacSQL SQLite binary ...")
+             (mkdir (file-name-directory emacsql-sqlite-executable) t)
              (let ((log (get-buffer-create byte-compile-log-buffer)))
                (with-current-buffer log
                  (let ((inhibit-read-only t))
