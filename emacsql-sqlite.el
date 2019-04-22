@@ -28,9 +28,8 @@
   "Directory where EmacSQL is installed.")
 
 (defvar emacsql-sqlite-executable-path
-  (if (memq system-type '(windows-nt cygwin ms-dos))
-      "sqlite/emacsql-sqlite.exe"
-    "sqlite/emacsql-sqlite")
+  (concat "sqlite/emacsql-sqlite-" emacsql-version
+          (when (memq system-type '(windows-nt cygwin ms-dos)) ".exe"))
   "Relative path to emacsql executable.")
 
 (defvar emacsql-sqlite-executable
