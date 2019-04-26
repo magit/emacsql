@@ -39,7 +39,10 @@
                             (file-exists-p (expand-file-name
                                             emacsql-sqlite-executable-path
                                             emacsql-sqlite-data-root)))
-                        emacsql-sqlite-data-root user-emacs-directory))
+                        emacsql-sqlite-data-root
+                      (expand-file-name
+                       (concat "emacsql/" emacsql-version)
+                       user-emacs-directory)))
   "Path to the EmacSQL backend (this is not the sqlite3 shell).")
 
 (defvar emacsql-sqlite-reserved
