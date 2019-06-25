@@ -69,7 +69,7 @@
   "The EmacSQL SQL database front-end."
   :group 'comm)
 
-(defvar emacsql-version "3.0.0")
+(defconst emacsql-version "3.0.0")
 
 (defvar emacsql-global-timeout 30
   "Maximum number of seconds to wait before bailing out on a SQL command.
