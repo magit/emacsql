@@ -173,6 +173,7 @@ MESSAGE should not have a newline on the end."
 
 (cl-defmethod emacsql ((connection emacsql-connection) sql &rest args)
   "Send SQL s-expression to CONNECTION and return the results."
+  (declare (indent common-lisp-indent-function))
   (let ((sql-string (apply #'emacsql-compile connection sql args)))
     (emacsql-clear connection)
     (emacsql-send-message connection sql-string)
@@ -399,18 +400,17 @@ A prefix argument causes the SQL to be printed into the current buffer."
           (setf (point) containing-sexp)
           (looking-at "\\["))))))
 
-(defadvice calculate-lisp-indent (around emacsql-vector-indent disable)
-  "Don't indent vectors in `emacs-lisp-mode' like lists."
-  (if (save-excursion (beginning-of-line) (emacsql--inside-vector-p))
-      (let ((lisp-indent-offset 1))
-        ad-do-it)
-      ad-do-it))
+(defun emacsql-sql-indent-function (path _state indent-point
+                                    sexp-col normal-indent)
+  "Proper indentation for `emacsql'."
+  (if (and (= (car path) 1)
+           (save-excursion (setf (point) indent-point)
+                           (beginning-of-line)
+                           (emacsql--inside-vector-p)))
+      (1+ sexp-col)
+    normal-indent))
 
-(defun emacsql-fix-vector-indentation ()
-  "When called, advise `calculate-lisp-indent' to stop indenting vectors.
-Once activate, vector contents no longer indent like lists."
-  (interactive)
-  (ad-enable-advice 'calculate-lisp-indent 'around 'emacsql-vector-indent)
-  (ad-activate 'calculate-lisp-indent))
+(put 'emacsql 'common-lisp-indent-function-for-elisp
+     'emacsql-sql-indent-function)
 
 ;;; emacsql.el ends here
