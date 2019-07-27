@@ -165,9 +165,10 @@ If called with non-nil ASYNC the return value is meaningless."
          (files (mapcar (lambda (f) (expand-file-name f src))
                         '("sqlite3.c" "emacsql.c")))
          (cflags (list (format "-I%s" src) (format "-O%d" (or o-level 2))))
-         (ldlibs (if (memq system-type '(windows-nt berkeley-unix))
-                     (list "-lm")
-                   (list "-lm" "-ldl")))
+         (ldlibs (cl-case system-type
+                   (windows-nt (list))
+                   (berkeley-unix (list "-lm"))
+                   (otherwise (list "-lm" "-ldl"))))
          (options (emacsql-sqlite-compile-switches))
          (output (list "-o" emacsql-sqlite-executable))
          (arguments (nconc cflags options files ldlibs output)))
