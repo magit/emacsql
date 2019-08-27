@@ -83,8 +83,8 @@ used.")
                       (nil nil))))
   (:documentation "A connection to a SQLite database."))
 
-(cl-defmethod initialize-instance :after
-  ((connection emacsql-sqlite-connection) &rest _)
+(cl-defmethod emacsql-sqlite--make-process
+    ((connection emacsql-sqlite-connection))
   (emacsql-sqlite-ensure-binary)
   (let* ((process-connection-type nil)  ; use a pipe
          (coding-system-for-write 'utf-8-auto)
@@ -101,6 +101,10 @@ used.")
     (emacsql connection [:pragma (= busy-timeout $s1)]
              (/ (* emacsql-global-timeout 1000) 2))
     (emacsql-register connection)))
+
+(cl-defmethod initialize-instance :after
+    ((connection emacsql-sqlite-connection) &rest _)
+  (emacsql-sqlite--make-process connection))
 
 (cl-defun emacsql-sqlite (file &key debug)
   "Open a connected to database stored in FILE.
