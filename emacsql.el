@@ -106,7 +106,9 @@ If nil, wait forever.")
 
 (cl-defmethod emacsql-live-p ((connection emacsql-connection))
   "Return non-nil if CONNECTION is still alive and ready."
-  (not (null (process-live-p (emacsql-process connection)))))
+  (and (not (null (process-live-p (emacsql-process connection))))
+       (or (null (emacsql-log-buffer connection))
+           (buffer-live-p (emacsql-log-buffer connection)))))
 
 (cl-defgeneric emacsql-types (connection)
   "Return an alist mapping EmacSQL types to database types.
