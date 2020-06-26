@@ -103,6 +103,7 @@ used.")
     (emacsql-wait connection)
     (emacsql connection [:pragma (= busy-timeout $s1)]
              (/ (* emacsql-global-timeout 1000) 2))
+    (emacsql connection [:pragma (= foreign_keys 1)])
     (emacsql-register connection)))
 
 (cl-defun emacsql-sqlite (file &key debug)
@@ -168,12 +169,12 @@ If called with non-nil ASYNC the return value is meaningless."
                       if path return it))
          (src (expand-file-name "sqlite" emacsql-sqlite-data-root))
          (files (mapcar (lambda (f) (expand-file-name f src))
-                        '("sqlite3.c" "emacsql.c")))
+                        '("emacsql.c")))
          (cflags (list (format "-I%s" src) (format "-O%d" (or o-level 2))))
          (ldlibs (cl-case system-type
                    (windows-nt (list))
                    (berkeley-unix (list "-lm"))
-                   (otherwise (list "-lm" "-ldl"))))
+                   (otherwise (list "-lm" "-ldl" "-lsqlite3"))))
          (options (emacsql-sqlite-compile-switches))
          (output (list "-o" emacsql-sqlite-executable))
          (arguments (nconc cflags options files ldlibs output)))
