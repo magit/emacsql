@@ -1,5 +1,7 @@
 # EmacSQL
 
+[![Build Status](https://travis-ci.com/skeeto/emacsql.svg?branch=master)](https://travis-ci.com/skeeto/emacsql)
+
 EmacSQL is a high-level Emacs Lisp front-end for SQLite (primarily),
 PostgreSQL, MySQL, and potentially other SQL databases.
 
