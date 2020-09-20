@@ -72,6 +72,8 @@ http://dev.mysql.com/doc/refman/5.5/en/reserved-words.html")
   "Connect to a MySQL server using the mysql command line program."
   (let* ((mysql (executable-find emacsql-mysql-executable))
          (command (list database "--skip-pager" "-rfBNL" mysql)))
+    (unless mysql
+      (user-error "Cannot find `mysql' executable.  Please check instalation or PATH configuration"))
     (when user     (push (format "--user=%s" user) command))
     (when password (push (format "--password=%s" password) command))
     (when host     (push (format "--host=%s" host) command))
