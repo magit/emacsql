@@ -58,16 +58,17 @@
 
 (defun emacsql-quote-scalar (string)
   "Single-quote (scalar) STRING for use in a SQL expression."
-  (with-temp-buffer
-    (insert string)
-    (goto-char (point-min))
-    (while (re-search-forward "'" nil t)
-      (replace-match "''"))
-    (goto-char (point-min))
-    (insert "'")
-    (goto-char (point-max))
-    (insert "'")
-    (buffer-string)))
+  (let ((l (length string))
+        (i 0)
+        quoted qi)
+    (while (and (< i l) (setq qi (string-match "'" string i)))
+      (setq quoted (cons (concat (substring string i qi) "''") quoted))
+      (setq i (1+ qi)))
+    (concat "'"
+            (if quoted
+                (apply #'concat (nreverse (cons (substring string i) quoted)))
+              string)
+            "'")))
 
 (defun emacsql-quote-character (c)
   "Single-quote character C for use in a SQL expression."
