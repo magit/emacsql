@@ -404,7 +404,7 @@ A prefix argument causes the SQL to be printed into the current buffer."
   (if (save-excursion (beginning-of-line) (emacsql--inside-vector-p))
       (let ((lisp-indent-offset 1))
         ad-do-it)
-      ad-do-it))
+    ad-do-it))
 
 (defun emacsql-fix-vector-indentation ()
   "When called, advise `calculate-lisp-indent' to stop indenting vectors.

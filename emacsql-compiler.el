@@ -267,7 +267,7 @@ Only use within `emacsql-with-params'!"
       (vector (format "(%s)" (mapconcat #'scalar vector ", ")))
       (otherwise (emacsql-error "Invalid vector: %S" vector)))))
 
-(defmacro emacsql--generate-op-lookup-defun (name 
+(defmacro emacsql--generate-op-lookup-defun (name
                                              operator-precedence-groups)
   "Generate function to look up predefined SQL operator metadata.
 
@@ -300,7 +300,7 @@ See `emacsql--generate-op-lookup-defun' for details."
                      (pcase arity
                        (:unary `(,sql-name " " :operand))
                        (:binary `(:operand " " ,sql-name " " :operand))))
-                 
+
                  collect (list `(and (eq operator-name
                                          (quote ,op-name))
                                      ,(if (eq arity :unary)
@@ -479,8 +479,8 @@ Only use within `emacsql-with-params'!"
                             (concat "VALUES " (svector (pop items)))
                           (emacsql--from-keyword item)))
                (symbol (if (eq item '*)
-                            "*"
-                          (param item)))
+                           "*"
+                         (param item)))
                (vector (if (emacsql-sql-p item)
                            (subsql item)
                          (let ((idents (combine
