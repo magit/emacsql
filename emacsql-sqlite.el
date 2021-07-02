@@ -82,7 +82,7 @@ used.")
   (:documentation "A connection to a SQLite database."))
 
 (cl-defmethod initialize-instance :after
-  ((connection emacsql-sqlite-connection) &rest _)
+  ((connection emacsql-sqlite-connection) &rest _rest)
   (emacsql-sqlite-ensure-binary)
   (let* ((process-connection-type nil)  ; use a pipe
          (coding-system-for-write 'utf-8-auto)
