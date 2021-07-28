@@ -37,16 +37,16 @@ void send_error(int code, const char *message) {
 typedef struct {
     char *buffer;
     size_t size;
-} buffer;
+} buffer_t;
 
-buffer* buffer_create() {
-    buffer *buffer = malloc(sizeof(buffer));
+buffer_t* buffer_create() {
+    buffer_t *buffer = malloc(sizeof(buffer_t));
     buffer->size = 4096;
     buffer->buffer = malloc(buffer->size * sizeof(char));
     return buffer;
 }
 
-int buffer_grow(buffer *buffer) {
+int buffer_grow(buffer_t *buffer) {
     unsigned factor = 2;
     char *newbuffer = realloc(buffer->buffer, buffer->size * factor);
     if (newbuffer == NULL) {
@@ -57,7 +57,7 @@ int buffer_grow(buffer *buffer) {
     return TRUE;
 }
 
-int buffer_read(buffer *buffer, size_t count) {
+int buffer_read(buffer_t *buffer, size_t count) {
     while (buffer->size < count + 1) {
         if (buffer_grow(buffer) == FALSE) {
             return FALSE;
@@ -68,7 +68,7 @@ int buffer_read(buffer *buffer, size_t count) {
     return in == count;
 }
 
-void buffer_free(buffer *buffer) {
+void buffer_free(buffer_t *buffer) {
     free(buffer->buffer);
     free(buffer);
 }
@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    buffer *input = buffer_create();
+    buffer_t *input = buffer_create();
     while (TRUE) {
         printf("#\n");
         fflush(stdout);
