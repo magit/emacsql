@@ -1,5 +1,7 @@
 ;;; emacsql-external-tests.el --- subprocess tests -*- lexical-binding: t; -*-
 
+;; This is free and unencumbered software released into the public domain.
+
 (require 'cl-lib)
 (require 'ert)
 (require 'emacsql)

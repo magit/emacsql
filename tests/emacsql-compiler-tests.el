@@ -1,5 +1,7 @@
 ;;; emacsql-tests.el --- tests for emacsql -*- lexical-binding: t; -*-
 
+;; This is free and unencumbered software released into the public domain.
+
 ;;; Code:
 
 (require 'ert)

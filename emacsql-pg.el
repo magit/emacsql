@@ -1,5 +1,7 @@
 ;;; emacsql-pg.el --- back-end for PostgreSQL via pg -*- lexical-binding: t; -*-
 
+;; This is free and unencumbered software released into the public domain.
+
 ;;; Commentary:
 
 ;; Unlike emacsql-psql, this connection type uses Eric Marsden's pg.el
