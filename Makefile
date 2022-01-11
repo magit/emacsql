@@ -1,18 +1,20 @@
 # Clone the dependencies of this package in sibling directories:
 #     $ git clone https://github.com/cbbrowne/pg.el ../pg
+#     $ git clone https://github.com/pekingduck/emacs-sqlite3-api.git ../sqlite3
 #
 # Or set LDFLAGS to point at these packages elsewhere:
-#     $ make LDFLAGS='-L path/to/pg'
+#     $ make LDFLAGS='-L path/to/pg -L path/to/sqlite3'
 
 .POSIX:
 .SUFFIXES: .el .elc
 EMACS   = emacs
-LDFLAGS = -L ../pg
+LDFLAGS = -L ../pg -L ../sqlite3
 BATCH   = $(EMACS) -batch -Q -L . -L tests $(LDFLAGS)
 
 EL = emacsql-compiler.el \
      emacsql.el \
      emacsql-sqlite.el \
+     emacsql-sqlite-module.el \
      emacsql-psql.el \
      emacsql-mysql.el \
      emacsql-pg.el
