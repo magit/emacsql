@@ -14,6 +14,7 @@ BATCH   = $(EMACS) -batch -Q -L . -L tests $(LDFLAGS)
 EL = emacsql-compiler.el \
      emacsql.el \
      emacsql-sqlite.el \
+     emacsql-sqlite-builtin.el \
      emacsql-sqlite-module.el \
      emacsql-psql.el \
      emacsql-mysql.el \
