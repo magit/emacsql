@@ -171,8 +171,10 @@ MESSAGE should not have a newline on the end."
          (emacsql-type-map (or mask emacsql-type-map)))
     (concat (apply #'emacsql-format (emacsql-prepare sql) args) ";")))
 
+(cl-defgeneric emacsql ((connection emacsql-connection) sql &rest args)
+  "Send SQL s-expression to CONNECTION and return the results.")
+
 (cl-defmethod emacsql ((connection emacsql-connection) sql &rest args)
-  "Send SQL s-expression to CONNECTION and return the results."
   (let ((sql-string (apply #'emacsql-compile connection sql args)))
     (emacsql-clear connection)
     (emacsql-send-message connection sql-string)
