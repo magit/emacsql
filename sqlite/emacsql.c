@@ -42,7 +42,7 @@ typedef struct {
 } buffer;
 
 buffer* buffer_create() {
-    buffer *buffer = malloc(sizeof(buffer));
+    buffer *buffer = malloc(sizeof(*buffer));
     buffer->size = 4096;
     buffer->buffer = malloc(buffer->size * sizeof(char));
     return buffer;
