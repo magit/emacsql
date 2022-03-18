@@ -516,17 +516,19 @@ Only use within `emacsql-with-params'!"
 (defun emacsql-format (expansion &rest args)
   "Fill in the variables EXPANSION with ARGS."
   (cl-destructuring-bind (format . vars) expansion
-    (apply #'format format
-           (cl-loop for (i . kind) in vars collect
-                    (let ((thing (nth i args)))
-                      (cl-case kind
-                        (:identifier (emacsql-escape-identifier thing))
-                        (:scalar (emacsql-escape-scalar thing))
-                        (:vector (emacsql-escape-vector thing))
-                        (:raw (emacsql-escape-raw thing))
-                        (:schema (emacsql-prepare-schema thing))
-                        (otherwise
-                         (emacsql-error "Invalid var type %S" kind))))))))
+    (let ((print-level nil)
+          (print-length nil))
+      (apply #'format format
+             (cl-loop for (i . kind) in vars collect
+                      (let ((thing (nth i args)))
+                        (cl-case kind
+                          (:identifier (emacsql-escape-identifier thing))
+                          (:scalar (emacsql-escape-scalar thing))
+                          (:vector (emacsql-escape-vector thing))
+                          (:raw (emacsql-escape-raw thing))
+                          (:schema (emacsql-prepare-schema thing))
+                          (otherwise
+                           (emacsql-error "Invalid var type %S" kind)))))))))
 
 (provide 'emacsql-compiler)
 
