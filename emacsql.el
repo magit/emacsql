@@ -136,7 +136,7 @@ MESSAGE should not have a newline on the end."
 
 ;;; Sending and receiving
 
-(cl-defgeneric emacsql-send-message ((connection emacsql-connection) message)
+(cl-defgeneric emacsql-send-message (connection message)
   "Send MESSAGE to CONNECTION.")
 
 (cl-defmethod emacsql-send-message :before
@@ -171,7 +171,7 @@ MESSAGE should not have a newline on the end."
          (emacsql-type-map (or mask emacsql-type-map)))
     (concat (apply #'emacsql-format (emacsql-prepare sql) args) ";")))
 
-(cl-defgeneric emacsql ((connection emacsql-connection) sql &rest args)
+(cl-defgeneric emacsql (connection sql &rest args)
   "Send SQL s-expression to CONNECTION and return the results.")
 
 (cl-defmethod emacsql ((connection emacsql-connection) sql &rest args)
