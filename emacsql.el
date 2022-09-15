@@ -296,7 +296,7 @@ Returns the result of the last evaluated BODY.
 All column names must be provided in the query ($ and * are not
 allowed). Hint: all of the bound identifiers must be known at
 compile time. For example, in the expression below the variables
-'name' and 'phone' will be bound for the body.
+`name' and `phone' will be bound for the body.
 
   (emacsql-with-bind db [:select [name phone] :from people]
     (message \"Found %s with %s\" name phone))
