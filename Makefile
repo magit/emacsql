@@ -1,3 +1,5 @@
+-include .config.mk
+
 # Clone the dependencies of this package in sibling directories:
 #     $ git clone https://github.com/cbbrowne/pg.el ../pg
 #
@@ -6,9 +8,9 @@
 
 .POSIX:
 .SUFFIXES: .el .elc
-EMACS   = emacs
-LDFLAGS = -L ../pg
-BATCH   = $(EMACS) -batch -Q -L . -L tests $(LDFLAGS)
+EMACS   ?= emacs
+LDFLAGS ?= -L ../pg
+BATCH    = $(EMACS) -batch -Q -L . -L tests $(LDFLAGS)
 
 EL = emacsql-compiler.el \
      emacsql.el \
