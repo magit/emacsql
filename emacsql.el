@@ -149,8 +149,10 @@ MESSAGE should not have a newline on the end."
 
 (cl-defmethod emacsql-clear ((connection emacsql-connection))
   "Clear the process buffer for CONNECTION-SPEC."
-  (with-current-buffer (emacsql-buffer connection)
-    (erase-buffer)))
+  (let ((buffer (emacsql-buffer connection)))
+    (when (and buffer (buffer-live-p buffer))
+      (with-current-buffer buffer
+        (erase-buffer)))))
 
 (cl-defgeneric emacsql-waiting-p (connection)
   "Return non-nil if CONNECTION is ready for more input.")
