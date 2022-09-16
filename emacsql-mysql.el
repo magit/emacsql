@@ -72,7 +72,8 @@ http://dev.mysql.com/doc/refman/5.5/en/reserved-words.html")
 
 (cl-defun emacsql-mysql (database &key user password host port debug)
   "Connect to a MySQL server using the mysql command line program."
-  (let* ((mysql (executable-find emacsql-mysql-executable))
+  (let* ((mysql (or (executable-find emacsql-mysql-executable)
+                    (error "No mysql binary available, aborting")))
          (command (list database "--skip-pager" "-rfBNL" mysql)))
     (when user     (push (format "--user=%s" user) command))
     (when password (push (format "--password=%s" password) command))
