@@ -130,11 +130,13 @@ SQL expression.")
 (cl-defmethod emacsql-log ((connection emacsql-connection) message)
   "Log MESSAGE into CONNECTION's log.
 MESSAGE should not have a newline on the end."
-  (let ((log (emacsql-log-buffer connection)))
-    (when log
-      (with-current-buffer log
+  (let ((buffer (emacsql-log-buffer connection)))
+    (when buffer
+      (unless (buffer-live-p buffer)
+        (setq buffer (emacsql-enable-debugging connection)))
+      (with-current-buffer buffer
         (setf (point) (point-max))
-        (princ (concat message "\n") log)))))
+        (princ (concat message "\n") buffer)))))
 
 ;;; Sending and receiving
 
