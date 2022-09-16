@@ -1,6 +1,11 @@
-;;; emacsql-compile.el --- s-expression SQL compiler -*- lexical-binding: t; -*-
+;;; emacsql-compile.el --- S-expression SQL compiler  -*- lexical-binding:t -*-
 
 ;; This is free and unencumbered software released into the public domain.
+
+;; Author: Christopher Wellons <wellons@nullprogram.com>
+;; Maintainer: Jonas Bernoulli <jonas@bernoul.li>
+;; Homepage: https://github.com/magit/emacsql
+;; SPDX-License-Identifier: Unlicense
 
 ;;; Code:
 

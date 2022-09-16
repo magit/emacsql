@@ -1,11 +1,13 @@
-;;; emacsql-mysql.el --- EmacSQL back-end for MySQL -*- lexical-binding: t; -*-
+;;; emacsql-mysql.el --- EmacSQL back-end for MySQL  -*- lexical-binding:t -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Christopher Wellons <wellons@nullprogram.com>
-;; URL: https://github.com/skeeto/emacsql
-;; Version: 1.0.0
+;; Maintainer: Jonas Bernoulli <jonas@bernoul.li>
+;; Homepage: https://github.com/magit/emacsql
+;; Version: 3.0.0-git
 ;; Package-Requires: ((emacs "25.1") (emacsql "2.0.0"))
+;; SPDX-License-Identifier: Unlicense
 
 ;;; Commentary:
 

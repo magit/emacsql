@@ -1,11 +1,13 @@
-;;; emacsql.el --- high-level SQL database front-end -*- lexical-binding: t; -*-
+;;; emacsql.el --- High-level SQL database front-end  -*- lexical-binding:t -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Christopher Wellons <wellons@nullprogram.com>
-;; URL: https://github.com/skeeto/emacsql
-;; Version: 3.0.0
+;; Maintainer: Jonas Bernoulli <jonas@bernoul.li>
+;; Homepage: https://github.com/magit/emacsql
+;; Version: 3.0.0-git
 ;; Package-Requires: ((emacs "25.1"))
+;; SPDX-License-Identifier: Unlicense
 
 ;;; Commentary:
 
