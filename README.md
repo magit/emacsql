@@ -14,7 +14,7 @@ closures. EmacSQL has no concept of "TEXT" values; it's all just lisp
 objects. The lisp object `nil` corresponds 1:1 with `NULL` in the
 database.
 
-On MELPA, each backend is provided as a separate package, suffixed with
+On MELPA, each back-end is provided as a separate package, suffixed with
 the database name. In the case of `emacsql-sqlite`, on first use EmacSQL
 will attempt to find a C compiler and use it to compile a custom native
 binary for communicating with a SQLite database.
@@ -188,7 +188,7 @@ own. (And it leaves out any possibility of a SQL injection!) See the
 keywords and other lisp object.
 
 Prepared EmacSQL s-expression statements are compiled into SQL
-statements. The statement compiler is memoized so that using the same
+statements. The statement compiler is memorized so that using the same
 statement multiple times is fast. To assist in this, the statement can
 act as a template -- using `$i1`, `$s2`, etc. -- working like the
 Elisp `format` function.
@@ -275,7 +275,7 @@ reference.
 
 #### A list whose first element is a vector is a table schema.
 
-This is to distinguish schemas from everything else. With the
+This is to distinguish schemata from everything else. With the
 exception of what follows `:values`, nothing else is shaped like this.
 
 ```el
@@ -318,7 +318,7 @@ This is why rows must be vectors and not lists.
 
 The custom EmacSQL SQLite binary is compiled with [Soundex][soundex] and
 [full-text search][fts] (FTS3, FTS4, and FTS5) enabled -- features
-disabled by the default SQLite build. This backend should work on any
+disabled by the default SQLite build. This back-end should work on any
 system with a conforming ANSI C compiler installed under a command name
 listed in `emacsql-sqlite-c-compilers`.
 
@@ -387,7 +387,7 @@ Then invoke make:
 If the environment variable `PGDATABASE` is present then the unit
 tests will also be run with PostgreSQL (emacsql-psql). Provide
 `PGHOST`, `PGPORT`, and `PGUSER` if needed. If `PGUSER` is provided,
-the pg.el backend (emacsql-pg) will also be tested.
+the pg.el back-end (emacsql-pg) will also be tested.
 
 If the environment variable `MYSQL_DBNAME` is present then the unit
 tests will also be run with MySQL in the named database. Note that
@@ -435,3 +435,6 @@ the emacsql-protocol-mixin class to do most of the work.
 [fts]: http://www.sqlite.org/fts3.html
 [soundex]: http://www.sqlite.org/compile.html#soundex
 [mistake]: https://github.com/magit/emacsql/issues/35#issuecomment-346352439
+
+<!-- LocalWords: EIEIO Elisp EmacSQL FTS MELPA Makefile NOCASE RTRIM SQL's Soundex -->
+<!-- LocalWords: autocommit el emacsql mixin psql schemas unprinted whitespace -->
