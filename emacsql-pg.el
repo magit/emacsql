@@ -29,7 +29,6 @@
 (require 'cl-lib)
 (require 'cl-generic)
 (require 'emacsql)
-(require 'emacsql-psql)  ; for reserved words
 
 (defclass emacsql-pg-connection (emacsql-connection)
   ((pgcon :reader emacsql-pg-pgcon :initarg :pgcon)
