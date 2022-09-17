@@ -11,8 +11,10 @@
 
 ;;; Commentary:
 
-;; During package installation EmacSQL will attempt to compile a
-;; custom native binary for communicating with a SQLite database.
+;; This package provides the original EmacSQL back-end for SQLite,
+;; which uses a custom binary for communicating with a SQLite database.
+
+;; During package installation an attempt is made to compile the binary.
 
 ;;; Code:
 

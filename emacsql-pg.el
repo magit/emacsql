@@ -1,4 +1,4 @@
-;;; emacsql-pg.el --- Emacsql back-end for PostgreSQL via pg  -*- lexical-binding:t -*-
+;;; emacsql-pg.el --- EmacSQL back-end for PostgreSQL via pg  -*- lexical-binding:t -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -11,16 +11,10 @@
 
 ;;; Commentary:
 
-;; Unlike emacsql-psql, this connection type uses Eric Marsden's pg.el
-;; to connect to PostgreSQL. It speaks directly to the database, so
-;; unlike the other EmacSQL connection types, this one requires no
-;; external command line programs.
+;; This package provides an EmacSQL back-end for PostgreSQL, which
+;; uses the `pg' package to directly speak to the database.
 
-;; The only pg functions required are pg:connect, pg:disconnect,
-;; pg:exec, and pg:result. Unfortunately, since pg.el is synchronous
-;; it will not be fully compliant once EmacSQL supports asynchronous
-;; queries. But, on the plus side, this means the implementation below
-;; is dead simple.
+;; (For an alternative back-end for PostgreSQL, see `emacsql-psql'.)
 
 ;;; Code:
 
