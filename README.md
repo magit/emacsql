@@ -21,6 +21,33 @@ binary for communicating with a SQLite database.
 
 Requires Emacs 25 or later.
 
+### FAQ
+#### Why are all values stored as strings?
+
+EmacSQL is not intended to interact with arbitrary databases, but to
+be an ACID-compliant database for Emacs extensions.  This means that
+EmacSQL cannot be used with a regular SQL database used by other
+non-Emacs clients.
+
+All database values must be s-expressions. When EmacSQL stores a
+value — string, symbol, cons, etc. — it is printed and written to
+the database in its printed form. Strings are wrapped in quotes
+and escaped as necessary. That means "bare" symbols in the database
+generally look like strings. The only exception is `nil`, which is
+stored as `NULL`.
+
+#### Will EmacSQL ever support arbitrary databases?
+
+The author of EmacSQL [thinks][mistake] that it was probably a
+design mistake to restrict it to Emacs by storing only printed values,
+and that it would be a lot more useful if it just handled primitive
+database types.
+
+However, EmacSQL is in maintenance mode and there are no plans to
+make any fundamental changes, not least because they would break all
+existing packages and databases that rely on the current EmacSQL
+behavior.
+
 ### Windows Issues
 
 Emacs `start-process-shell-command` function is not supported on
@@ -407,3 +434,4 @@ the emacsql-protocol-mixin class to do most of the work.
 [batch]: http://lists.gnu.org/archive/html/emacs-pretest-bug/2005-11/msg00320.html
 [fts]: http://www.sqlite.org/fts3.html
 [soundex]: http://www.sqlite.org/compile.html#soundex
+[mistake]: https://github.com/magit/emacsql/issues/35#issuecomment-346352439
