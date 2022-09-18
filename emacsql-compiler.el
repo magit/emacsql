@@ -59,12 +59,12 @@
   "Single-quote (scalar) STRING for use in a SQL expression."
   (with-temp-buffer
     (insert string)
-    (setf (point) (point-min))
+    (goto-char (point-min))
     (while (re-search-forward "'" nil t)
       (replace-match "''"))
-    (setf (point) (point-min))
+    (goto-char (point-min))
     (insert "'")
-    (setf (point) (point-max))
+    (goto-char (point-max))
     (insert "'")
     (buffer-string)))
 

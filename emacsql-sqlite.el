@@ -154,7 +154,7 @@ buffer. This is for debugging purposes."
         (case-fold-search nil))
     (with-temp-buffer
       (insert-file-contents makefile)
-      (setf (point) (point-min))
+      (goto-char (point-min))
       (cl-loop while (re-search-forward "-D[A-Z0-9_=]+" nil :no-error)
                collect (match-string 0)))))
 

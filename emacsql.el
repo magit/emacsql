@@ -136,7 +136,7 @@ MESSAGE should not have a newline on the end."
       (unless (buffer-live-p buffer)
         (setq buffer (emacsql-enable-debugging connection)))
       (with-current-buffer buffer
-        (setf (point) (point-max))
+        (goto-char (point-max))
         (princ (concat message "\n") buffer)))))
 
 ;;; Sending and receiving
@@ -215,7 +215,7 @@ specific error conditions."
 (cl-defmethod emacsql-parse ((connection emacsql-protocol-mixin))
   "Parse well-formed output into an s-expression."
   (with-current-buffer (emacsql-buffer connection)
-    (setf (point) (point-min))
+    (goto-char (point-min))
     (let* ((standard-input (current-buffer))
            (value (read)))
       (if (eql value 'error)
@@ -337,7 +337,7 @@ Each column must be a plain symbol, no expressions allowed here."
 (defun emacsql--indent ()
   "Indent and wrap the SQL expression in the current buffer."
   (save-excursion
-    (setf (point) (point-min))
+    (goto-char (point-min))
     (let ((case-fold-search nil))
       (while (search-forward-regexp " [A-Z]+" nil :no-error)
         (when (> (current-column) (* fill-column 0.8))
@@ -405,7 +405,7 @@ A prefix argument causes the SQL to be printed into the current buffer."
       (beginning-of-defun)
       (let ((containing-sexp (elt (parse-partial-sexp (point) start) 1)))
         (when containing-sexp
-          (setf (point) containing-sexp)
+          (goto-char containing-sexp)
           (looking-at "\\["))))))
 
 (defadvice calculate-lisp-indent (around emacsql-vector-indent disable)
