@@ -7,7 +7,7 @@
 ;; Homepage: https://github.com/magit/emacsql
 
 ;; Package-Version: 3.0.0-git
-;; Package-Requires: ((emacs "25.1") (emacsql "3.0.0") (pg "0"))
+;; Package-Requires: ((emacs "25.1") (emacsql "3.0.0") (pg "0.16"))
 ;; SPDX-License-Identifier: Unlicense
 
 ;;; Commentary:
@@ -41,7 +41,7 @@
                              (host "localhost") (password "") (port 5432) debug)
   "Connect to a PostgreSQL server using pg.el."
   (require 'pg)
-  (let* ((pgcon (pg:connect dbname user password host port))
+  (let* ((pgcon (pg-connect dbname user password host port))
          (connection (make-instance 'emacsql-pg-connection
                                     :process (pgcon-process pgcon)
                                     :pgcon pgcon
@@ -51,20 +51,20 @@
     (emacsql-register connection)))
 
 (cl-defmethod emacsql-close ((connection emacsql-pg-connection))
-  (ignore-errors (pg:disconnect (emacsql-pg-pgcon connection))))
+  (ignore-errors (pg-disconnect (emacsql-pg-pgcon connection))))
 
 (cl-defmethod emacsql-send-message ((connection emacsql-pg-connection) message)
   (condition-case error
       (setf (emacsql-pg-result connection)
-            (pg:exec (emacsql-pg-pgcon connection) message))
+            (pg-exec (emacsql-pg-pgcon connection) message))
     (error (signal 'emacsql-error error))))
 
 (cl-defmethod emacsql-waiting-p ((_connection emacsql-pg-connection))
-  ;; pg:exec will block
+  ;; pg-exec will block
   t)
 
 (cl-defmethod emacsql-parse ((connection emacsql-pg-connection))
-  (let ((tuples (pg:result (emacsql-pg-result connection) :tuples)))
+  (let ((tuples (pg-result (emacsql-pg-result connection) :tuples)))
     (cl-loop for tuple in tuples collect
              (cl-loop for value in tuple
                       when (stringp value) collect (read value)
