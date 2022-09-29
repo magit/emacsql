@@ -32,7 +32,7 @@ binary: sqlite/emacsql-sqlite
 sqlite/emacsql-sqlite:
 	$(MAKE) -C sqlite
 
-compile: $(ELC)
+compile: binary $(ELC)
 
 check: test
 test: compile $(TEST_ELC)
