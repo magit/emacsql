@@ -10,7 +10,7 @@
 (require 'emacsql-sqlite)
 (require 'emacsql-psql)
 (require 'emacsql-mysql)
-(require 'emacsql-pg)
+(when (require 'pg nil t) (require 'emacsql-pg))
 
 (defvar emacsql-tests-timeout 4
   "Be aggressive about not waiting on subprocesses in unit tests.")

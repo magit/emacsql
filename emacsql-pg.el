@@ -19,7 +19,7 @@
 
 ;;; Code:
 
-(require 'pg)
+(require 'pg nil t)
 (require 'eieio)
 (require 'cl-lib)
 (require 'cl-generic)
@@ -40,6 +40,7 @@
 (cl-defun emacsql-pg (dbname user &key
                              (host "localhost") (password "") (port 5432) debug)
   "Connect to a PostgreSQL server using pg.el."
+  (require 'pg)
   (let* ((pgcon (pg:connect dbname user password host port))
          (connection (make-instance 'emacsql-pg-connection
                                     :process (pgcon-process pgcon)
