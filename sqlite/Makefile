@@ -1,3 +1,5 @@
+-include ../.config.mk
+
 .POSIX:
 LDLIBS = -ldl -lm
 CFLAGS = -O2 -Wall -Wextra \
