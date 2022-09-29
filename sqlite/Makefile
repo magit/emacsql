@@ -2,7 +2,7 @@
 
 .POSIX:
 LDLIBS = -ldl -lm
-CFLAGS = -O2 -Wall -Wextra \
+CFLAGS = -O2 -Wall -Wextra -Wno-implicit-fallthrough \
     -DSQLITE_THREADSAFE=0 \
     -DSQLITE_DEFAULT_FOREIGN_KEYS=1 \
     -DSQLITE_ENABLE_FTS5 \
