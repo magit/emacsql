@@ -3,14 +3,14 @@
 # Clone the dependencies of this package in sibling directories:
 #     $ git clone https://github.com/cbbrowne/pg.el ../pg
 #
-# Or set LDFLAGS to point at these packages elsewhere:
-#     $ make LDFLAGS='-L path/to/pg'
+# Or set LOAD_PATH to point at these packages elsewhere:
+#     $ make LOAD_PATH='-L path/to/pg'
 
 .POSIX:
 .SUFFIXES: .el .elc
 EMACS   ?= emacs
-LDFLAGS ?= -L ../pg
-BATCH    = $(EMACS) -batch -Q -L . -L tests $(LDFLAGS)
+LOAD_PATH ?= -L ../pg
+BATCH    = $(EMACS) -batch -Q -L . -L tests $(LOAD_PATH)
 
 EL = emacsql-compiler.el \
      emacsql.el \
