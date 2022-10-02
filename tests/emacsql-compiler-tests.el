@@ -16,8 +16,8 @@
   (should-error (emacsql-escape-identifier 10))
   (should-error (emacsql-escape-identifier nil))
   (should (string= (emacsql-escape-identifier 'person-id) "person_id"))
-  (should (string= (emacsql-escape-identifier
-                    'people:person-id) "people.person_id"))
+  (should (string= (emacsql-escape-identifier 'people:person-id)
+                   "people.person_id"))
   (should (string= (emacsql-escape-identifier 'foo$) "foo$"))
   (should (string= (emacsql-escape-identifier 'foo:bar) "foo.bar")))
 
@@ -129,8 +129,10 @@
     ([:create-table foo ([a b] (:check (< a b)))] '()
      "CREATE TABLE foo (a &NONE, b &NONE, CHECK (a < b));")
     ([:create-table foo ([a b c]
-                         (:foreign-key [a b] :references bar [aa bb]
-                                       :on-delete :cascade))] '()
+                         ( :foreign-key [a b]
+                           :references bar [aa bb]
+                           :on-delete :cascade))]
+     '()
       (concat "CREATE TABLE foo (a &NONE, b &NONE, c &NONE, FOREIGN KEY (a, b) "
               "REFERENCES bar (aa, bb) ON DELETE CASCADE);"))
     ;; Template

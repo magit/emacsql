@@ -380,7 +380,8 @@ string returned is wrapped with parentheses."
       (cl-values (cond
                   ((null format-string) nil)
                   ((>= parent-precedence-value
-                       precedence-value) (format "(%s)" expanded-format-string))
+                       precedence-value)
+                   (format "(%s)" expanded-format-string))
                   (t expanded-format-string))
                  precedence-value))))
 
