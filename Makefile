@@ -1,7 +1,7 @@
 -include .config.mk
 
 # Clone the dependencies of this package in sibling directories:
-#     $ git clone https://github.com/cbbrowne/pg.el ../pg
+#     $ git clone https://github.com/emarsden/pg-el ../pg
 #
 # Or set LOAD_PATH to point at these packages elsewhere:
 #     $ make LOAD_PATH='-L path/to/pg'
