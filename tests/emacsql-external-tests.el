@@ -25,7 +25,7 @@
       (reg "sqlite" #'emacsql-sqlite nil)
       (when pgdatabase
         (reg "psql" #'emacsql-psql pgdatabase))
-      (when (and pgdatabase pguser)
+      (when (and pgdatabase pguser (fboundp 'emacsql-pg))
         (reg "pg" #'emacsql-pg pgdatabase pguser))
       (when mysql-dbname
         (reg "mysql" #'emacsql-mysql mysql-dbname)))

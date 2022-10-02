@@ -19,7 +19,13 @@
 
 ;;; Code:
 
-(require 'pg nil t)
+(unless (require 'pg nil t)
+  (declare-function pg-connect "pg"
+                    ( dbname user &optional
+                      (password "") (host "localhost") (port 5432) (tls nil)))
+  (declare-function pg-disconnect "pg" (con))
+  (declare-function pg-exec "pg" (connection &rest args))
+  (declare-function pg-result "pg" (result what &rest arg)))
 (require 'eieio)
 (require 'cl-lib)
 (require 'cl-generic)
@@ -43,7 +49,8 @@
   (require 'pg)
   (let* ((pgcon (pg-connect dbname user password host port))
          (connection (make-instance 'emacsql-pg-connection
-                                    :process (pgcon-process pgcon)
+                                    :process (and (fboundp 'pgcon-process)
+                                                  (pgcon-process pgcon))
                                     :pgcon pgcon
                                     :dbname dbname)))
     (when debug (emacsql-enable-debugging connection))
