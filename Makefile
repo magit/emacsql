@@ -28,6 +28,7 @@ EMACS_ARGS ?=
 
 LOAD_PATH  ?= $(addprefix -L ../,$(DEPS))
 LOAD_PATH  += -L .
+LOAD_PATH  += -L ./tests
 
 all: binary lisp
 
@@ -57,7 +58,7 @@ check-declare:
 	@$(EMACS) -Q --batch $(EMACS_ARGS) $(LOAD_PATH) \
 	--eval "(check-declare-directory default-directory)"
 
-CLEAN  = $(ELCS) $(PKG)-autoloads.el
+CLEAN  = $(ELCS) $(TEST_ELCS) $(PKG)-autoloads.el
 
 clean:
 	@printf " Cleaning...\n"
