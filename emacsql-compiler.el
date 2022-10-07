@@ -15,7 +15,7 @@
 ;;; Error symbols
 
 (defmacro emacsql-deferror (symbol parents message)
-  "Defines a new error symbol  for EmacSQL."
+  "Defines a new error symbol for EmacSQL."
   (declare (indent 2))
   (let ((conditions (cl-remove-duplicates
                      (append parents (list symbol 'emacsql-error 'error)))))
