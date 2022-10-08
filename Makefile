@@ -83,4 +83,4 @@ $(PKG)-autoloads.el: $(ELS)
 
 test: all $(TEST_ELCS)
 	@$(EMACS) -Q --batch $(EMACS_ARGS) $(LOAD_PATH) \
-	-L tests -l tests/emacsql-tests.elc -f ert-run-tests-batch
+	-L tests -l tests/emacsql-tests.elc -f ert-run-tests-batch-and-exit

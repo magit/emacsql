@@ -1,0 +1,43 @@
+# This is free and unencumbered software released into the public domain.
+name: test
+on: [ push, pull_request ]
+permissions: read-all
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        emacs_version:
+        - 25.1
+        - 25.3
+        - 26.1
+        - 26.2
+        - 26.3
+        - 27.1
+        - 27.2
+        - 28.1
+        - snapshot
+    steps:
+    - name: Install emacs
+      uses: purcell/setup-emacs@bea3d9e95785b8412caf802b320cd6de386be7a3 # v3.0
+      with:
+        version: ${{ matrix.emacs_version }}
+    - name: Checkout emacsql
+      uses: actions/checkout@v3
+      with:
+        persist-credentials: false
+        path: emacsql
+    - name: Checkout pg (dependency)
+      uses: actions/checkout@v3
+      with:
+        persist-credentials: false
+        repository: cbbrowne/pg.el
+        path: pg
+    - name: Checkout finalize (dependency)
+      uses: actions/checkout@v3
+      with:
+        persist-credentials: false
+        repository: skeeto/elisp-finalize
+        path: finalize
+    - name: Test emacsql
+      run: make -C emacsql test
