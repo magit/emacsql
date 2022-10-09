@@ -43,7 +43,7 @@
                 nil)))
         (error :cannot-execute)))))
 
-(defvar emacsql-psql-reserved
+(defconst emacsql-psql-reserved
   (emacsql-register-reserved
    '(ALL ANALYSE ANALYZE AND ANY AS ASC AUTHORIZATION BETWEEN BINARY
      BOTH CASE CAST CHECK COLLATE COLUMN CONSTRAINT CREATE CROSS

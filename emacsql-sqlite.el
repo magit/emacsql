@@ -48,7 +48,7 @@
                        user-emacs-directory)))
   "Path to the EmacSQL backend (this is not the sqlite3 shell).")
 
-(defvar emacsql-sqlite-reserved
+(defconst emacsql-sqlite-reserved
   (emacsql-register-reserved
    '(ABORT ACTION ADD AFTER ALL ALTER ANALYZE AND AS ASC ATTACH
      AUTOINCREMENT BEFORE BEGIN BETWEEN BY CASCADE CASE CAST CHECK
@@ -128,7 +128,7 @@ buffer. This is for debugging purposes."
     (process-send-string process message)
     (process-send-string process "\n")))
 
-(defvar emacsql-sqlite-condition-alist
+(defconst emacsql-sqlite-condition-alist
   '(((1 4 9 12 17 18 20 21 22 25) emacsql-error)
     ((2)                          emacsql-internal)
     ((3 8 10 13 14 15 23)         emacsql-access)

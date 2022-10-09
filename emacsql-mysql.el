@@ -28,7 +28,7 @@
 (defvar emacsql-mysql-sentinel "--------------\n\n--------------\n\n"
   "What MySQL will print when it has completed its output.")
 
-(defvar emacsql-mysql-reserved
+(defconst emacsql-mysql-reserved
   (emacsql-register-reserved
    '(ACCESSIBLE ADD ALL ALTER ANALYZE AND AS ASC ASENSITIVE BEFORE
      BETWEEN BIGINT BINARY BLOB BOTH BY CALL CASCADE CASE CHANGE CHAR
