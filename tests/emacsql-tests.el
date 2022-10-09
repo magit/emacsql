@@ -8,6 +8,7 @@
 (require 'emacsql-compiler-tests)
 (require 'emacsql-external-tests)
 
+(setq truncate-lines nil)
 (setq truncate-partial-width-windows nil)
 
 ;; Print testing information
