@@ -27,12 +27,6 @@ jobs:
       with:
         persist-credentials: false
         path: emacsql
-    - name: Checkout pg (dependency)
-      uses: actions/checkout@v3
-      with:
-        persist-credentials: false
-        repository: cbbrowne/pg.el
-        path: pg
     - name: Checkout finalize (dependency)
       uses: actions/checkout@v3
       with:
