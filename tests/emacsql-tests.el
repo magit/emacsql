@@ -8,8 +8,6 @@
 (require 'emacsql-compiler-tests)
 (require 'emacsql-external-tests)
 
-(setq ert-batch-backtrace-right-margin nil)
-
 ;; Print testing information
 (cl-eval-when (load eval)
   (princ (format "\nTesting %d database(s): %S\n"
