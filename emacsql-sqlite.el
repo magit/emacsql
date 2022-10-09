@@ -137,7 +137,9 @@ buffer. This is for debugging purposes."
     ((11 16 24 26)                emacsql-corruption)
     ((19)                         emacsql-constraint)
     ((27 28)                      emacsql-warning))
-  "List of regexp's mapping sqlite3 output to conditions.")
+  "Alist mapping SQLite error codes to EmacSQL conditions.
+Each key is a list of error codes (integers).
+Also see https://www.sqlite.org/rescode.html.")
 
 (cl-defmethod emacsql-handle ((_ emacsql-sqlite-connection) code message)
   "Get condition for MESSAGE provided from SQLite."
