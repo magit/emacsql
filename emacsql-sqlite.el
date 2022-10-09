@@ -144,7 +144,7 @@ buffer. This is for debugging purposes."
   (signal
    (or (cl-second (cl-assoc code emacsql-sqlite-condition-alist :test #'memql))
        'emacsql-error)
-   (list message)))
+   (list message code)))
 
 ;;; SQLite compilation
 
