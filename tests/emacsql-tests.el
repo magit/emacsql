@@ -8,8 +8,7 @@
 (require 'emacsql-compiler-tests)
 (require 'emacsql-external-tests)
 
-(setq truncate-lines nil)
-(setq truncate-partial-width-windows nil)
+(setq ert-batch-backtrace-right-margin nil)
 
 ;; Print testing information
 (cl-eval-when (load eval)
