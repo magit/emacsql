@@ -49,3 +49,5 @@ jobs:
         path: pg
     - name: Test emacsql
       run: make -C emacsql test
+      env:
+        PGDATABASE: runner
