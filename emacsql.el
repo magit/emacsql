@@ -6,7 +6,7 @@
 ;; Maintainer: Jonas Bernoulli <jonas@bernoul.li>
 ;; Homepage: https://github.com/magit/emacsql
 
-;; Package-Version: 3.0.0-git
+;; Package-Version: 3.1.0-git
 ;; Package-Requires: ((emacs "25.1"))
 ;; SPDX-License-Identifier: Unlicense
 
@@ -210,7 +210,7 @@ must display as \"nil\".")
   "Signal a specific condition for CODE from CONNECTION.
 Subclasses should override this method in order to provide more
 specific error conditions."
-  (signal 'emacsql-error (list code message)))
+  (signal 'emacsql-error (list message code)))
 
 (cl-defmethod emacsql-parse ((connection emacsql-protocol-mixin))
   "Parse well-formed output into an s-expression."
