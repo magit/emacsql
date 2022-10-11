@@ -20,6 +20,12 @@ jobs:
         - snapshot
       fail-fast: false
     steps:
+    - name: Setup PostgreSQL
+      run: |
+        sudo apt install postgresql
+        sudo sudo systemctl start postgresql.service
+        sudo -u postgres createuser --createdb runner
+        sudo -u postgres createdb --owner=runner runner
     - name: Install emacs
       uses: purcell/setup-emacs@bea3d9e95785b8412caf802b320cd6de386be7a3 # v3.0
       with:
@@ -35,5 +41,11 @@ jobs:
         persist-credentials: false
         repository: skeeto/elisp-finalize
         path: finalize
+    - name: Checkout pg-el (dependency)
+      uses: actions/checkout@v3
+      with:
+        persist-credentials: false
+        repository: emarsden/pg-el
+        path: pg
     - name: Test emacsql
       run: make -C emacsql test

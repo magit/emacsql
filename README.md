@@ -376,7 +376,7 @@ sibling directories. The Makefile will automatically put these paths on
 the Emacs load path (override `LDFLAGS` if your situation is different).
 
     $ cd ..
-    $ git clone https://github.com/cbbrowne/pg.el pg
+    $ git clone https://github.com/emarsden/pg-el pg
     $ git clone https://github.com/skeeto/elisp-finalize finalize
     $ cd -
 
