@@ -23,7 +23,7 @@ jobs:
       postgres:
         image: postgres:14
         env:
-          POSTGRES_PASSWORD: emacsql
+          POSTGRES_PASSWORD: postgres
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -54,7 +54,8 @@ jobs:
     - name: Test emacsql
       run: make -C emacsql test
       env:
-        PGHOST: postgres
-        PGDATABASE: postgres
-        PGUSER: postgres
-        PGPASSWORD: emacsql
+        PG_DATABASE: postgres
+        PG_USER: postgres
+        PG_PASSWORD: postgres
+        PG_HOST: postgres
+        PG_POST: 5432
