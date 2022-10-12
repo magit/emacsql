@@ -58,4 +58,4 @@ jobs:
         PG_USER: postgres
         PG_PASSWORD: postgres
         PG_HOST: postgres
-        PG_POST: 5432
+        PG_PORT: 5432
