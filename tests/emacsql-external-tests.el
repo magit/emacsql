@@ -36,7 +36,7 @@
       (when (and pg-database pg-user pg-password pg-host pg-port (fboundp 'emacsql-pg))
         (reg "pg" #'emacsql-pg pg-database pg-user :host pg-host :password pg-password :port pg-port))
       (when (and mysql-database mysql-user mysql-host mysql-password mysql-port)
-        (reg "mysql" #'emacsql-mysql mysql-database mysql-user :host mysql-host :password mysql-password :port mysql-port)))
+        (reg "mysql" #'emacsql-mysql mysql-database :user mysql-user :host mysql-host :password mysql-password :port mysql-port)))
     (nreverse factories))
   "List of connection factories to use in unit tests.")
 
