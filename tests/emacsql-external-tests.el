@@ -18,6 +18,9 @@
 (defvar emacsql-tests-connection-factories
   (let ((factories ())
         (psql-database (getenv "PSQL_DATABASE"))
+        (psql-user (getenv "PSQL_USER"))
+        (psql-host (getenv "PSQL_HOST"))
+        (psql-port (getenv "PSQL_PORT"))
         (pg-database (getenv "PG_DATABASE"))
         (pg-user (getenv "PG_USER"))
         (pg-password (getenv "PG_PASSWORD"))
@@ -31,8 +34,8 @@
     (cl-labels ((reg (name &rest args)
                   (push (cons name (apply #'apply-partially args)) factories)))
       (reg "sqlite" #'emacsql-sqlite nil)
-      (when psql-database
-        (reg "psql" #'emacsql-psql psql-database))
+      (when (and psql-database psql-user psql-host psql-port)
+        (reg "psql" #'emacsql-psql psql-database :username psql-username :hostname psql-host :port psql-port))
       (when (and pg-database pg-user pg-password pg-host pg-port (fboundp 'emacsql-pg))
         (reg "pg" #'emacsql-pg pg-database pg-user :host pg-host :password pg-password :port pg-port))
       (when (and mysql-database mysql-user mysql-host mysql-password mysql-port)
