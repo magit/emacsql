@@ -23,7 +23,11 @@
         (pg-password (getenv "PG_PASSWORD"))
         (pg-host (getenv "PG_HOST"))
         (pg-port (getenv "PG_PORT"))
-        (mysql-dbname (getenv "MYSQL_DBNAME")))
+        (mysql-database (getenv "MYSQL_DATABASE"))
+        (mysql-user (getenv "MYSQL_USER"))
+        (mysql-password (getenv "MYSQL_PASSWORD"))
+        (mysql-host (getenv "MYSQL_HOST"))
+        (mysql-port (getenv "MYSQL_PORT")))
     (cl-labels ((reg (name &rest args)
                   (push (cons name (apply #'apply-partially args)) factories)))
       (reg "sqlite" #'emacsql-sqlite nil)
@@ -31,8 +35,8 @@
         (reg "psql" #'emacsql-psql psql-database))
       (when (and pg-database pg-user pg-password pg-host pg-port (fboundp 'emacsql-pg))
         (reg "pg" #'emacsql-pg pg-database pg-user :host pg-host :password pg-password :port pg-port))
-      (when mysql-dbname
-        (reg "mysql" #'emacsql-mysql mysql-dbname)))
+      (when (and mysql-database mysql-user mysql-host mysql-password mysql-port)
+        (reg "mysql" #'emacsql-mysql mysql-database mysql-user :host mysql-host :password mysql-password :port mysql-port)))
     (nreverse factories))
   "List of connection factories to use in unit tests.")
 

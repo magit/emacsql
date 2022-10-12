@@ -31,6 +31,21 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: emacsql
+          MYSQL_DATABASE: emacsql
+          MYSQL_USER: emacsql
+          MYSQL_PASSWORD: emacsql
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
     steps:
     - name: Install emacs
       uses: purcell/setup-emacs@bea3d9e95785b8412caf802b320cd6de386be7a3 # v3.0
@@ -56,8 +71,13 @@ jobs:
     - name: Test emacsql
       run: make -C emacsql test
       env:
-        PG_DATABASE: postgres
-        PG_USER: postgres
-        PG_PASSWORD: postgres
-        PG_HOST: 127.0.0.1
-        PG_PORT: 5432
+        #PG_DATABASE: postgres
+        #PG_USER: postgres
+        #PG_PASSWORD: postgres
+        #PG_HOST: 127.0.0.1
+        #PG_PORT: 5432
+        MYSQL_DATABASE: emacsql
+        MYSQL_USER: emacsql
+        MYSQL_PASSWORD: emacsql
+        MYSQL_HOST: 127.0.0.1
+        MYSQL_PORT: 3306
