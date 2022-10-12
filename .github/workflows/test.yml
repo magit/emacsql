@@ -19,13 +19,17 @@ jobs:
         - 28.2
         - snapshot
       fail-fast: false
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: emacsql
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
-    - name: Setup PostgreSQL
-      run: |
-        sudo apt install postgresql
-        sudo sudo systemctl start postgresql.service
-        sudo -u postgres createuser --createdb runner
-        sudo -u postgres createdb --owner=runner runner
     - name: Install emacs
       uses: purcell/setup-emacs@bea3d9e95785b8412caf802b320cd6de386be7a3 # v3.0
       with:
@@ -50,4 +54,7 @@ jobs:
     - name: Test emacsql
       run: make -C emacsql test
       env:
-        PGDATABASE: runner
+        PGHOST: postgres
+        PGDATABASE: postgres
+        PGUSER: postgres
+        PGPASSWORD: emacsql
