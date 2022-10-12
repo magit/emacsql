@@ -20,9 +20,9 @@
         (psql-database (getenv "PSQL_DATABASE"))
         (pg-database (getenv "PG_DATABASE"))
         (pg-user (getenv "PG_USER"))
+        (pg-password (getenv "PG_PASSWORD"))
         (pg-host (getenv "PG_HOST"))
         (pg-port (getenv "PG_PORT"))
-        (pg-password (getenv "PG_PASSWORD"))
         (mysql-dbname (getenv "MYSQL_DBNAME")))
     (cl-labels ((reg (name &rest args)
                   (push (cons name (apply #'apply-partially args)) factories)))
@@ -30,7 +30,7 @@
       (when psql-database
         (reg "psql" #'emacsql-psql psql-database))
       (when (and pg-database pg-user pg-password pg-host pg-port (fboundp 'emacsql-pg))
-        (reg "pg" #'emacsql-pg pg-database pg-user pg-password pg-host))
+        (reg "pg" #'emacsql-pg pg-database pg-user :host pg-host :password pg-password :port pg-port))
       (when mysql-dbname
         (reg "mysql" #'emacsql-mysql mysql-dbname)))
     (nreverse factories))
