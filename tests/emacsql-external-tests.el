@@ -35,7 +35,7 @@
                   (push (cons name (apply #'apply-partially args)) factories)))
       (reg "sqlite" #'emacsql-sqlite nil)
       (when (and psql-database psql-user psql-host psql-port)
-        (reg "psql" #'emacsql-psql psql-database :username psql-username :hostname psql-host :port psql-port))
+        (reg "psql" #'emacsql-psql psql-database :username psql-user :hostname psql-host :port psql-port))
       (when (and pg-database pg-user pg-password pg-host pg-port (fboundp 'emacsql-pg))
         (reg "pg" #'emacsql-pg pg-database pg-user :host pg-host :password pg-password :port pg-port))
       (when (and mysql-database mysql-user mysql-host mysql-password mysql-port)
