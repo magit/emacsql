@@ -24,6 +24,8 @@
 (require 'eieio)
 (require 'emacsql)
 
+(emacsql-register-reserved emacsql-sqlite-reserved)
+
 ;;; SQLite connection
 
 (defvar emacsql-sqlite-data-root
@@ -47,25 +49,6 @@
                        (concat "emacsql/" emacsql-version)
                        user-emacs-directory)))
   "Path to the EmacSQL backend (this is not the sqlite3 shell).")
-
-(defconst emacsql-sqlite-reserved
-  (emacsql-register-reserved
-   '( ABORT ACTION ADD AFTER ALL ALTER ANALYZE AND AS ASC ATTACH
-      AUTOINCREMENT BEFORE BEGIN BETWEEN BY CASCADE CASE CAST CHECK
-      COLLATE COLUMN COMMIT CONFLICT CONSTRAINT CREATE CROSS
-      CURRENT_DATE CURRENT_TIME CURRENT_TIMESTAMP DATABASE DEFAULT
-      DEFERRABLE DEFERRED DELETE DESC DETACH DISTINCT DROP EACH ELSE END
-      ESCAPE EXCEPT EXCLUSIVE EXISTS EXPLAIN FAIL FOR FOREIGN FROM FULL
-      GLOB GROUP HAVING IF IGNORE IMMEDIATE IN INDEX INDEXED INITIALLY
-      INNER INSERT INSTEAD INTERSECT INTO IS ISNULL JOIN KEY LEFT LIKE
-      LIMIT MATCH NATURAL NO NOT NOTNULL NULL OF OFFSET ON OR ORDER
-      OUTER PLAN PRAGMA PRIMARY QUERY RAISE RECURSIVE REFERENCES REGEXP
-      REINDEX RELEASE RENAME REPLACE RESTRICT RIGHT ROLLBACK ROW
-      SAVEPOINT SELECT SET TABLE TEMP TEMPORARY THEN TO TRANSACTION
-      TRIGGER UNION UNIQUE UPDATE USING VACUUM VALUES VIEW VIRTUAL WHEN
-      WHERE WITH WITHOUT))
-  "List of all of SQLite's reserved words.
-Also see http://www.sqlite.org/lang_keywords.html.")
 
 (defvar emacsql-sqlite-c-compilers '("cc" "gcc" "clang")
   "List of names to try when searching for a C compiler.
@@ -128,25 +111,12 @@ buffer. This is for debugging purposes."
     (process-send-string process message)
     (process-send-string process "\n")))
 
-(defconst emacsql-sqlite-condition-alist
-  '(((1 4 9 12 17 18 20 21 22 25) emacsql-error)
-    ((2)                          emacsql-internal)
-    ((3 8 10 13 14 15 23)         emacsql-access)
-    ((5 6)                        emacsql-locked)
-    ((7)                          emacsql-memory)
-    ((11 16 24 26)                emacsql-corruption)
-    ((19)                         emacsql-constraint)
-    ((27 28)                      emacsql-warning))
-  "Alist mapping SQLite error codes to EmacSQL conditions.
-Each key is a list of error codes (integers).
-Also see https://www.sqlite.org/rescode.html.")
-
-(cl-defmethod emacsql-handle ((_ emacsql-sqlite-connection) code message)
-  "Get condition for MESSAGE provided from SQLite."
-  (signal
-   (or (cl-second (cl-assoc code emacsql-sqlite-condition-alist :test #'memql))
-       'emacsql-error)
-   (list message code)))
+(cl-defmethod emacsql-handle ((_ emacsql-sqlite-connection) errcode errmsg)
+  "Get condition for ERRCODE and ERRMSG provided from SQLite."
+  (pcase-let ((`(,_ ,_ ,signal ,errstr)
+               (assq errcode emacsql-sqlite-error-codes)))
+    (signal (or signal 'emacsql-error)
+            (list errmsg errcode nil errstr))))
 
 ;;; SQLite compilation
 

@@ -2,9 +2,10 @@
 
 # Clone the dependencies of this package in sibling directories:
 #     $ git clone https://github.com/emarsden/pg-el ../pg
+#     $ git clone https://github.com/pekingduck/emacs-sqlite3-api.git ../sqlite3
 #
 # Or set LOAD_PATH to point at these packages elsewhere:
-#     $ make LOAD_PATH='-L path/to/pg'
+#     $ make LOAD_PATH='-L path/to/pg -L path/to/sqlite3'
 
 PKG = emacsql
 
@@ -14,6 +15,8 @@ ELS  += $(PKG)-mysql.el
 ELS  += $(PKG)-pg.el
 ELS  += $(PKG)-psql.el
 ELS  += $(PKG)-sqlite.el
+ELS  += $(PKG)-sqlite-builtin.el
+ELS  += $(PKG)-sqlite-module.el
 ELCS  = $(ELS:.el=.elc)
 
 TEST_ELS  = tests/emacsql-compiler-tests.el
@@ -22,6 +25,7 @@ TEST_ELS += tests/emacsql-tests.el
 TEST_ELCS = $(TEST_ELS:.el=.elc)
 
 DEPS  = pg
+DEPS += sqlite3
 
 EMACS      ?= emacs
 EMACS_ARGS ?=

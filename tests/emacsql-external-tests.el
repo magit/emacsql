@@ -7,9 +7,12 @@
 (require 'cl-lib)
 (require 'ert)
 (require 'emacsql)
+
 (require 'emacsql-sqlite)
-(require 'emacsql-psql)
+(when (require 'sqlite nil t) (require 'emacsql-sqlite-builtin))
+(when (require 'sqlite3 nil t) (require 'emacsql-sqlite-module))
 (require 'emacsql-mysql)
+(require 'emacsql-psql)
 (when (require 'pg nil t) (require 'emacsql-pg))
 
 (defvar emacsql-tests-timeout 4
@@ -23,12 +26,16 @@
     (cl-labels ((reg (name &rest args)
                   (push (cons name (apply #'apply-partially args)) factories)))
       (reg "sqlite" #'emacsql-sqlite nil)
+      (when (featurep 'emacsql-sqlite-builtin)
+        (reg "sqlite-builtin" 'emacsql-sqlite-builtin nil))
+      (when (featurep 'emacsql-sqlite-module)
+        (reg "sqlite-module" 'emacsql-sqlite-module nil))
+      (when mysql-dbname
+        (reg "mysql" #'emacsql-mysql mysql-dbname))
       (when pgdatabase
         (reg "psql" #'emacsql-psql pgdatabase))
-      (when (and pgdatabase pguser (fboundp 'emacsql-pg))
-        (reg "pg" #'emacsql-pg pgdatabase pguser))
-      (when mysql-dbname
-        (reg "mysql" #'emacsql-mysql mysql-dbname)))
+      (when (and pgdatabase pguser)
+        (reg "pg" 'emacsql-pg pgdatabase pguser)))
     (nreverse factories))
   "List of connection factories to use in unit tests.")
 
@@ -99,7 +106,8 @@
       (emacsql-with-connection (db (funcall (cdr factory)))
         (emacsql db [:create-temporary-table test-table ([x])])
         (emacsql db [:insert-into test-table :values ([""] [\])])
-        (should (process-live-p (emacsql-process db)))
+        (when (cl-typep db 'process)
+          (should (process-live-p (emacsql-process db))))
         (should (equal (emacsql db [:select * :from test-table])
                        '(("") (\))))))))
 
