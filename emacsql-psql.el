@@ -5,7 +5,7 @@
 ;; Author: Christopher Wellons <wellons@nullprogram.com>
 ;; Maintainer: Jonas Bernoulli <jonas@bernoul.li>
 ;; Homepage: https://github.com/magit/emacsql
-;; Package-Version: 3.1.1-git
+;; Package-Version: 3.1.1.50-git
 ;; Package-Requires: ((emacs "25.1") (emacsql "3.1.1"))
 ;; SPDX-License-Identifier: Unlicense
 
