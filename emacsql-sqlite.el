@@ -84,6 +84,8 @@ used.")
     (setf (slot-value connection 'process) process)
     (setf (process-sentinel process)
           (lambda (proc _) (kill-buffer (process-buffer proc))))
+    (when (memq (process-status process) '(exit signal))
+      (error "%s has failed immediately" emacsql-sqlite-executable))
     (emacsql-wait connection)
     (emacsql connection [:pragma (= busy-timeout $s1)]
              (/ (* emacsql-global-timeout 1000) 2))
