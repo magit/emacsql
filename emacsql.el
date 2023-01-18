@@ -200,10 +200,14 @@ must display as \"nil\".")
   :abstract t)
 
 (cl-defmethod emacsql-waiting-p ((connection emacsql-protocol-mixin))
-  "Return true if the end of the buffer has a properly-formatted prompt."
-  (with-current-buffer (emacsql-buffer connection)
-    (and (>= (buffer-size) 2)
-         (string= "#\n" (buffer-substring (- (point-max) 2) (point-max))))))
+  "Return t if the end of the buffer has a properly-formatted prompt.
+Also return t if the process buffer has been killed."
+  (let ((buffer (emacsql-buffer connection)))
+    (or (not (buffer-live-p buffer))
+        (with-current-buffer buffer
+          (and (>= (buffer-size) 2)
+               (string= "#\n"
+                        (buffer-substring (- (point-max) 2) (point-max))))))))
 
 (cl-defmethod emacsql-handle ((_ emacsql-protocol-mixin) code message)
   "Signal a specific condition for CODE from CONNECTION.
