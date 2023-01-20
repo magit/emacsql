@@ -1,4 +1,5 @@
-*.elc
-*.tar
-sqlite/emacsql-sqlite
+/*.elc
+/*-autoloads.el
 /.config.mk
+
+/sqlite/emacsql-sqlite
