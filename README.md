@@ -430,11 +430,14 @@ the emacsql-protocol-mixin class to do most of the work.
 
  * [SQLite Documentation](https://www.sqlite.org/docs.html)
 
+<br><br>
+[![Compile](https://github.com/magit/emacsql/actions/workflows/compile.yml/badge.svg)](https://github.com/magit/emacsql/actions/workflows/compile.yml)
+[![Test](https://github.com/magit/emacsql/actions/workflows/test.yml/badge.svg)](https://github.com/magit/emacsql/actions/workflows/test.yml)
+[![NonGNU ELPA](https://elpa.nongnu.org/nongnu/emacsql.svg)](https://elpa.nongnu.org/nongnu/emacsql.html)
+[![MELPA Stable](https://stable.melpa.org/packages/emacsql-badge.svg)](https://stable.melpa.org/#/emacsql)
+[![MELPA](https://melpa.org/packages/emacsql-badge.svg)](https://melpa.org/#/emacsql)
 
 [readable]: http://nullprogram.com/blog/2013/12/30/#almost_everything_prints_readably
-[stderr]: http://thread.gmane.org/gmane.comp.db.sqlite.general/85824
-[foreign]: http://www.sqlite.org/foreignkeys.html
-[batch]: http://lists.gnu.org/archive/html/emacs-pretest-bug/2005-11/msg00320.html
 [fts]: http://www.sqlite.org/fts3.html
 [soundex]: http://www.sqlite.org/compile.html#soundex
 [mistake]: https://github.com/magit/emacsql/issues/35#issuecomment-346352439
