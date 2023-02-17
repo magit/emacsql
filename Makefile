@@ -88,3 +88,20 @@ $(PKG)-autoloads.el: $(ELS)
 test: all $(TEST_ELCS)
 	@$(EMACS) -Q --batch $(EMACS_ARGS) $(LOAD_PATH) \
 	-L tests -l tests/emacsql-tests.elc -f ert-run-tests-batch-and-exit
+
+GITSTATS      ?= gitstats
+GITSTATS_DIR  ?= $(TOP)stats
+GITSTATS_ARGS ?= -c style=https://magit.vc/assets/stats.css -c max_authors=999
+
+.PHONY: stats
+stats:
+	@printf "Generating statistics\n"
+	@$(GITSTATS) $(GITSTATS_ARGS) $(TOP) $(GITSTATS_DIR)
+
+stats-upload:
+	@printf "Uploading statistics...\n"
+	@aws s3 sync $(GITSTATS_DIR) $(S3_BUCKET)/stats/$(PKG)
+	@printf "Uploaded to $(S3_BUCKET)/stats/$(PKG)\n"
+	@printf "Generating CDN invalidation\n"
+	@aws cloudfront create-invalidation \
+	--distribution-id $(CFRONT_DIST) --paths "/stats/*" > /dev/null
