@@ -21,7 +21,13 @@ DEPS  = pg
 DEPS += sqlite3
 
 EMACS      ?= emacs
+
+ifeq ($(CI), true)
+# Workaround for bug#58252 on Emacs 28.x.
+override EMACS_ARGS += --eval "(setq byte-compile-docstring-max-column 120)"
+else
 EMACS_ARGS ?=
+endif
 
 LOAD_PATH  ?= $(addprefix -L ../,$(DEPS))
 LOAD_PATH  += -L .
