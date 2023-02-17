@@ -18,9 +18,6 @@
 
 ;;; Code:
 
-(require 'cl-lib)
-(require 'cl-generic)
-(require 'eieio)
 (require 'emacsql)
 
 (defvar emacsql-psql-executable "psql"

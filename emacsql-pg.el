@@ -19,6 +19,8 @@
 
 ;;; Code:
 
+(require 'emacsql)
+
 (unless (require 'pg nil t)
   (declare-function pg-connect "pg"
                     ( dbname user &optional
@@ -26,10 +28,6 @@
   (declare-function pg-disconnect "pg" (con))
   (declare-function pg-exec "pg" (connection &rest args))
   (declare-function pg-result "pg" (result what &rest arg)))
-(require 'eieio)
-(require 'cl-lib)
-(require 'cl-generic)
-(require 'emacsql)
 
 (defclass emacsql-pg-connection (emacsql-connection)
   ((pgcon :reader emacsql-pg-pgcon :initarg :pgcon)
