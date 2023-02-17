@@ -16,8 +16,12 @@
 
 ;;; Code:
 
-(require 'sqlite)
 (require 'emacsql)
+
+(unless (require 'sqlite nil t)
+  (declare-function sqlite-open "sqlite")
+  (declare-function sqlite-select "sqlite")
+  (declare-function sqlite-close "sqlite"))
 
 (emacsql-register-reserved emacsql-sqlite-reserved)
 

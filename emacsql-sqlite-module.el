@@ -16,8 +16,14 @@
 
 ;;; Code:
 
-(require 'sqlite3)
 (require 'emacsql)
+
+(unless (require 'sqlite3 nil t)
+  (declare-function sqlite3-open "sqlite3-api")
+  (declare-function sqlite3-exec "sqlite3-api")
+  (declare-function sqlite3-close "sqlite3-api"))
+(defvar sqlite-open-readwrite)
+(defvar sqlite-open-create)
 
 (emacsql-register-reserved emacsql-sqlite-reserved)
 

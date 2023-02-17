@@ -42,7 +42,7 @@ binary: sqlite/emacsql-sqlite
 sqlite/emacsql-sqlite:
 	$(MAKE) -C sqlite
 
-lisp: $(ELCS) loaddefs check-declare
+lisp: $(ELCS) loaddefs
 
 loaddefs: $(PKG)-autoloads.el
 
@@ -74,7 +74,7 @@ $(PKG)-autoloads.el: $(ELS)
       (coding-system-for-write 'utf-8-emacs-unix))\
   (write-region (autoload-rubric file \"package\" nil) nil file nil 'silent)\
   (cl-letf (((symbol-function 'progress-reporter-do-update) (lambda (&rest _)))\
-            ((symbol-function 'progress-reporter-done) (lambda (_))))\
+	    ((symbol-function 'progress-reporter-done) (lambda (_))))\
     (let ((generated-autoload-file file))\
       (update-directory-autoloads default-directory))))" \
 	2>&1 | sed "/^Package autoload is deprecated$$/d"
