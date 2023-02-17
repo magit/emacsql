@@ -9,10 +9,16 @@
 (require 'emacsql)
 
 (require 'emacsql-sqlite)
+;; FIXME(CI) this is currently not tested because the Emacs
+;; snapshot hasn't been compiled with sqlite support.
 (when (require 'sqlite nil t) (require 'emacsql-sqlite-builtin))
-(when (require 'sqlite3 nil t) (require 'emacsql-sqlite-module))
+;; FIXME(CI) libsqlite3.so.0 cannot be found, even though
+;; it appears to be installed in the correct location.
+(unless (equal (getenv "CI") "true")
+  (when (require 'sqlite3 nil t) (require 'emacsql-sqlite-module)))
 (require 'emacsql-mysql)
 (require 'emacsql-psql)
+;; FIXME(CI) broken and thus disabled in test.yml.
 (when (require 'pg nil t) (require 'emacsql-pg))
 
 (defvar emacsql-tests-timeout 4
@@ -20,22 +26,48 @@
 
 (defvar emacsql-tests-connection-factories
   (let ((factories ())
-        (pgdatabase (getenv "PGDATABASE"))
-        (pguser (getenv "PGUSER"))
-        (mysql-dbname (getenv "MYSQL_DBNAME")))
+        (mysql-database (getenv "MYSQL_DATABASE"))
+        (mysql-user     (getenv "MYSQL_USER"))
+        (mysql-password (getenv "MYSQL_PASSWORD"))
+        (mysql-host     (getenv "MYSQL_HOST"))
+        (mysql-port     (getenv "MYSQL_PORT"))
+        (psql-database  (getenv "PSQL_DATABASE"))
+        (psql-user      (getenv "PSQL_USER"))
+        (psql-host      (getenv "PSQL_HOST"))
+        (psql-port      (getenv "PSQL_PORT"))
+        (pg-database    (getenv "PG_DATABASE"))
+        (pg-user        (getenv "PG_USER"))
+        (pg-password    (getenv "PG_PASSWORD"))
+        (pg-host        (getenv "PG_HOST"))
+        (pg-port        (getenv "PG_PORT")))
     (cl-labels ((reg (name &rest args)
                   (push (cons name (apply #'apply-partially args)) factories)))
       (reg "sqlite" #'emacsql-sqlite nil)
-      (when (featurep 'emacsql-sqlite-builtin)
+      (when (and (featurep 'emacsql-sqlite-builtin)
+                 (fboundp 'sqlite-available-p)
+                 (sqlite-available-p))
         (reg "sqlite-builtin" 'emacsql-sqlite-builtin nil))
-      (when (featurep 'emacsql-sqlite-module)
+      (when (and (featurep 'emacsql-sqlite-module)
+                 (boundp 'module-file-suffix)
+                 module-file-suffix)
         (reg "sqlite-module" 'emacsql-sqlite-module nil))
-      (when mysql-dbname
-        (reg "mysql" #'emacsql-mysql mysql-dbname))
-      (when pgdatabase
-        (reg "psql" #'emacsql-psql pgdatabase))
-      (when (and pgdatabase pguser)
-        (reg "pg" 'emacsql-pg pgdatabase pguser)))
+      (when (and mysql-database mysql-user mysql-host mysql-password mysql-port)
+        (reg "mysql" #'emacsql-mysql mysql-database
+             :user mysql-user
+             :host mysql-host
+             :password mysql-password
+             :port mysql-port))
+      (when (and psql-database psql-user psql-host psql-port)
+        (reg "psql" #'emacsql-psql psql-database
+             :username psql-user
+             :hostname psql-host
+             :port psql-port))
+      (when (and pg-database pg-user pg-password pg-host pg-port
+                 (fboundp 'emacsql-pg))
+        (reg "pg" #'emacsql-pg pg-database pg-user
+             :host pg-host
+             :password pg-password
+             :port pg-port)))
     (nreverse factories))
   "List of connection factories to use in unit tests.")
 

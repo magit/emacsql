@@ -1,0 +1,113 @@
+name: Test
+permissions: read-all
+on: [ push, pull_request ]
+env:
+  pwd: ${{ github.event.repository.name }}
+jobs:
+  matrix:
+    name: 'Get matrix'
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - name: 'Install Emacs'
+        uses: purcell/setup-emacs@master
+        with:
+          version: 28.2
+      - name: 'Install workflow scripts'
+        uses: actions/checkout@v3
+        with:
+          repository: emacscollective/workflows
+          ref: ${{ inputs.workflow_ref }}
+          path: _scripts
+          persist-credentials: false
+      - name: 'Checkout ${{ github.repository }}'
+        uses: actions/checkout@v3
+        with:
+          path: ${{ env.pwd }}
+          persist-credentials: false
+      - name: 'Get matrix'
+        id: matrix
+        working-directory: ${{ env.pwd }}
+        run: |
+          ../_scripts/bin/get-matrix >> $GITHUB_OUTPUT
+          echo "• get-matrix: emacscollective/workflows@${{ inputs.workflow_ref }}"
+  main:
+    name: 'Test using Emacs ${{ matrix.emacs }}'
+    runs-on: ubuntu-latest
+    needs: matrix
+    strategy:
+      fail-fast: false
+      matrix:
+        emacs: ${{ fromJson(needs.matrix.outputs.matrix) }}
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: emacsql
+          MYSQL_DATABASE: emacsql
+          MYSQL_USER: emacsql
+          MYSQL_PASSWORD: emacsql
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+    steps:
+      - name: 'Install Emacs'
+        uses: purcell/setup-emacs@master
+        with:
+          version: ${{ matrix.emacs }}
+      - name: 'Checkout scripts'
+        uses: actions/checkout@v3
+        with:
+          repository: emacscollective/workflows
+          ref: ${{ inputs.workflow_ref }}
+          path: _scripts
+          persist-credentials: false
+      - name: 'Checkout ${{ github.repository }}'
+        uses: actions/checkout@v3
+        with:
+          path: ${{ env.pwd }}
+          persist-credentials: false
+      - name: 'Install dependencies'
+        working-directory: ${{ env.pwd }}
+        run: ../_scripts/bin/install-deps
+      - name: 'Build Sqlite3'
+        working-directory: sqlite3
+        run: make all
+      - name: 'Build Emacsql'
+        run: make all
+        working-directory: ${{ env.pwd }}
+      - name: 'Test Emacsql'
+        run: make test
+        working-directory: ${{ env.pwd }}
+        env:
+          MYSQL_DATABASE: emacsql
+          MYSQL_USER: emacsql
+          MYSQL_PASSWORD: emacsql
+          MYSQL_HOST: 127.0.0.1
+          MYSQL_PORT: 3306
+          PSQL_DATABASE: postgres
+          PSQL_USER: postgres
+          PSQL_HOST: 127.0.0.1
+          PSQL_PORT: 5432
+          # PG_DATABASE: postgres
+          # PG_USER: postgres
+          # PG_PASSWORD: postgres
+          # PG_HOST: 127.0.0.1
+          # PG_PORT: 5432
