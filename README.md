@@ -370,16 +370,22 @@ To run the test suite, clone the `pg` and `sqlite3` packages into
 sibling directories. The Makefile will automatically put these paths on
 the Emacs load path (override `LDFLAGS` if your situation is different).
 
-	$ git clone https://github.com/emarsden/pg-el ../pg
-	$ git clone https://github.com/pekingduck/emacs-sqlite3-api ../sqlite3
+```shell
+git clone https://github.com/emarsden/pg-el ../pg
+git clone https://github.com/pekingduck/emacs-sqlite3-api ../sqlite3
+```
 
 Or set `LOAD_PATH` to point at these packages elsewhere:
 
-	$ make LOAD_PATH='-L path/to/pg -L path/to/sqlite3'
+```shell
+make LOAD_PATH='-L path/to/pg -L path/to/sqlite3'
+```
 
 Then invoke make:
 
-	$ make test
+```shell
+make test
+```
 
 If the environment variable `PGDATABASE` is present then the unit
 tests will also be run with PostgreSQL (emacsql-psql). Provide
