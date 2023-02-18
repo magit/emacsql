@@ -89,14 +89,21 @@ test: all $(TEST_ELCS)
 	@$(EMACS) -Q --batch $(EMACS_ARGS) $(LOAD_PATH) \
 	-L tests -l tests/emacsql-tests.elc -f ert-run-tests-batch-and-exit
 
+ifeq ($(CI), true)
+override GITSTATS = gitstats/gitstats
+endif
 GITSTATS      ?= gitstats
-GITSTATS_DIR  ?= $(TOP)stats
+GITSTATS_DIR  ?= stats
 GITSTATS_ARGS ?= -c style=https://magit.vc/assets/stats.css -c max_authors=999
+
+DOMAIN      ?= magit.vc
+CFRONT_DIST ?= E2LUHBKU1FBV02
+S3_BUCKET   ?= s3://$(DOMAIN)
 
 .PHONY: stats
 stats:
 	@printf "Generating statistics\n"
-	@$(GITSTATS) $(GITSTATS_ARGS) $(TOP) $(GITSTATS_DIR)
+	@$(GITSTATS) $(GITSTATS_ARGS) . $(GITSTATS_DIR)
 
 stats-upload:
 	@printf "Uploading statistics...\n"
