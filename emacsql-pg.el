@@ -21,13 +21,13 @@
 
 (require 'emacsql)
 
-(unless (require 'pg nil t)
-  (declare-function pg-connect "pg"
-                    ( dbname user &optional
-                      (password "") (host "localhost") (port 5432) (tls nil)))
-  (declare-function pg-disconnect "pg" (con))
-  (declare-function pg-exec "pg" (connection &rest args))
-  (declare-function pg-result "pg" (result what &rest arg)))
+(require 'pg nil t)
+(declare-function pg-connect "pg"
+                  ( dbname user &optional
+                    (password "") (host "localhost") (port 5432) (tls nil)))
+(declare-function pg-disconnect "pg" (con))
+(declare-function pg-exec "pg" (connection &rest args))
+(declare-function pg-result "pg" (result what &rest arg))
 
 (defclass emacsql-pg-connection (emacsql-connection)
   ((pgcon :reader emacsql-pg-pgcon :initarg :pgcon)
