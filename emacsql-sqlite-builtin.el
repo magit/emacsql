@@ -6,7 +6,7 @@
 ;; Homepage: https://github.com/magit/emacsql
 
 ;; Package-Version: 3.1.1.50-git
-;; Package-Requires: ((emacs "29") (emacsql "3.1.1"))
+;; Package-Requires: ((emacs "29") (emacsql "20230220"))
 ;; SPDX-License-Identifier: Unlicense
 
 ;;; Commentary:
