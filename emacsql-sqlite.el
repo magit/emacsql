@@ -55,16 +55,8 @@ Each is queried using `executable-find', so full paths are
 allowed. Only the first compiler which is successfully found will
 used.")
 
-(defclass emacsql-sqlite-connection (emacsql-connection emacsql-protocol-mixin)
-  ((file :initarg :file
-         :type (or null string)
-         :documentation "Database file name.")
-   (types :allocation :class
-          :reader emacsql-types
-          :initform '((integer "INTEGER")
-                      (float "REAL")
-                      (object "TEXT")
-                      (nil nil))))
+(defclass emacsql-sqlite-connection
+  (emacsql--sqlite-base emacsql-protocol-mixin) ()
   "A connection to a SQLite database.")
 
 (cl-defmethod initialize-instance :after

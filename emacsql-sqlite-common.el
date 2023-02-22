@@ -13,6 +13,22 @@
 
 ;;; Code:
 
+(require 'emacsql)
+
+;;; Base class
+
+(defclass emacsql--sqlite-base (emacsql-connection)
+  ((file :initarg :file
+         :type (or null string)
+         :documentation "Database file name.")
+   (types :allocation :class
+          :reader emacsql-types
+          :initform '((integer "INTEGER")
+                      (float "REAL")
+                      (object "TEXT")
+                      (nil nil))))
+  :abstract t)
+
 ;;; Constants
 
 (defconst emacsql-sqlite-reserved

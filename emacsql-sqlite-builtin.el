@@ -26,16 +26,7 @@
 
 (emacsql-register-reserved emacsql-sqlite-reserved)
 
-(defclass emacsql-sqlite-builtin-connection (emacsql-connection)
-  ((file :initarg :file
-         :type (or null string)
-         :documentation "Database file name.")
-   (types :allocation :class
-          :reader emacsql-types
-          :initform '((integer "INTEGER")
-                      (float "REAL")
-                      (object "TEXT")
-                      (nil nil))))
+(defclass emacsql-sqlite-builtin-connection (emacsql--sqlite-base) ()
   "A connection to a SQLite database using builtin support.")
 
 (cl-defmethod initialize-instance :after
