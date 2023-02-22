@@ -19,6 +19,7 @@
 
 (defclass emacsql--sqlite-base (emacsql-connection)
   ((file :initarg :file
+         :initform nil
          :type (or null string)
          :documentation "Database file name.")
    (types :allocation :class
