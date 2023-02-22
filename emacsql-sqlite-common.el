@@ -99,6 +99,53 @@ in the returned value."
                         (not-like name "sqlite_%"))
             :order-by [(asc name)]]))
 
+(defun emacsql-sqlite-dump-database (connection &optional versionp)
+  "Dump the database specified by CONNECTION to a file.
+
+The dump file is placed in the same directory as the database
+file and its name derives from the name of the database file.
+The suffix is replaced with \".sql\" and if optional VERSIONP is
+non-nil, then the database version (the `user_version' pragma)
+and a timestamp are appended to the file name.
+
+Dumping is done using the official `sqlite3' binary.  If that is
+not available and VERSIONP is non-nil, then the database file is
+copied instead."
+  (let* ((version (caar (emacsql connection [:pragma user-version])))
+         (db (oref connection file))
+         (db (if (symbolp db) (symbol-value db) db))
+         (name (file-name-nondirectory db))
+         (output (concat (file-name-sans-extension db)
+                         (and versionp
+                              (concat (format "-v%s" version)
+                                      (format-time-string "-%Y%m%d-%H%M")))
+                         ".sql")))
+    (cond
+     ((locate-file "sqlite3" exec-path)
+      (when (file-exists-p output)
+        (error "Cannot dump database; %s already exists" output))
+      (with-temp-file output
+        (message "Dumping %s database to %s..." name output)
+        (unless (zerop (save-excursion
+                         (call-process "sqlite3" nil t nil db ".dump")))
+          (error "Failed to dump %s" db))
+        (when version
+          (insert (format "PRAGMA user_version=%s;\n" version)))
+        ;; The output contains "PRAGMA foreign_keys=OFF;".
+        ;; Change that to avoid alarming attentive users.
+        (when (re-search-forward "^PRAGMA foreign_keys=\\(OFF\\);" 1000 t)
+          (replace-match "ON" t t nil 1))
+        (message "Dumping %s database to %s...done" name output)))
+     (versionp
+      (setq output (concat (file-name-sans-extension output) ".db"))
+      (message "Cannot dump database because sqlite3 binary cannot be found")
+      (when (file-exists-p output)
+        (error "Cannot copy database; %s already exists" output))
+      (message "Copying %s database to %s..." name output)
+      (copy-file db output)
+      (message "Copying %s database to %s...done" name output))
+     ((error "Cannot dump database; sqlite3 binary isn't available")))))
+
 (provide 'emacsql-sqlite-common)
 
 ;;; emacsql-sqlite-common.el ends here
