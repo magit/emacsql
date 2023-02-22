@@ -85,6 +85,31 @@ ERRSTR).  Also see https://www.sqlite.org/rescode.html.")
 
 ;;; Utilities
 
+(defun emacsql-sqlite-default-connection ()
+  "Determine and return the best SQLite connection class.
+If a module or binary is required and that doesn't exist yet,
+then try to compile it.  Signal an error if no connection class
+can be used."
+  (or (and (fboundp 'sqlite-available-p)
+           (sqlite-available-p)
+           (require 'emacsql-sqlite-builtin)
+           'emacsql-sqlite-builtin-connection)
+      (and (boundp 'module-file-suffix)
+           module-file-suffix
+           (and (with-demoted-errors
+                    "Cannot use `emacsql-sqlite-module-connection': %S"
+                  (require 'emacsql-sqlite-module))
+                'emacsql-sqlite-module-connection))
+      (and (require 'emacsql-sqlite)
+           (boundp 'emacsql-sqlite-executable)
+           (or (file-exists-p emacsql-sqlite-executable)
+               (with-demoted-errors
+                   "Cannot use `emacsql-sqlite-connection': %S"
+                 (and (fboundp 'emacsql-sqlite-compile)
+                      (emacsql-sqlite-compile 2))))
+           'emacsql-sqlite-connection)
+      (error "EmacSQL could not find or compile a back-end")))
+
 (defun emacsql-sqlite-list-tables (connection)
   "Return a list of the names of all tables in CONNECTION.
 Tables whose names begin with \"sqlite_\", are not included
