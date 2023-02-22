@@ -37,7 +37,7 @@
                       (float "REAL")
                       (object "TEXT")
                       (nil nil))))
-  (:documentation "A connection to a SQLite database using a module."))
+  "A connection to a SQLite database using a module.")
 
 (cl-defmethod initialize-instance :after
   ((connection emacsql-sqlite-module-connection) &rest _)

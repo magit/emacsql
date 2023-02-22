@@ -35,7 +35,7 @@
                       (float "REAL")
                       (object "TEXT")
                       (nil nil))))
-  (:documentation "A connection to a SQLite database using builtin support."))
+  "A connection to a SQLite database using builtin support.")
 
 (cl-defmethod initialize-instance :after
   ((connection emacsql-sqlite-builtin-connection) &rest _)

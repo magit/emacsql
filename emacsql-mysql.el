@@ -67,7 +67,8 @@ http://dev.mysql.com/doc/refman/5.5/en/reserved-words.html")
           :initform '((integer "BIGINT")
                       (float "DOUBLE")
                       (object "LONGTEXT")
-                      (nil "LONGTEXT")))))
+                      (nil "LONGTEXT"))))
+  "A connection to a MySQL database.")
 
 (cl-defun emacsql-mysql (database &key user password host port debug)
   "Connect to a MySQL server using the mysql command line program."

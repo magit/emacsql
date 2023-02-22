@@ -98,7 +98,7 @@ If nil, wait forever.")
           :initform nil
           :reader emacsql-types
           :documentation "Maps EmacSQL types to SQL types."))
-  (:documentation "A connection to a SQL database.")
+  "A connection to a SQL database."
   :abstract t)
 
 (cl-defgeneric emacsql-close (connection)
@@ -190,14 +190,12 @@ MESSAGE should not have a newline on the end."
 
 ;;; Helper mixin class
 
-(defclass emacsql-protocol-mixin ()
-  ()
-  (:documentation
-   "A mixin for back-ends following the EmacSQL protocol.
+(defclass emacsql-protocol-mixin () ()
+  "A mixin for back-ends following the EmacSQL protocol.
 The back-end prompt must be a single \"]\" character. This prompt
 value was chosen because it is unreadable. Output must have
 exactly one row per line, fields separated by whitespace. NULL
-must display as \"nil\".")
+must display as \"nil\"."
   :abstract t)
 
 (cl-defmethod emacsql-waiting-p ((connection emacsql-protocol-mixin))

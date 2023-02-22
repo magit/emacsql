@@ -63,7 +63,7 @@ http://www.postgresql.org/docs/7.3/static/sql-keywords-appendix.html")
                       (float "DOUBLE PRECISION")
                       (object "TEXT")
                       (nil "TEXT"))))
-  (:documentation "A connection to a PostgreSQL database via psql."))
+  "A connection to a PostgreSQL database via psql.")
 
 (cl-defun emacsql-psql (dbname &key username hostname port debug)
   "Connect to a PostgreSQL server using the psql command line program."

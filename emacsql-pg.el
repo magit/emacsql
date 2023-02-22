@@ -39,7 +39,7 @@
                       (float "DOUBLE PRECISION")
                       (object "TEXT")
                       (nil "TEXT"))))
-  (:documentation "A connection to a PostgreSQL database via pg.el."))
+  "A connection to a PostgreSQL database via pg.el.")
 
 (cl-defun emacsql-pg (dbname user &key
                              (host "localhost") (password "") (port 5432) debug)
