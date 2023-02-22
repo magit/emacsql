@@ -4,12 +4,13 @@ PKG = emacsql
 
 ELS   = $(PKG)-compiler.el
 ELS  += $(PKG).el
-ELS  += $(PKG)-mysql.el
-ELS  += $(PKG)-pg.el
-ELS  += $(PKG)-psql.el
-ELS  += $(PKG)-sqlite.el
+ELS  += $(PKG)-sqlite-common.el
 ELS  += $(PKG)-sqlite-builtin.el
 ELS  += $(PKG)-sqlite-module.el
+ELS  += $(PKG)-sqlite.el
+ELS  += $(PKG)-mysql.el
+ELS  += $(PKG)-psql.el
+ELS  += $(PKG)-pg.el
 ELCS  = $(ELS:.el=.elc)
 
 TEST_ELS  = tests/emacsql-compiler-tests.el
