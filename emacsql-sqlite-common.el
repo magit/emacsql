@@ -83,6 +83,22 @@ Also see http://www.sqlite.org/lang_keywords.html.")
 Elements have the form (ERRCODE SYMBOLIC-NAME EMACSQL-ERROR
 ERRSTR).  Also see https://www.sqlite.org/rescode.html.")
 
+;;; Utilities
+
+(defun emacsql-sqlite-list-tables (connection)
+  "Return a list of the names of all tables in CONNECTION.
+Tables whose names begin with \"sqlite_\", are not included
+in the returned value."
+  (emacsql connection
+           [:select name
+            ;; The new name is `sqlite-schema', but this name
+            ;; is supported by old and new SQLite versions.
+            ;; See https://www.sqlite.org/schematab.html.
+            :from sqlite-master
+            :where (and (= type 'table)
+                        (not-like name "sqlite_%"))
+            :order-by [(asc name)]]))
+
 (provide 'emacsql-sqlite-common)
 
 ;;; emacsql-sqlite-common.el ends here
