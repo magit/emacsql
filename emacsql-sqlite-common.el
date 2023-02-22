@@ -147,7 +147,7 @@ copied instead."
                          ".sql")))
     (cond
      ((locate-file "sqlite3" exec-path)
-      (when (file-exists-p output)
+      (when (and (file-exists-p output) versionp)
         (error "Cannot dump database; %s already exists" output))
       (with-temp-file output
         (message "Dumping %s database to %s..." name output)
@@ -164,7 +164,7 @@ copied instead."
      (versionp
       (setq output (concat (file-name-sans-extension output) ".db"))
       (message "Cannot dump database because sqlite3 binary cannot be found")
-      (when (file-exists-p output)
+      (when (and (file-exists-p output) versionp)
         (error "Cannot copy database; %s already exists" output))
       (message "Copying %s database to %s..." name output)
       (copy-file db output)
