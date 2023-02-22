@@ -146,6 +146,23 @@ copied instead."
       (message "Copying %s database to %s...done" name output))
      ((error "Cannot dump database; sqlite3 binary isn't available")))))
 
+(defun emacsql-sqlite-restore-database (db dump)
+  "Restore database DB from DUMP.
+
+DUMP is a file containing SQL statements.  DB can be the file
+in which the database is to be stored, or it can be a database
+connection.  In the latter case the current database is first
+dumped to a new file and the connection is closed.  Then the
+database is restored from DUMP.  No connection to the new
+database is created."
+  (unless (stringp db)
+    (emacsql-sqlite-dump-database db t)
+    (emacsql-close (prog1 db (setq db (oref db file)))))
+  (with-temp-buffer
+    (unless (zerop (call-process "sqlite3" nil t nil db
+                                 (format ".read %s" dump)))
+      (error "Failed to read %s: %s" dump (buffer-string)))))
+
 (provide 'emacsql-sqlite-common)
 
 ;;; emacsql-sqlite-common.el ends here
