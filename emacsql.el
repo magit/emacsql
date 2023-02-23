@@ -410,17 +410,18 @@ A prefix argument causes the SQL to be printed into the current buffer."
           (goto-char containing-sexp)
           (looking-at "\\["))))))
 
-(defadvice calculate-lisp-indent (around emacsql-vector-indent disable)
+(defun emacsql--calculate-vector-indent (fn &optional parse-start)
   "Don't indent vectors in `emacs-lisp-mode' like lists."
   (if (save-excursion (beginning-of-line) (emacsql--inside-vector-p))
-      (let ((lisp-indent-offset 1)) ad-do-it)
-    ad-do-it))
+      (let ((lisp-indent-offset 1))
+        (funcall fn parse-start))
+    (funcall fn parse-start)))
 
 (defun emacsql-fix-vector-indentation ()
   "When called, advise `calculate-lisp-indent' to stop indenting vectors.
-Once activate, vector contents no longer indent like lists."
+Once activated, vector contents no longer indent like lists."
   (interactive)
-  (ad-enable-advice 'calculate-lisp-indent 'around 'emacsql-vector-indent)
-  (ad-activate 'calculate-lisp-indent))
+  (advice-add 'calculate-lisp-indent :around
+              #'emacsql--calculate-vector-indent))
 
 ;;; emacsql.el ends here
