@@ -413,8 +413,7 @@ A prefix argument causes the SQL to be printed into the current buffer."
 (defadvice calculate-lisp-indent (around emacsql-vector-indent disable)
   "Don't indent vectors in `emacs-lisp-mode' like lists."
   (if (save-excursion (beginning-of-line) (emacsql--inside-vector-p))
-      (let ((lisp-indent-offset 1))
-        ad-do-it)
+      (let ((lisp-indent-offset 1)) ad-do-it)
     ad-do-it))
 
 (defun emacsql-fix-vector-indentation ()
