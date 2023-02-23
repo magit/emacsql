@@ -123,9 +123,10 @@ buffer. This is for debugging purposes."
       (cl-loop while (re-search-forward "-D[A-Z0-9_=]+" nil :no-error)
                collect (match-string 0)))))
 
-(defun emacsql-sqlite-compile (&optional o-level async)
+(defun emacsql-sqlite-compile (&optional o-level async error)
   "Compile the SQLite back-end for EmacSQL, returning non-nil on success.
-If called with non-nil ASYNC the return value is meaningless."
+If called with non-nil ASYNC, the return value is meaningless.
+If called with non-nil ERROR, signal an error on failure."
   (let* ((cc (cl-loop for option in emacsql-sqlite-c-compilers
                       for path = (executable-find option)
                       if path return it))
@@ -140,26 +141,41 @@ If called with non-nil ASYNC the return value is meaningless."
          (options (emacsql-sqlite-compile-switches))
          (output (list "-o" emacsql-sqlite-executable))
          (arguments (nconc cflags options files ldlibs output)))
-    (cond ((not cc)
-           (prog1 nil
-             (message "Could not find C compiler, skipping SQLite build")))
-          (t (message "Compiling EmacSQL SQLite binary ...")
-             (mkdir (file-name-directory emacsql-sqlite-executable) t)
-             (let ((log (get-buffer-create byte-compile-log-buffer)))
-               (with-current-buffer log
-                 (let ((inhibit-read-only t))
-                   (insert (mapconcat #'identity (cons cc arguments) " ") "\n")
-                   (eql 0 (apply #'call-process cc nil (if async 0 t) t
-                                 arguments)))))))))
+    (cond
+     ((not cc)
+      (funcall (if error #'error #'message)
+               "Could not find C compiler, skipping SQLite build")
+      nil)
+     (t
+      (message "Compiling EmacSQL SQLite binary...")
+      (mkdir (file-name-directory emacsql-sqlite-executable) t)
+      (let ((log (get-buffer-create byte-compile-log-buffer)))
+        (with-current-buffer log
+          (let ((inhibit-read-only t))
+            (insert (mapconcat #'identity (cons cc arguments) " ") "\n")
+            (let ((pos (point))
+                  (ret (apply #'call-process cc nil (if async 0 t) t
+                              arguments)))
+              (cond
+               ((zerop ret)
+                (message "Compiling EmacSQL SQLite binary...done")
+                t)
+               ((and error (not async))
+                (error "Cannot compile EmacSQL SQLite binary: %S"
+                       (replace-regexp-in-string
+                        "\n" " "
+                        (buffer-substring-no-properties
+                         pos (point-max))))))))))))))
 
 ;;; Ensure the SQLite binary is available
 
 (defun emacsql-sqlite-ensure-binary ()
   "Ensure the EmacSQL SQLite binary is available, signaling an error if not."
   (unless (file-exists-p emacsql-sqlite-executable)
-    ;; try compiling at the last minute
-    (unless (ignore-errors (emacsql-sqlite-compile 2))
-      (error "No EmacSQL SQLite binary available, aborting"))))
+    ;; Try compiling at the last minute.
+    (condition-case err
+        (emacsql-sqlite-compile 2 nil t)
+      (error (error "No EmacSQL SQLite binary available: %s" (cdr err))))))
 
 (provide 'emacsql-sqlite)
 
