@@ -72,8 +72,8 @@ used.")
          (process (start-process
                    "emacsql-sqlite" buffer emacsql-sqlite-executable fullfile)))
     (setf (slot-value connection 'process) process)
-    (setf (process-sentinel process)
-          (lambda (proc _) (kill-buffer (process-buffer proc))))
+    (set-process-sentinel process
+                          (lambda (proc _) (kill-buffer (process-buffer proc))))
     (when (memq (process-status process) '(exit signal))
       (error "%s has failed immediately" emacsql-sqlite-executable))
     (emacsql-wait connection)
