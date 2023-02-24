@@ -85,7 +85,7 @@ http://dev.mysql.com/doc/refman/5.5/en/reserved-words.html")
            (process (start-process-shell-command
                      "emacsql-mysql" buffer (concat "stty raw &&" command)))
            (connection (make-instance 'emacsql-mysql-connection
-                                      :process process
+                                      :handle process
                                       :dbname database)))
       (set-process-sentinel process
                             (lambda (proc _) (kill-buffer (process-buffer proc))))
@@ -97,12 +97,12 @@ http://dev.mysql.com/doc/refman/5.5/en/reserved-words.html")
       (emacsql-register connection))))
 
 (cl-defmethod emacsql-close ((connection emacsql-mysql-connection))
-  (let ((process (emacsql-process connection)))
+  (let ((process (oref connection handle)))
     (when (process-live-p process)
       (process-send-eof process))))
 
 (cl-defmethod emacsql-send-message ((connection emacsql-mysql-connection) message)
-  (let ((process (emacsql-process connection)))
+  (let ((process (oref connection handle)))
     (process-send-string process message)
     (process-send-string process "\\c\\p\n")))
 

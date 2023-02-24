@@ -86,8 +86,11 @@ If nil, wait forever.")
 ;;; Database connection
 
 (defclass emacsql-connection ()
-  ((process :initarg :process
-            :accessor emacsql-process)
+  ((handle :initarg :handle
+           :documentation "Internal connection handler.
+The value is a record-like object and should not be accessed
+directly.  Depending on the concrete implementation, `type-of'
+may return `process', `user-ptr' or `sqlite' for this value.")
    (log-buffer :type (or null buffer)
                :initarg :log-buffer
                :initform nil
@@ -109,7 +112,7 @@ If nil, wait forever.")
 
 (cl-defmethod emacsql-live-p ((connection emacsql-connection))
   "Return non-nil if CONNECTION is still alive and ready."
-  (not (null (process-live-p (emacsql-process connection)))))
+  (not (null (process-live-p (oref connection handle)))))
 
 (cl-defgeneric emacsql-types (connection)
   "Return an alist mapping EmacSQL types to database types.
@@ -120,7 +123,7 @@ SQL expression.")
 
 (cl-defmethod emacsql-buffer ((connection emacsql-connection))
   "Get process buffer for CONNECTION."
-  (process-buffer (emacsql-process connection)))
+  (process-buffer (oref connection handle)))
 
 (cl-defmethod emacsql-enable-debugging ((connection emacsql-connection))
   "Enable debugging on CONNECTION."
@@ -139,6 +142,29 @@ MESSAGE should not have a newline on the end."
         (goto-char (point-max))
         (princ (concat message "\n") buffer)))))
 
+(cl-defgeneric emacsql-process (this)
+  "Access internal `handle' slot directly, which you shouldn't do.
+Using this function to do it anyway, means additionally using a
+misnamed and obsolete accessor function."
+  (and (slot-boundp this 'handle)
+       (eieio-oref this 'handle)))
+(cl-defmethod (setf emacsql-process) (value (this emacsql-connection))
+  (eieio-oset this 'handle value))
+(make-obsolete 'emacsql-process "underlying slot is for internal use only."
+               "Emacsql 4.0.0")
+
+(cl-defmethod slot-missing ((connection emacsql-connection)
+                            slot-name operation &optional new-value)
+  "Treat removed `process' slot-name as an alias for internal `handle' slot."
+  (pcase (list operation slot-name)
+    ('(oref process)
+     (message "EmacSQL: Slot `process' is obsolete")
+     (oref connection handle))
+    ('(oset process)
+     (message "EmacSQL: Slot `process' is obsolete")
+     (oset connection handle new-value))
+    (_ (cl-call-next-method))))
+
 ;;; Sending and receiving
 
 (cl-defgeneric emacsql-send-message (connection message)
@@ -149,7 +175,7 @@ MESSAGE should not have a newline on the end."
   (emacsql-log connection message))
 
 (cl-defmethod emacsql-clear ((connection emacsql-connection))
-  "Clear the process buffer for CONNECTION-SPEC."
+  "Clear the connection buffer for CONNECTION-SPEC."
   (let ((buffer (emacsql-buffer connection)))
     (when (and buffer (buffer-live-p buffer))
       (with-current-buffer buffer
@@ -165,7 +191,7 @@ MESSAGE should not have a newline on the end."
     (while (and (or (null real-timeout) (< (float-time) end))
                 (not (emacsql-waiting-p connection)))
       (save-match-data
-        (accept-process-output (emacsql-process connection) real-timeout)))
+        (accept-process-output (oref connection handle) real-timeout)))
     (unless (emacsql-waiting-p connection)
       (signal 'emacsql-timeout (list "Query timed out" real-timeout)))))
 
@@ -200,7 +226,7 @@ must display as \"nil\"."
 
 (cl-defmethod emacsql-waiting-p ((connection emacsql-protocol-mixin))
   "Return t if the end of the buffer has a properly-formatted prompt.
-Also return t if the process buffer has been killed."
+Also return t if the connection buffer has been killed."
   (let ((buffer (emacsql-buffer connection)))
     (or (not (buffer-live-p buffer))
         (with-current-buffer buffer

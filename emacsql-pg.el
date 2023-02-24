@@ -47,8 +47,8 @@
   (require 'pg)
   (let* ((pgcon (pg-connect dbname user password host port))
          (connection (make-instance 'emacsql-pg-connection
-                                    :process (and (fboundp 'pgcon-process)
-                                                  (pgcon-process pgcon))
+                                    :handle (and (fboundp 'pgcon-process)
+                                                 (pgcon-process pgcon))
                                     :pgcon pgcon
                                     :dbname dbname)))
     (when debug (emacsql-enable-debugging connection))

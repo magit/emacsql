@@ -71,7 +71,7 @@ used.")
          (fullfile (if file (expand-file-name file) ":memory:"))
          (process (start-process
                    "emacsql-sqlite" buffer emacsql-sqlite-executable fullfile)))
-    (setf (slot-value connection 'process) process)
+    (oset connection handle process)
     (set-process-sentinel process
                           (lambda (proc _) (kill-buffer (process-buffer proc))))
     (when (memq (process-status process) '(exit signal))
@@ -94,12 +94,12 @@ buffer. This is for debugging purposes."
 
 (cl-defmethod emacsql-close ((connection emacsql-sqlite-connection))
   "Gracefully exits the SQLite subprocess."
-  (let ((process (emacsql-process connection)))
+  (let ((process (oref connection handle)))
     (when (process-live-p process)
       (process-send-eof process))))
 
 (cl-defmethod emacsql-send-message ((connection emacsql-sqlite-connection) message)
-  (let ((process (emacsql-process connection)))
+  (let ((process (oref connection handle)))
     (process-send-string process (format "%d " (string-bytes message)))
     (process-send-string process message)
     (process-send-string process "\n")))

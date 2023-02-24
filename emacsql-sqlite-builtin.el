@@ -31,7 +31,7 @@
 
 (cl-defmethod initialize-instance :after
   ((connection emacsql-sqlite-builtin-connection) &rest _)
-  (setf (emacsql-process connection)
+  (oset connection handle
         (sqlite-open (slot-value connection 'file)))
   (when emacsql-global-timeout
     (emacsql connection [:pragma (= busy-timeout $s1)]
@@ -52,11 +52,11 @@ buffer. This is for debugging purposes."
     connection))
 
 (cl-defmethod emacsql-live-p ((connection emacsql-sqlite-builtin-connection))
-  (and (emacsql-process connection) t))
+  (and (oref connection handle) t))
 
 (cl-defmethod emacsql-close ((connection emacsql-sqlite-builtin-connection))
-  (sqlite-close (emacsql-process connection))
-  (setf (emacsql-process connection) nil))
+  (sqlite-close (oref connection handle))
+  (oset connection handle nil))
 
 (cl-defmethod emacsql-send-message
   ((connection emacsql-sqlite-builtin-connection) message)
@@ -68,7 +68,7 @@ buffer. This is for debugging purposes."
                                 ((numberp col) col)
                                 (t (read col))))
                         row))
-              (sqlite-select (emacsql-process connection) message nil nil))
+              (sqlite-select (oref connection handle) message nil nil))
     ((sqlite-error sqlite-locked-error)
      (if (stringp (cdr err))
          (signal 'emacsql-error (list (cdr err)))

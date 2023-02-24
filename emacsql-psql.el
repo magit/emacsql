@@ -84,7 +84,7 @@ http://www.postgresql.org/docs/7.3/static/sql-keywords-appendix.html")
            (process (start-process-shell-command
                      "emacsql-psql" buffer (concat "stty raw && " command)))
            (connection (make-instance 'emacsql-psql-connection
-                                      :process process
+                                      :handle process
                                       :dbname dbname)))
       (setf (process-sentinel process)
             (lambda (proc _) (kill-buffer (process-buffer proc))))
@@ -104,12 +104,12 @@ http://www.postgresql.org/docs/7.3/static/sql-keywords-appendix.html")
       (emacsql-register connection))))
 
 (cl-defmethod emacsql-close ((connection emacsql-psql-connection))
-  (let ((process (emacsql-process connection)))
+  (let ((process (oref connection handle)))
     (when (process-live-p process)
       (process-send-string process "\\q\n"))))
 
 (cl-defmethod emacsql-send-message ((connection emacsql-psql-connection) message)
-  (let ((process (emacsql-process connection)))
+  (let ((process (oref connection handle)))
     (process-send-string process message)
     (process-send-string process "\n")))
 

@@ -33,7 +33,7 @@
 
 (cl-defmethod initialize-instance :after
   ((connection emacsql-sqlite-module-connection) &rest _)
-  (setf (emacsql-process connection)
+  (oset connection handle
         (sqlite3-open (or (slot-value connection 'file) ":memory:")
                       sqlite-open-readwrite
                       sqlite-open-create))
@@ -56,17 +56,17 @@ buffer. This is for debugging purposes."
     connection))
 
 (cl-defmethod emacsql-live-p ((connection emacsql-sqlite-module-connection))
-  (and (emacsql-process connection) t))
+  (and (oref connection handle) t))
 
 (cl-defmethod emacsql-close ((connection emacsql-sqlite-module-connection))
-  (sqlite3-close (emacsql-process connection))
-  (setf (emacsql-process connection) nil))
+  (sqlite3-close (oref connection handle))
+  (oset connection handle nil))
 
 (cl-defmethod emacsql-send-message
   ((connection emacsql-sqlite-module-connection) message)
   (condition-case err
       (let (rows)
-        (sqlite3-exec (emacsql-process connection)
+        (sqlite3-exec (oref connection handle)
                       message
                       (lambda (_ row __)
                         (push (mapcar (lambda (col)
