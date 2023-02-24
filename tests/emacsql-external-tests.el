@@ -141,7 +141,7 @@
         (emacsql db [:create-temporary-table test-table ([x])])
         (emacsql db [:insert-into test-table :values ([""] [\])])
         (when (cl-typep db 'process)
-          (should (process-live-p (emacsql-process db))))
+          (should (emacsql-live-p db)))
         (should (equal (emacsql db [:select * :from test-table])
                        '(("") (\))))))))
 
