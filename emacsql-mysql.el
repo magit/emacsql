@@ -89,6 +89,7 @@ http://dev.mysql.com/doc/refman/5.5/en/reserved-words.html")
                                       :dbname database)))
       (set-process-sentinel process
                             (lambda (proc _) (kill-buffer (process-buffer proc))))
+      (set-process-query-on-exit-flag (oref connection handle) nil)
       (when debug (emacsql-enable-debugging connection))
       (emacsql connection
                [:set-session (= sql-mode 'NO_BACKSLASH_ESCAPES\,ANSI_QUOTES)])

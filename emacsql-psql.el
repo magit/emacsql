@@ -88,6 +88,7 @@ http://www.postgresql.org/docs/7.3/static/sql-keywords-appendix.html")
                                       :dbname dbname)))
       (setf (process-sentinel process)
             (lambda (proc _) (kill-buffer (process-buffer proc))))
+      (set-process-query-on-exit-flag (oref connection handle) nil)
       (when debug (emacsql-enable-debugging connection))
       (mapc (apply-partially #'emacsql-send-message connection)
             '("\\pset pager off"

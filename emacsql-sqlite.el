@@ -88,6 +88,7 @@ If FILE is nil use an in-memory database.
 :debug LOG -- When non-nil, log all SQLite commands to a log
 buffer. This is for debugging purposes."
   (let ((connection (make-instance 'emacsql-sqlite-connection :file file)))
+    (set-process-query-on-exit-flag (oref connection handle) nil)
     (when debug
       (emacsql-enable-debugging connection))
     connection))
