@@ -85,6 +85,23 @@ ERRSTR).  Also see https://www.sqlite.org/rescode.html.")
 
 ;;; Utilities
 
+(defun emacsql-sqlite-open (file &optional debug)
+  "Open a connected to the database stored in FILE using an SQLite back-end.
+
+Automatically use the best available back-end, as returned by
+`emacsql-sqlite-default-connection'.
+
+If FILE is nil, use an in-memory database.  If optional DEBUG is
+non-nil, log all SQLite commands to a log buffer, for debugging
+purposes."
+  (let* ((class (emacsql-sqlite-default-connection))
+         (connection (make-instance class :file file)))
+    (when (eq class 'emacsql-sqlite-connection)
+      (set-process-query-on-exit-flag (oref connection handle) nil))
+    (when debug
+      (emacsql-enable-debugging connection))
+    connection))
+
 (defun emacsql-sqlite-default-connection ()
   "Determine and return the best SQLite connection class.
 If a module or binary is required and that doesn't exist yet,
