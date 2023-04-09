@@ -31,6 +31,7 @@
 
 (cl-defmethod initialize-instance :after
   ((connection emacsql-sqlite-builtin-connection) &rest _)
+  (require (quote sqlite))
   (oset connection handle
         (sqlite-open (slot-value connection 'file)))
   (when emacsql-global-timeout

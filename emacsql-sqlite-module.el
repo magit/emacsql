@@ -33,6 +33,7 @@
 
 (cl-defmethod initialize-instance :after
   ((connection emacsql-sqlite-module-connection) &rest _)
+  (require (quote sqlite3))
   (oset connection handle
         (sqlite3-open (or (slot-value connection 'file) ":memory:")
                       sqlite-open-readwrite
