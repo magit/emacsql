@@ -113,10 +113,45 @@ can be used."
            'emacsql-sqlite-builtin-connection)
       (and (boundp 'module-file-suffix)
            module-file-suffix
-           (and (with-demoted-errors
-                    "Cannot use `emacsql-sqlite-module-connection': %S"
-                  (require 'emacsql-sqlite-module))
-                'emacsql-sqlite-module-connection))
+           (condition-case nil
+               ;; Failure modes:
+               ;; 1. `sqlite3' elisp library isn't available.
+               ;; 2. `libsqlite' shared library isn't available.
+               ;; 3. `libsqlite' compilation fails.
+               ;; 4. User chooses to not compile `libsqlite'.
+               (and (require 'sqlite3)
+                    (require 'emacsql-sqlite-module)
+                    'emacsql-sqlite-module-connection)
+             (error
+              (display-warning 'emacsql "\
+Since your Emacs does not come with
+built-in SQLite support [1], but does support C modules, the best
+EmacSQL backend is provided by the third-party `sqlite3' package
+[2].
+
+Please install the `sqlite3' Elisp package using your preferred
+Emacs package manager, and install the SQLite shared library
+using your distribution's package manager.  That package should
+be named something like `libsqlite3' [3] and NOT just `sqlite3'.
+
+In the current Emacs instance the legacy backend is used, which
+uses a custom SQLite executable.  Using an external process like
+that is less reliable and less performant, and in a few releases
+support for that might be removed.
+
+[1]: Supported since Emacs 29.1, provided it was not disabled
+     with `--without-sqlite3'.
+[2]: https://github.com/pekingduck/emacs-sqlite3-api
+[3]: On Debian https://packages.debian.org/buster/libsqlite3-0")
+              ;; The buffer displaying the warning might immediately
+              ;; be replaced by another buffer, before the user gets
+              ;; a chance to see it.  We cannot have that.
+              (let (fn)
+                (setq fn (lambda ()
+                           (remove-hook 'post-command-hook fn)
+                           (pop-to-buffer (get-buffer "*Warnings*"))))
+                (add-hook 'post-command-hook fn))
+              nil)))
       (and (require 'emacsql-sqlite)
            (boundp 'emacsql-sqlite-executable)
            (or (file-exists-p emacsql-sqlite-executable)
