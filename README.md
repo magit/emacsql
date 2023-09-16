@@ -211,7 +211,7 @@ most kinds of sub-queries.
 
 Dashes are converted into spaces and the keyword gets capitalized. For
 example, `:if-not-exists` becomes `IF NOT EXISTS`. How you choose to
-combine keywords is up to your personal taste (e.g. `:drop :table` vs.
+combine keywords is up to your personal taste (e.g., `:drop :table` vs.
 `:drop-table`).
 
 #### Standalone symbols are identifiers.
