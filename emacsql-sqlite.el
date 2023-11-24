@@ -59,6 +59,22 @@ used.")
   (emacsql--sqlite-base emacsql-protocol-mixin) ()
   "A connection to a SQLite database.")
 
+(defun emacsql-sqlite--sentinel (process _)
+  "If PROCESS is not alive kill its associated buffer.
+
+Signal an error if PROCESS exited abnormally."
+  (unless (process-live-p process)
+    (let* ((buffer (process-buffer process))
+           (contents (and (buffer-live-p buffer)
+                          (with-current-buffer buffer (buffer-string))))
+           (status (process-exit-status process)))
+      (kill-buffer buffer)
+      (when (> status 0)
+        (error "%s exited abnormallly :status %S :exit-code %d :last-output %s"
+               emacsql-sqlite-executable
+               (process-status process)
+               status contents)))))
+
 (cl-defmethod initialize-instance :after
   ((connection emacsql-sqlite-connection) &rest _rest)
   (emacsql-sqlite-ensure-binary)
@@ -72,8 +88,7 @@ used.")
          (process (start-process
                    "emacsql-sqlite" buffer emacsql-sqlite-executable fullfile)))
     (oset connection handle process)
-    (set-process-sentinel process
-                          (lambda (proc _) (kill-buffer (process-buffer proc))))
+    (set-process-sentinel process #'emacsql-sqlite--sentinel)
     (when (memq (process-status process) '(exit signal))
       (error "%s has failed immediately" emacsql-sqlite-executable))
     (emacsql-wait connection)

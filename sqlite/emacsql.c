@@ -102,6 +102,7 @@ int main(int argc, char **argv) {
     }
 
     buffer *input = buffer_create();
+    int ret = EXIT_SUCCESS;
     while (TRUE) {
         printf("#\n");
         fflush(stdout);
@@ -113,6 +114,7 @@ int main(int argc, char **argv) {
             break;
         } else if (result != 1) {
             send_error(SQLITE_ERROR, "middleware parsing error");
+            ret = EXIT_FAILURE;
             break;  /* stream out of sync: quit program */
         }
         if (!buffer_read(input, length)) {
@@ -179,5 +181,5 @@ int main(int argc, char **argv) {
 
     sqlite3_close(db);
     sqlite3_shutdown();
-    return EXIT_SUCCESS;
+    return ret;
 }
