@@ -397,6 +397,20 @@ tests will also be run with MySQL in the named database. Note that
 this is not an official MySQL variable, just something made up for
 EmacSQL.
 
+
+In addition, the tests can be run with the
+[Eldev](https://github.com/emacs-eldev/eldev) build tool
+
+```sh
+  # from source
+  eldev test
+  # or as a compiled package
+  eldev -p test
+```
+
+See [Eldev documentation](https://emacs-eldev.github.io/eldev/) for
+more information.
+
 ### Creating a New Front-end
 
 EmacSQL uses EIEIO so that interactions with a connection occur

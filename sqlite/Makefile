@@ -1,7 +1,10 @@
 -include ../.config.mk
 
 .POSIX:
+ifneq ($(OS),Windows_NT)
 LDLIBS = -ldl -lm
+endif
+
 CFLAGS = -O2 -Wall -Wextra -Wno-implicit-fallthrough \
     -DSQLITE_THREADSAFE=0 \
     -DSQLITE_DEFAULT_FOREIGN_KEYS=1 \
@@ -17,3 +20,4 @@ emacsql-sqlite: emacsql.c sqlite3.c
 
 clean:
 	rm -f emacsql-sqlite
+	rm -f emacsql-sqlite.exe
