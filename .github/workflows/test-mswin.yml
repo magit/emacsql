@@ -1,0 +1,35 @@
+name: Test (MS-Windows)
+permissions: read-all
+on: [ push, pull_request ]
+
+jobs:
+  test:
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os: [windows-latest]
+        emacs_version: ['29.1', '28.2']
+    steps:
+    - name: Setup dev env
+      uses: msys2/setup-msys2@v2
+      if: startsWith (matrix.os, 'windows')
+      with:
+        msystem: MINGW64
+        location: D:\
+        pacboy: >-
+          gcc:p sqlite3:p
+    - name: Set up Emacs
+      if: startsWith (matrix.os, 'windows')
+      uses: jcs090218/setup-emacs-windows@master
+      with:
+        version: ${{matrix.emacs_version}}
+    - name: Install Eldev
+      run: |
+        curl.exe -fsSL https://raw.github.com/doublep/eldev/master/webinstall/github-eldev.bat | cmd /Q
+    - name: Check out the source code
+      uses: actions/checkout@v3
+    - name: Test
+      run: |
+        # Update PATH to begin with the new msys2 dev environment.
+        $env:Path = "D:\msys64\mingw64\bin;" + $env:Path
+        eldev -p -dtTC test
