@@ -30,6 +30,10 @@ else
 EMACS_ARGS ?=
 endif
 
+ifdef NIX_PATH
+export SQLITE3_API_BUILD_COMMAND = nix-shell -p sqlite.dev --run "make all"
+endif
+
 LOAD_PATH  ?= $(addprefix -L ../,$(DEPS))
 LOAD_PATH  += -L .
 LOAD_PATH  += -L ./tests
