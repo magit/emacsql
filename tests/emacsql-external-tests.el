@@ -9,14 +9,21 @@
 (require 'emacsql)
 
 (require 'emacsql-sqlite)
-;; FIXME(CI) this is currently not tested because the Emacs
-;; snapshot hasn't been compiled with sqlite support.
-(when (require 'sqlite nil t) (require 'emacsql-sqlite-builtin))
-(when (require 'sqlite3 nil t) (require 'emacsql-sqlite-module))
+(if (require 'sqlite nil t)
+    (require 'emacsql-sqlite-builtin)
+  (message "WARNING: Forgo testing `%s' because `%s' is unavailable"
+           'emacsql-sqlite-builtin 'sqlite))
+(if (require 'sqlite3 nil t)
+    (require 'emacsql-sqlite-module)
+  (message "WARNING: Forgo testing `%s' because `%s' is unavailable"
+           'emacsql-sqlite-module 'sqlite3))
 (require 'emacsql-mysql)
 (require 'emacsql-psql)
-;; FIXME(CI) broken and thus disabled in test.yml.
-(when (require 'pg nil t) (require 'emacsql-pg))
+;; FIXME(CI) Broken and thus disabled in test.yml.
+(if (require 'pg nil t)
+    (require 'emacsql-pg)
+  (message "WARNING: Forgo testing `%s' because `%s' is unavailable"
+           'emacsql-pg 'pg))
 
 (defvar emacsql-tests-timeout 4
   "Be aggressive about not waiting on subprocesses in unit tests.")
