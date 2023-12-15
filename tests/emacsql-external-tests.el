@@ -12,10 +12,7 @@
 ;; FIXME(CI) this is currently not tested because the Emacs
 ;; snapshot hasn't been compiled with sqlite support.
 (when (require 'sqlite nil t) (require 'emacsql-sqlite-builtin))
-;; FIXME(CI) libsqlite3.so.0 cannot be found, even though
-;; it appears to be installed in the correct location.
-(unless (equal (getenv "CI") "true")
-  (when (require 'sqlite3 nil t) (require 'emacsql-sqlite-module)))
+(when (require 'sqlite3 nil t) (require 'emacsql-sqlite-module))
 (require 'emacsql-mysql)
 (require 'emacsql-psql)
 ;; FIXME(CI) broken and thus disabled in test.yml.
