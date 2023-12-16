@@ -4,3 +4,7 @@
 
 /stats/
 /sqlite/emacsql-sqlite
+/sqlite/emacsql-sqlite.exe
+
+/.eldev
+/Eldev-local

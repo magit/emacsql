@@ -6,6 +6,7 @@
 
 (require 'cl-lib)
 (require 'emacsql-compiler-tests)
+(require 'emacsql-sqlite-tests)
 (require 'emacsql-external-tests)
 
 ;; Print testing information

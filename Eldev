@@ -1,0 +1,18 @@
+;; -*- mode: emacs-lisp; lexical-binding: t; -*-
+
+(eldev-use-package-archive 'melpa)
+
+(eldev-use-plugin 'autoloads)
+
+(setf eldev-project-source-dirs ".")
+
+(setf eldev-project-main-file "emacsql.el")
+
+(setf eldev-files-to-package
+      `(:or ,eldev-files-to-package
+            '("./sqlite/Makefile"
+              "./sqlite/emacsql.c"
+              "./sqlite/sqlite3.c"
+              "./sqlite3.h")))
+
+(eldev-add-extra-dependencies 'test 'sqlite3 'pg)
