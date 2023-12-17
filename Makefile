@@ -44,6 +44,7 @@ help:
 	$(info make all          - generate binary, byte-code and autoloads)
 	$(info make binary       - generate binary)
 	$(info make lisp         - generate byte-code and autoloads)
+	$(info make redo         - re-generate byte-code and autoloads)
 	$(info make test         - run tests)
 	$(info make clean        - remove byte-code and autoloads)
 	$(info make distclean    - remove binary, byte-code and autoloads)
@@ -53,6 +54,7 @@ binary: sqlite/emacsql-sqlite
 sqlite/emacsql-sqlite:
 	$(MAKE) -C sqlite
 
+redo: clean lisp
 lisp: $(ELCS) loaddefs
 
 loaddefs: $(PKG)-autoloads.el
