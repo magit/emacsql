@@ -20,8 +20,8 @@
   (let ((conditions (cl-remove-duplicates
                      (append parents (list symbol 'emacsql-error 'error)))))
     `(prog1 ',symbol
-       (setf (get ',symbol 'error-conditions) ',conditions
-             (get ',symbol 'error-message) ,message))))
+       (put ',symbol 'error-conditions ',conditions)
+       (put ',symbol 'error-message ,message))))
 
 (emacsql-deferror emacsql-error () ;; parent condition for all others
   "EmacSQL had an unhandled condition")
