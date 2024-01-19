@@ -260,9 +260,9 @@ specific error conditions."
 
 (defun emacsql-register (connection)
   "Register CONNECTION for automatic cleanup and return CONNECTION."
-  (let ((finalizer (make-finalizer (lambda () (emacsql-close connection)))))
-    (prog1 connection
-      (setf (slot-value connection 'finalizer) finalizer))))
+  (prog1 connection
+    (oset connection finalizer
+          (make-finalizer (lambda () (emacsql-close connection))))))
 
 ;;; Useful macros
 
