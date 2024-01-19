@@ -151,7 +151,7 @@ misnamed and obsolete accessor function."
 (cl-defmethod (setf emacsql-process) (value (this emacsql-connection))
   (eieio-oset this 'handle value))
 (make-obsolete 'emacsql-process "underlying slot is for internal use only."
-               "Emacsql 4.0.0")
+               "EmacSQL 4.0.0")
 
 (cl-defmethod slot-missing ((connection emacsql-connection)
                             slot-name operation &optional new-value)
