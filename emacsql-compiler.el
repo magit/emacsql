@@ -236,7 +236,7 @@ string, which will be combined with variable definitions."
                 (svector (thing) (combine (emacsql--*vector thing)))
                 (expr (thing) (combine (emacsql--*expr thing)))
                 (subsql (thing)
-                        (format "(%s)" (combine (emacsql-prepare thing)))))
+                  (format "(%s)" (combine (emacsql-prepare thing)))))
        (cons (concat ,prefix (progn ,@body)) emacsql--vars))))
 
 (defun emacsql--!param (thing &optional kind)
@@ -244,9 +244,9 @@ string, which will be combined with variable definitions."
 If optional KIND is not specified, then try to guess it.
 Only use within `emacsql-with-params'!"
   (cl-flet ((check (param)
-                   (when (and kind (not (eq kind (cdr param))))
-                     (emacsql-error
-                      "Invalid parameter type %s, expecting %s" thing kind))))
+              (when (and kind (not (eq kind (cdr param))))
+                (emacsql-error
+                 "Invalid parameter type %s, expecting %s" thing kind))))
     (let ((param (emacsql-param thing)))
       (if (null param)
           (emacsql-escape-format
@@ -397,10 +397,11 @@ string returned is wrapped with parentheses."
             (emacsql--get-op-info op
                                   (length args)
                                   (or parent-precedence-value 0))
-          (cl-flet ((recur (n) (combine (emacsql--*expr (nth n args)
-                                                        (or precedence-value 0))))
+          (cl-flet ((recur (n)
+                      (combine (emacsql--*expr (nth n args)
+                                               (or precedence-value 0))))
                     (nops (op)
-                          (emacsql-error "Wrong number of operands for %s" op)))
+                      (emacsql-error "Wrong number of operands for %s" op)))
             (cl-case op
               ;; Special cases <= >=
               ((<= >=)
