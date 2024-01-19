@@ -149,9 +149,9 @@ MESSAGE should not have a newline on the end."
 Using this function to do it anyway, means additionally using a
 misnamed and obsolete accessor function."
   (and (slot-boundp this 'handle)
-       (eieio-oref this 'handle)))
+       (oref this handle)))
 (cl-defmethod (setf emacsql-process) (value (this emacsql-connection))
-  (eieio-oset this 'handle value))
+  (oset this handle value))
 (make-obsolete 'emacsql-process "underlying slot is for internal use only."
                "EmacSQL 4.0.0")
 
