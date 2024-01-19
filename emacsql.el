@@ -104,6 +104,9 @@ may return `process', `user-ptr' or `sqlite' for this value.")
   "A connection to a SQL database."
   :abstract t)
 
+(make-obsolete 'emacsql-log-buffer "use (oref obj log-buffer) instead."
+               "EmacSQL 4.0.0")
+
 (cl-defgeneric emacsql-close (connection)
   "Close CONNECTION and free all resources.")
 
@@ -127,14 +130,13 @@ SQL expression.")
 
 (cl-defmethod emacsql-enable-debugging ((connection emacsql-connection))
   "Enable debugging on CONNECTION."
-  (unless (buffer-live-p (emacsql-log-buffer connection))
-    (setf (emacsql-log-buffer connection)
-          (generate-new-buffer " *emacsql-log*"))))
+  (unless (buffer-live-p (oref connection log-buffer))
+    (oset connection log-buffer (generate-new-buffer " *emacsql-log*"))))
 
 (cl-defmethod emacsql-log ((connection emacsql-connection) message)
   "Log MESSAGE into CONNECTION's log.
 MESSAGE should not have a newline on the end."
-  (let ((buffer (emacsql-log-buffer connection)))
+  (let ((buffer (oref connection log-buffer)))
     (when buffer
       (unless (buffer-live-p buffer)
         (setq buffer (emacsql-enable-debugging connection)))
