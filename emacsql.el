@@ -189,7 +189,7 @@ misnamed and obsolete accessor function."
 (cl-defmethod emacsql-wait ((connection emacsql-connection) &optional timeout)
   "Block until CONNECTION is waiting for further input."
   (let* ((real-timeout (or timeout emacsql-global-timeout))
-         (end (when real-timeout (+ (float-time) real-timeout))))
+         (end (and real-timeout (+ (float-time) real-timeout))))
     (while (and (or (null real-timeout) (< (float-time) end))
                 (not (emacsql-waiting-p connection)))
       (save-match-data
@@ -202,7 +202,7 @@ misnamed and obsolete accessor function."
 
 (defun emacsql-compile (connection sql &rest args)
   "Compile s-expression SQL for CONNECTION into a string."
-  (let* ((mask (when connection (emacsql-types connection)))
+  (let* ((mask (and connection (emacsql-types connection)))
          (emacsql-type-map (or mask emacsql-type-map)))
     (concat (apply #'emacsql-format (emacsql-prepare sql) args) ";")))
 
@@ -346,7 +346,7 @@ compile time. For example, in the expression below the variables
 Each column must be a plain symbol, no expressions allowed here."
   (declare (indent 2))
   (let ((sql (if (vectorp sql-and-args) sql-and-args (car sql-and-args)))
-        (args (unless (vectorp sql-and-args) (cdr sql-and-args))))
+        (args (and (not (vectorp sql-and-args)) (cdr sql-and-args))))
     (cl-assert (eq :select (elt sql 0)))
     (let ((vars (elt sql 1)))
       (when (eq '* vars)
@@ -434,9 +434,9 @@ A prefix argument causes the SQL to be printed into the current buffer."
     (save-excursion
       (beginning-of-defun)
       (let ((containing-sexp (elt (parse-partial-sexp (point) start) 1)))
-        (when containing-sexp
-          (goto-char containing-sexp)
-          (looking-at "\\["))))))
+        (and containing-sexp
+             (progn (goto-char containing-sexp)
+                    (looking-at "\\[")))))))
 
 (defun emacsql--calculate-vector-indent (fn &optional parse-start)
   "Don't indent vectors in `emacs-lisp-mode' like lists."

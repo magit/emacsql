@@ -210,16 +210,16 @@
 A parameter is a symbol that looks like $i1, $s2, $v3, etc. The
 letter refers to the type: identifier (i), scalar (s),
 vector (v), raw string (r), schema (S)."
-  (when (symbolp thing)
-    (let ((name (symbol-name thing)))
-      (when (string-match-p "^\\$[isvrS][0-9]+$" name)
-        (cons (1- (read (substring name 2)))
-              (cl-ecase (aref name 1)
-                (?i :identifier)
-                (?s :scalar)
-                (?v :vector)
-                (?r :raw)
-                (?S :schema)))))))
+  (and (symbolp thing)
+       (let ((name (symbol-name thing)))
+         (and (string-match-p "^\\$[isvrS][0-9]+$" name)
+              (cons (1- (read (substring name 2)))
+                    (cl-ecase (aref name 1)
+                      (?i :identifier)
+                      (?s :scalar)
+                      (?v :vector)
+                      (?r :raw)
+                      (?S :schema)))))))
 
 (defmacro emacsql-with-params (prefix &rest body)
   "Evaluate BODY, collecting parameters.
@@ -349,20 +349,18 @@ See `emacsql--generate-op-lookup-defun' for details."
   "Create format-string for an SQL operator.
 The format-string returned is intended to be used with `format'
 to create an SQL expression."
-  (when expr
-    (cl-labels ((replace-operand (x) (if (eq x :operand)
-                                         "%s"
-                                       x))
-                (to-format-string (e) (mapconcat #'replace-operand e "")))
-      (cond
-       ((and (eq arity :unary) (eql argument-count 1))
-        (to-format-string expr))
-       ((and (eq arity :binary) (>= argument-count 2))
-        (let ((result (reverse expr)))
-          (dotimes (_ (- argument-count 2))
-            (setf result (nconc (reverse expr) (cdr result))))
-          (to-format-string (nreverse result))))
-       (t (emacsql-error "Wrong number of operands for %s" op))))))
+  (and expr
+       (cl-labels ((replace-operand (x) (if (eq x :operand) "%s" x))
+                   (to-format-string (e) (mapconcat #'replace-operand e "")))
+         (cond
+          ((and (eq arity :unary) (eql argument-count 1))
+           (to-format-string expr))
+          ((and (eq arity :binary) (>= argument-count 2))
+           (let ((result (reverse expr)))
+             (dotimes (_ (- argument-count 2))
+               (setf result (nconc (reverse expr) (cdr result))))
+             (to-format-string (nreverse result))))
+          (t (emacsql-error "Wrong number of operands for %s" op))))))
 
 (defun emacsql--get-op-info (op argument-count parent-precedence-value)
   "Lookup SQL operator information for generating an SQL expression.
