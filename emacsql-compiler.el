@@ -275,8 +275,7 @@ Only use within `emacsql-with-params'!"
       (vector (format "(%s)" (mapconcat #'scalar vector ", ")))
       (otherwise (emacsql-error "Invalid vector: %S" vector)))))
 
-(defmacro emacsql--generate-op-lookup-defun (name
-                                             operator-precedence-groups)
+(defmacro emacsql--generate-op-lookup-defun (name operator-precedence-groups)
   "Generate function to look up predefined SQL operator metadata.
 
 The generated function is bound to NAME and accepts two
@@ -371,10 +370,12 @@ equal to the identified operator's precedence, then the format
 string returned is wrapped with parentheses."
   (cl-destructuring-bind (format-string arity precedence-value)
       (emacsql--get-op op argument-count)
-    (let ((expanded-format-string (emacsql--expand-format-string op
-                                                                 format-string
-                                                                 arity
-                                                                 argument-count)))
+    (let ((expanded-format-string
+           (emacsql--expand-format-string
+            op
+            format-string
+            arity
+            argument-count)))
       (cl-values (cond
                   ((null format-string) nil)
                   ((>= parent-precedence-value

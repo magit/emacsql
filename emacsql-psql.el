@@ -117,9 +117,9 @@ http://www.postgresql.org/docs/7.3/static/sql-keywords-appendix.html")
 (cl-defmethod emacsql-waiting-p ((connection emacsql-psql-connection))
   (with-current-buffer (emacsql-buffer connection)
     (cond ((= (buffer-size) 1) (string= "]" (buffer-string)))
-          ((> (buffer-size) 1) (string= "\n]"
-                                        (buffer-substring
-                                         (- (point-max) 2) (point-max)))))))
+          ((> (buffer-size) 1) (string= "\n]" (buffer-substring
+                                               (- (point-max) 2)
+                                               (point-max)))))))
 
 (cl-defmethod emacsql-check-error ((connection emacsql-psql-connection))
   (with-current-buffer (emacsql-buffer connection)
