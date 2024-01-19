@@ -35,7 +35,7 @@
   ((connection emacsql-sqlite-module-connection) &rest _)
   (require (quote sqlite3))
   (oset connection handle
-        (sqlite3-open (or (slot-value connection 'file) ":memory:")
+        (sqlite3-open (or (oref connection file) ":memory:")
                       sqlite-open-readwrite
                       sqlite-open-create))
   (when emacsql-global-timeout

@@ -66,7 +66,7 @@ used.")
          ;; See https://debbugs.gnu.org/cgi/bugreport.cgi?bug=60872#11.
          (coding-system-for-write 'utf-8)
          (coding-system-for-read 'utf-8)
-         (file (slot-value connection 'file))
+         (file (oref connection file))
          (buffer (generate-new-buffer " *emacsql-sqlite*"))
          (fullfile (if file (expand-file-name file) ":memory:"))
          (process (start-process
