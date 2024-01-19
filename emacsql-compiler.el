@@ -264,7 +264,7 @@ Only use within `emacsql-with-params'!"
                (emacsql-escape-scalar thing))))
         (prog1 (if (eq (cdr param) :schema) "(%s)" "%s")
           (check param)
-          (setf emacsql--vars (nconc emacsql--vars (list param))))))))
+          (setq emacsql--vars (nconc emacsql--vars (list param))))))))
 
 (defun emacsql--*vector (vector)
   "Prepare VECTOR."
@@ -358,7 +358,7 @@ to create an SQL expression."
           ((and (eq arity :binary) (>= argument-count 2))
            (let ((result (reverse expr)))
              (dotimes (_ (- argument-count 2))
-               (setf result (nconc (reverse expr) (cdr result))))
+               (setq result (nconc (reverse expr) (cdr result))))
              (to-format-string (nreverse result))))
           (t (emacsql-error "Wrong number of operands for %s" op))))))
 
@@ -465,7 +465,7 @@ string returned is wrapped with parentheses."
   "Append parameters from PREPARED to `emacsql--vars', return the string.
 Only use within `emacsql-with-params'!"
   (cl-destructuring-bind (string . vars) prepared
-    (setf emacsql--vars (nconc emacsql--vars vars))
+    (setq emacsql--vars (nconc emacsql--vars vars))
     string))
 
 (defun emacsql-prepare--string (string)
@@ -505,7 +505,7 @@ Only use within `emacsql-with-params'!"
                 (emacsql-escape-format
                  (emacsql-escape-scalar item))))
              into parts
-             do (setf last item)
+             do (setq last item)
              finally (cl-return
                       (mapconcat #'identity parts " ")))))
 

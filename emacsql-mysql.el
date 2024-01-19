@@ -126,7 +126,7 @@ http://dev.mysql.com/doc/refman/5.5/en/reserved-words.html")
                collect (read) into row
                when (looking-at "\n")
                collect row into rows
-               and do (setf row ())
+               and do (setq row ())
                and do (forward-char)
                finally (cl-return rows)))))
 

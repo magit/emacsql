@@ -77,7 +77,7 @@ http://www.postgresql.org/docs/7.3/static/sql-keywords-appendix.html")
     (when hostname
       (push "-h" args)
       (push hostname args))
-    (setf args (nreverse args))
+    (setq args (nreverse args))
     (let* ((buffer (generate-new-buffer " *emacsql-psql*"))
            (psql emacsql-psql-executable)
            (command (mapconcat #'shell-quote-argument (cons psql args) " "))
@@ -139,7 +139,7 @@ http://www.postgresql.org/docs/7.3/static/sql-keywords-appendix.html")
                collect (read) into row
                when (looking-at "\n")
                collect row into rows
-               and do (progn (forward-char 1) (setf row ()))
+               and do (progn (forward-char 1) (setq row ()))
                finally (cl-return rows)))))
 
 (provide 'emacsql-psql)

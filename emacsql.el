@@ -303,10 +303,10 @@ multiple times before the changes are committed."
                  (when (= 1 emacsql--transaction-level)
                    (emacsql emacsql--connection [:begin]))
                  (let ((result (progn ,@body)))
-                   (setf emacsql--result result)
+                   (setq emacsql--result result)
                    (when (= 1 emacsql--transaction-level)
                      (emacsql emacsql--connection [:commit]))
-                   (setf emacsql--completed t)))
+                   (setq emacsql--completed t)))
              (emacsql-locked (emacsql emacsql--connection [:rollback])
                              (sleep-for 0.05))))
        (when (and (= 1 emacsql--transaction-level)
@@ -355,7 +355,7 @@ Each column must be a plain symbol, no expressions allowed here."
       `(let ((emacsql--results (emacsql ,connection ,sql ,@args))
              (emacsql--final nil))
          (dolist (emacsql--result emacsql--results emacsql--final)
-           (setf emacsql--final
+           (setq emacsql--final
                  (cl-destructuring-bind ,(cl-coerce vars 'list) emacsql--result
                    ,@body)))))))
 
