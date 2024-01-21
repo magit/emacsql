@@ -123,7 +123,7 @@ Retrieve the slot `log-buffer' from an object of class `emacsql-connection'."
 
 (cl-defmethod emacsql-live-p ((connection emacsql-connection))
   "Return non-nil if CONNECTION is still alive and ready."
-  (not (null (process-live-p (oref connection handle)))))
+  (and (process-live-p (oref connection handle)) t))
 
 (cl-defgeneric emacsql-types (connection)
   "Return an alist mapping EmacSQL types to database types.
