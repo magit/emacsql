@@ -103,18 +103,6 @@ may return `process', `user-ptr' or `sqlite' for this value.")
   "A connection to a SQL database."
   :abstract t)
 
-(cl-defmethod (setf emacsql-log-buffer) (value (obj emacsql-connection))
-  (oset obj log-buffer value))
-(make-obsolete-generalized-variable 'emacsql-log-buffer
-                                    "use (oset obj log-buffer val) instead."
-                                    "EmacsSQL 4.0.0")
-(with-suppressed-warnings ((obsolete emacsql-log-buffer))
-  (cl-defmethod emacsql-log-buffer ((obj emacsql-connection)) "\
-Retrieve the slot `log-buffer' from an object of class `emacsql-connection'."
-    (oref obj log-buffer)))
-(make-obsolete 'emacsql-log-buffer "use (oref obj log-buffer) instead."
-               "EmacSQL 4.0.0")
-
 (cl-defgeneric emacsql-close (connection)
   "Close CONNECTION and free all resources.")
 
