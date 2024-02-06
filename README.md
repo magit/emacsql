@@ -16,6 +16,12 @@ binary for communicating with a SQLite database.
 
 Requires Emacs 25 or later.
 
+[![Compile](https://github.com/magit/emacsql/actions/workflows/compile.yml/badge.svg)](https://github.com/magit/emacsql/actions/workflows/compile.yml)
+[![Test](https://github.com/magit/emacsql/actions/workflows/test.yml/badge.svg)](https://github.com/magit/emacsql/actions/workflows/test.yml)
+[![NonGNU ELPA](https://emacsair.me/assets/badges/nongnu-elpa.svg)](https://elpa.nongnu.org/nongnu-devel/emacsql.html)
+[![MELPA Stable](https://stable.melpa.org/packages/emacsql-badge.svg)](https://stable.melpa.org/#/emacsql)
+[![MELPA](https://melpa.org/packages/emacsql-badge.svg)](https://melpa.org/#/emacsql)
+
 ### FAQ
 #### Why are all values stored as strings?
 
@@ -429,13 +435,6 @@ the emacsql-protocol-mixin class to do most of the work.
 ## See Also
 
  * [SQLite Documentation](https://www.sqlite.org/docs.html)
-
-<br><br>
-[![Compile](https://github.com/magit/emacsql/actions/workflows/compile.yml/badge.svg)](https://github.com/magit/emacsql/actions/workflows/compile.yml)
-[![Test](https://github.com/magit/emacsql/actions/workflows/test.yml/badge.svg)](https://github.com/magit/emacsql/actions/workflows/test.yml)
-[![NonGNU ELPA](https://emacsair.me/assets/badges/nongnu-elpa.svg)](https://elpa.nongnu.org/nongnu-devel/emacsql.html)
-[![MELPA Stable](https://stable.melpa.org/packages/emacsql-badge.svg)](https://stable.melpa.org/#/emacsql)
-[![MELPA](https://melpa.org/packages/emacsql-badge.svg)](https://melpa.org/#/emacsql)
 
 [readable]: http://nullprogram.com/blog/2013/12/30/#almost_everything_prints_readably
 [fts]: http://www.sqlite.org/fts3.html
