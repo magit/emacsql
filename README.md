@@ -433,7 +433,7 @@ the emacsql-protocol-mixin class to do most of the work.
 <br><br>
 [![Compile](https://github.com/magit/emacsql/actions/workflows/compile.yml/badge.svg)](https://github.com/magit/emacsql/actions/workflows/compile.yml)
 [![Test](https://github.com/magit/emacsql/actions/workflows/test.yml/badge.svg)](https://github.com/magit/emacsql/actions/workflows/test.yml)
-[![NonGNU ELPA](https://elpa.nongnu.org/nongnu/emacsql.svg)](https://elpa.nongnu.org/nongnu/emacsql.html)
+[![NonGNU ELPA](https://emacsair.me/assets/badges/nongnu-elpa.svg)](https://elpa.nongnu.org/nongnu-devel/emacsql.html)
 [![MELPA Stable](https://stable.melpa.org/packages/emacsql-badge.svg)](https://stable.melpa.org/#/emacsql)
 [![MELPA](https://melpa.org/packages/emacsql-badge.svg)](https://melpa.org/#/emacsql)
 
