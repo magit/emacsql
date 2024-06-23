@@ -12,6 +12,8 @@
 
 (require 'cl-lib)
 
+(eval-when-compile (require 'subr-x))
+
 ;;; Error symbols
 
 (defmacro emacsql-deferror (symbol parents message)
@@ -507,8 +509,7 @@ Only use within `emacsql-with-params'!"
                  (emacsql-escape-scalar item))))
              into parts
              do (setq last item)
-             finally (cl-return
-                      (mapconcat #'identity parts " ")))))
+             finally (cl-return (string-join parts " ")))))
 
 (defun emacsql-prepare (sql)
   "Expand SQL (string or sexp) into a prepared statement."

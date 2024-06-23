@@ -19,6 +19,8 @@
 
 ;;; Code:
 
+(eval-when-compile (require 'subr-x))
+
 (require 'emacsql)
 (require 'emacsql-sqlite-common)
 
@@ -153,7 +155,7 @@ If called with non-nil ERROR, signal an error on failure."
       (let ((log (get-buffer-create byte-compile-log-buffer)))
         (with-current-buffer log
           (let ((inhibit-read-only t))
-            (insert (mapconcat #'identity (cons cc arguments) " ") "\n")
+            (insert (string-join (cons cc arguments) " ") "\n")
             (let ((pos (point))
                   (ret (apply #'call-process cc nil (if async 0 t) t
                               arguments)))
