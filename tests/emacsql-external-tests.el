@@ -20,10 +20,14 @@
 (require 'emacsql-mysql)
 (require 'emacsql-psql)
 ;; FIXME(CI) Broken and thus disabled in test.yml.
-(if (require 'pg nil t)
-    (require 'emacsql-pg)
-  (message "WARNING: Forgo testing `%s' because `%s' is unavailable"
-           'emacsql-pg 'pg))
+(cond
+ ((< emacs-major-version 28)
+  (message "WARNING: Forgo testing `%s' because it is unsupported on Emacs %s"
+           'emacsql-pg emacs-version))
+ ((require 'pg nil t)
+  (require 'emacsql-pg))
+ ((message "WARNING: Forgo testing `%s' because `%s' is unavailable"
+           'emacsql-pg 'pg)))
 
 (defvar emacsql-tests-timeout 4
   "Be aggressive about not waiting on subprocesses in unit tests.")

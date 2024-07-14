@@ -7,13 +7,14 @@
 ;; Homepage: https://github.com/magit/emacsql
 
 ;; Package-Version: 3.1.1.50-git
-;; Package-Requires: ((emacs "25.1") (emacsql "20230220") (pg "0.16"))
+;; Package-Requires: ((emacs "28.1") (emacsql "20240623") (pg "0.37"))
 ;; SPDX-License-Identifier: Unlicense
 
 ;;; Commentary:
 
 ;; This library provides an EmacSQL back-end for PostgreSQL, which
-;; uses the `pg' package to directly speak to the database.
+;; uses the `pg' package to directly speak to the database.  This
+;; library requires at least Emacs 28.1.
 
 ;; (For an alternative back-end for PostgreSQL, see `emacsql-psql'.)
 
@@ -21,7 +22,9 @@
 
 (require 'emacsql)
 
-(require 'pg nil t)
+(if (>= emacs-major-version 28)
+    (require 'pg nil t)
+  (message "emacsql-pg.el requires Emacs 28.1 or later"))
 (declare-function pg-connect "pg"
                   ( dbname user &optional
                     (password "") (host "localhost") (port 5432) (tls nil)))

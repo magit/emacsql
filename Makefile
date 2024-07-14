@@ -19,6 +19,7 @@ TEST_ELS += tests/emacsql-tests.el
 TEST_ELCS = $(TEST_ELS:.el=.elc)
 
 DEPS  = pg
+DEPS += peg
 DEPS += sqlite3
 
 EMACS      ?= emacs
