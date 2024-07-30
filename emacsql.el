@@ -378,10 +378,7 @@ Each column must be a plain symbol, no expressions allowed here."
            (sql-mode)
            (with-no-warnings ;; autoloaded by previous line
              (sql-highlight-sqlite-keywords))
-           (save-restriction
-             (widen)
-             (font-lock-flush)
-             (font-lock-ensure))
+           (font-lock-ensure)
            (emacsql--indent)
            (buffer-string))))
     (with-current-buffer (get-buffer-create emacsql-show-buffer-name)
