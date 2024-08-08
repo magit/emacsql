@@ -6,7 +6,7 @@
 ;; Maintainer: Jonas Bernoulli <emacs.emacsql@jonas.bernoulli.dev>
 ;; Homepage: https://github.com/magit/emacsql
 
-;; Package-Version: 3.1.1.50-git
+;; Package-Version: 4.0.0
 ;; Package-Requires: ((emacs "25.1"))
 
 ;; SPDX-License-Identifier: Unlicense
@@ -74,7 +74,7 @@
   "The EmacSQL SQL database front-end."
   :group 'comm)
 
-(defconst emacsql-version "3.1.1.50-git")
+(defconst emacsql-version "4.0.0")
 
 (defvar emacsql-global-timeout 30
   "Maximum number of seconds to wait before bailing out on a SQL command.
