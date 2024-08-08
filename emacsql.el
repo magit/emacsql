@@ -8,6 +8,7 @@
 
 ;; Package-Version: 3.1.1.50-git
 ;; Package-Requires: ((emacs "25.1"))
+
 ;; SPDX-License-Identifier: Unlicense
 
 ;;; Commentary:

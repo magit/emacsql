@@ -4,7 +4,6 @@
 
 ;; Author: Christopher Wellons <wellons@nullprogram.com>
 ;; Maintainer: Jonas Bernoulli <emacs.emacsql@jonas.bernoulli.dev>
-;; Homepage: https://github.com/magit/emacsql
 
 ;; SPDX-License-Identifier: Unlicense
 
