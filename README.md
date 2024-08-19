@@ -1,18 +1,15 @@
 # EmacSQL
 
-EmacSQL is a high-level Emacs Lisp front-end for SQLite (primarily),
-PostgreSQL, MySQL, and potentially other SQL databases.
+EmacSQL is a high-level Emacs Lisp front-end for SQLite.
+
+PostgreSQL and MySQL are also supported, but use of these connectors
+is not recommended.
 
 Any [readable lisp value][readable] can be stored as a value in
 EmacSQL, including numbers, strings, symbols, lists, vectors, and
 closures. EmacSQL has no concept of "TEXT" values; it's all just lisp
 objects. The lisp object `nil` corresponds 1:1 with `NULL` in the
 database.
-
-On MELPA, each back-end is provided as a separate package, suffixed with
-the database name. In the case of `emacsql-sqlite`, on first use EmacSQL
-will attempt to find a C compiler and use it to compile a custom native
-binary for communicating with a SQLite database.
 
 Requires Emacs 25 or later.
 
@@ -58,7 +55,7 @@ function, neither of these connection types are supported on Windows.
 ## Example Usage
 
 ```el
-(defvar db (emacsql-sqlite "~/company.db"))
+(defvar db (emacsql-sqlite-open "~/company.db"))
 
 ;; Create a table. Table and column identifiers are symbols.
 (emacsql db [:create-table people ([name id salary])])
