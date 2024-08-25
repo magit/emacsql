@@ -16,7 +16,7 @@
 
 (display-warning 'emacsql "Uninstall all `emacsql-*' packages.
 
-All EmacSQL back-ends are not distributed as part of the `emacsql'
+All EmacSQL back-ends are now distributed as part of the `emacsql'
 package itself, and you must uninstall all `emacsql-*' packages.
 These packages now do nothing but display this warning, but if they
 are located earlier on the `load-path' than `emacsql' is, then they
