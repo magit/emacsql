@@ -64,10 +64,14 @@ buffer. This is for debugging purposes."
 (cl-defmethod emacsql-send-message
   ((connection emacsql-sqlite-module-connection) message)
   (condition-case err
-      (let (rows)
+      (let ((include-header emacsql-include-header)
+            (rows ()))
         (sqlite3-exec (oref connection handle)
                       message
-                      (lambda (_ row __)
+                      (lambda (_ row header)
+                        (when include-header
+                          (push header rows)
+                          (setq include-header nil))
                         (push (mapcar (lambda (col)
                                         (cond ((null col) nil)
                                               ((equal col "") "")
