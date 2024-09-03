@@ -83,7 +83,9 @@ Also see http://www.sqlite.org/lang_keywords.html.")
 Elements have the form (ERRCODE SYMBOLIC-NAME EMACSQL-ERROR
 ERRSTR).  Also see https://www.sqlite.org/rescode.html.")
 
-(defconst emacsql-include-header nil
+;;; Variables
+
+(defvar emacsql-include-header nil
   "Whether to include names of columns as an additional row.
 Never enable this globally, only let-bind it around calls to `emacsql'.
 Currently only supported by `emacsql-sqlite-builtin-connection' and
