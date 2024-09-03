@@ -32,9 +32,7 @@
   (require (quote sqlite))
   (oset connection handle
         (sqlite-open (oref connection file)))
-  (when emacsql-global-timeout
-    (emacsql connection [:pragma (= busy-timeout $s1)]
-             (/ (* emacsql-global-timeout 1000) 2)))
+  (emacsql-sqlite-set-busy-timeout connection)
   (emacsql connection [:pragma (= foreign-keys on)])
   (emacsql-register connection))
 

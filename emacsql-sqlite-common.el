@@ -91,6 +91,10 @@ Never enable this globally, only let-bind it around calls to `emacsql'.
 Currently only supported by `emacsql-sqlite-builtin-connection' and
 `emacsql-sqlite-module-connection'.")
 
+(defvar emacsql-sqlite-busy-timeout 20
+  "Seconds to wait when trying to access a table blocked by another process.
+See https://www.sqlite.org/c3ref/busy_timeout.html.")
+
 ;;; Utilities
 
 (defun emacsql-sqlite-open (file &optional debug)
@@ -169,6 +173,11 @@ support for that might be removed.
                       (emacsql-sqlite-compile 2))))
            'emacsql-sqlite-connection)
       (error "EmacSQL could not find or compile a back-end")))
+
+(defun emacsql-sqlite-set-busy-timeout (connection)
+  (when emacsql-sqlite-busy-timeout
+    (emacsql connection [:pragma (= busy-timeout $s1)]
+             (* emacsql-sqlite-busy-timeout 1000))))
 
 (defun emacsql-sqlite-list-tables (connection)
   "Return a list of the names of all tables in CONNECTION.

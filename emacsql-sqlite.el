@@ -76,8 +76,7 @@ used.")
     (when (memq (process-status process) '(exit signal))
       (error "%s has failed immediately" emacsql-sqlite-executable))
     (emacsql-wait connection)
-    (emacsql connection [:pragma (= busy-timeout $s1)]
-             (/ (* emacsql-global-timeout 1000) 2))
+    (emacsql-sqlite-set-busy-timeout connection)
     (emacsql-register connection)))
 
 (cl-defun emacsql-sqlite (file &key debug)

@@ -36,9 +36,7 @@
         (sqlite3-open (or (oref connection file) ":memory:")
                       sqlite-open-readwrite
                       sqlite-open-create))
-  (when emacsql-global-timeout
-    (emacsql connection [:pragma (= busy-timeout $s1)]
-             (/ (* emacsql-global-timeout 1000) 2)))
+  (emacsql-sqlite-set-busy-timeout connection)
   (emacsql connection [:pragma (= foreign-keys on)])
   (emacsql-register connection))
 
