@@ -59,23 +59,29 @@
                  (boundp 'module-file-suffix)
                  module-file-suffix)
         (reg "sqlite-module" 'emacsql-sqlite-module nil))
-      (when (and mysql-database mysql-user mysql-host mysql-password mysql-port)
-        (reg "mysql" #'emacsql-mysql mysql-database
-             :user mysql-user
-             :host mysql-host
-             :password mysql-password
-             :port mysql-port))
-      (when (and psql-database psql-user psql-host psql-port)
-        (reg "psql" #'emacsql-psql psql-database
-             :username psql-user
-             :hostname psql-host
-             :port psql-port))
-      (when (and pg-database pg-user pg-password pg-host pg-port
-                 (fboundp 'emacsql-pg))
-        (reg "pg" #'emacsql-pg pg-database pg-user
-             :host pg-host
-             :password pg-password
-             :port pg-port)))
+      (if (and mysql-database mysql-user mysql-host mysql-password mysql-port)
+          (reg "mysql" #'emacsql-mysql mysql-database
+               :user mysql-user
+               :host mysql-host
+               :password mysql-password
+               :port mysql-port)
+        (message "WARNING: Forgo testing `%s' because %s" 'emacsql-mysql
+                 "not all required environment variables are set"))
+      (if (and psql-database psql-user psql-host psql-port)
+          (reg "psql" #'emacsql-psql psql-database
+               :username psql-user
+               :hostname psql-host
+               :port psql-port)
+        (message "WARNING: Forgo testing `%s' because %s" 'emacsql-psql
+                 "not all required environment variables are set"))
+      (if (and pg-database pg-user pg-password pg-host pg-port
+               (fboundp 'emacsql-pg))
+          (reg "pg" #'emacsql-pg pg-database pg-user
+               :host pg-host
+               :password pg-password
+               :port pg-port)
+        (message "WARNING: Forgo testing `%s' because %s" 'emacsql-pg
+                 "not all required environment variables are set")))
     (nreverse factories))
   "List of connection factories to use in unit tests.")
 
