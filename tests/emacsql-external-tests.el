@@ -8,7 +8,6 @@
 (require 'ert)
 (require 'emacsql)
 
-(require 'emacsql-sqlite)
 (if (require 'sqlite nil t)
     (require 'emacsql-sqlite-builtin)
   (message "WARNING: Forgo testing `%s' because `%s' is unavailable"
@@ -104,8 +103,6 @@
 
 (ert-deftest emacsql-nul-character ()
   "Try inserting and retrieving strings with a NUL byte."
-  ;; FIXME #102
-  :expected-result (if (= emacs-major-version 25) :failed :passed)
   (let ((emacsql-global-timeout emacsql-tests-timeout))
     (dolist (factory emacsql-tests-connection-factories)
       (emacsql-with-connection (db (funcall (cdr factory)))

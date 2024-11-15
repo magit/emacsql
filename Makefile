@@ -7,7 +7,6 @@ ELS  += $(PKG).el
 ELS  += $(PKG)-sqlite-common.el
 ELS  += $(PKG)-sqlite-builtin.el
 ELS  += $(PKG)-sqlite-module.el
-ELS  += $(PKG)-sqlite.el
 ELS  += $(PKG)-mysql.el
 ELS  += $(PKG)-psql.el
 ELS  += $(PKG)-pg.el
@@ -38,21 +37,15 @@ LOAD_PATH  ?= $(addprefix -L ../,$(DEPS))
 LOAD_PATH  += -L .
 LOAD_PATH  += -L ./tests
 
-all: binary lisp
+all: lisp
 
 help:
-	$(info make all          - generate binary, byte-code and autoloads)
-	$(info make binary       - generate binary)
+	$(info make all          - generate byte-code and autoloads)
 	$(info make lisp         - generate byte-code and autoloads)
 	$(info make redo         - re-generate byte-code and autoloads)
 	$(info make test         - run tests)
 	$(info make clean        - remove byte-code and autoloads)
-	$(info make distclean    - remove binary, byte-code and autoloads)
 	@printf "\n"
-
-binary: sqlite/emacsql-sqlite
-sqlite/emacsql-sqlite:
-	$(MAKE) -C sqlite
 
 redo: clean lisp
 lisp: $(ELCS) loaddefs
@@ -73,9 +66,6 @@ CLEAN  = $(ELCS) $(TEST_ELCS) $(PKG)-autoloads.el
 clean:
 	@printf " Cleaning...\n"
 	@rm -rf $(CLEAN)
-
-distclean: clean
-	$(MAKE) -C sqlite clean
 
 $(PKG)-autoloads.el: $(ELS)
 	@printf " Creating $@\n"

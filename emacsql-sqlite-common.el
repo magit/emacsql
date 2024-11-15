@@ -116,9 +116,7 @@ purposes."
 
 (defun emacsql-sqlite-default-connection ()
   "Determine and return the best SQLite connection class.
-If a module or binary is required and that doesn't exist yet,
-then try to compile it.  Signal an error if no connection class
-can be used."
+Signal an error if none of the connection classes can be used."
   (or (and (fboundp 'sqlite-available-p)
            (sqlite-available-p)
            (require 'emacsql-sqlite-builtin)
@@ -127,29 +125,26 @@ can be used."
            module-file-suffix
            (condition-case nil
                ;; Failure modes:
-               ;; 1. `sqlite3' elisp library isn't available.
-               ;; 2. `libsqlite' shared library isn't available.
+               ;; 1. `libsqlite' shared library isn't available.
+               ;; 2. User chooses to not compile `libsqlite'.
                ;; 3. `libsqlite' compilation fails.
-               ;; 4. User chooses to not compile `libsqlite'.
                (and (require 'sqlite3)
                     (require 'emacsql-sqlite-module)
                     'emacsql-sqlite-module-connection)
              (error
               (display-warning 'emacsql "\
 Since your Emacs does not come with
-built-in SQLite support [1], but does support C modules, the best
-EmacSQL backend is provided by the third-party `sqlite3' package
-[2].
+built-in SQLite support [1], but does support C modules, we can
+use an EmacSQL backend that relies on the third-party `sqlite3'
+package [2].
 
 Please install the `sqlite3' Elisp package using your preferred
 Emacs package manager, and install the SQLite shared library
 using your distribution's package manager.  That package should
 be named something like `libsqlite3' [3] and NOT just `sqlite3'.
 
-In the current Emacs instance the legacy backend is used, which
-uses a custom SQLite executable.  Using an external process like
-that is less reliable and less performant, and in a few releases
-support for that might be removed.
+The legacy backend, which uses a custom SQLite executable, has
+been remove, so we can no longer fall back to that.
 
 [1]: Supported since Emacs 29.1, provided it was not disabled
      with `--without-sqlite3'.
@@ -164,14 +159,6 @@ support for that might be removed.
                            (pop-to-buffer (get-buffer "*Warnings*"))))
                 (add-hook 'post-command-hook fn))
               nil)))
-      (and (require 'emacsql-sqlite)
-           (boundp 'emacsql-sqlite-executable)
-           (or (file-exists-p emacsql-sqlite-executable)
-               (with-demoted-errors
-                   "Cannot use `emacsql-sqlite-connection': %S"
-                 (and (fboundp 'emacsql-sqlite-compile)
-                      (emacsql-sqlite-compile 2))))
-           'emacsql-sqlite-connection)
       (error "EmacSQL could not find or compile a back-end")))
 
 (defun emacsql-sqlite-set-busy-timeout (connection)
