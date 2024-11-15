@@ -91,7 +91,7 @@ test: all $(TEST_ELCS)
 	-l tests/emacsql-external-tests.elc -f ert-run-tests-batch-and-exit
 
 ifeq ($(CI), true)
-override GITSTATS = gitstats/gitstats
+override GITSTATS = ../_gitstats/gitstats
 endif
 GITSTATS      ?= gitstats
 GITSTATS_DIR  ?= stats
