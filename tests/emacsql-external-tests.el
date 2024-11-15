@@ -26,63 +26,64 @@
            'emacsql-pg emacs-version))
  ((require 'pg nil t)
   (require 'emacsql-pg))
- ((message "WARNING: Forgo testing `%s' because `%s' is unavailable"
+ ((not byte-compile-current-file)
+  (message "WARNING: Forgo testing `%s' because `%s' is unavailable"
            'emacsql-pg 'pg)))
 
 (defvar emacsql-tests-timeout 4
   "Be aggressive about not waiting on subprocesses in unit tests.")
 
 (defvar emacsql-tests-connection-factories
-  (let ((factories ())
-        (mysql-database (getenv "MYSQL_DATABASE"))
-        (mysql-user     (getenv "MYSQL_USER"))
-        (mysql-password (getenv "MYSQL_PASSWORD"))
-        (mysql-host     (getenv "MYSQL_HOST"))
-        (mysql-port     (getenv "MYSQL_PORT"))
-        (psql-database  (getenv "PSQL_DATABASE"))
-        (psql-user      (getenv "PSQL_USER"))
-        (psql-host      (getenv "PSQL_HOST"))
-        (psql-port      (getenv "PSQL_PORT"))
-        (pg-database    (getenv "PG_DATABASE"))
-        (pg-user        (getenv "PG_USER"))
-        (pg-password    (getenv "PG_PASSWORD"))
-        (pg-host        (getenv "PG_HOST"))
-        (pg-port        (getenv "PG_PORT")))
-    (cl-labels ((reg (name &rest args)
-                  (push (cons name (apply #'apply-partially args)) factories)))
-      (reg "sqlite" #'emacsql-sqlite nil)
-      (when (and (featurep 'emacsql-sqlite-builtin)
-                 (fboundp 'sqlite-available-p)
-                 (sqlite-available-p))
-        (reg "sqlite-builtin" 'emacsql-sqlite-builtin nil))
-      (when (and (featurep 'emacsql-sqlite-module)
-                 (boundp 'module-file-suffix)
-                 module-file-suffix)
-        (reg "sqlite-module" 'emacsql-sqlite-module nil))
-      (if (and mysql-database mysql-user mysql-host mysql-password mysql-port)
-          (reg "mysql" #'emacsql-mysql mysql-database
-               :user mysql-user
-               :host mysql-host
-               :password mysql-password
-               :port mysql-port)
-        (message "WARNING: Forgo testing `%s' because %s" 'emacsql-mysql
-                 "not all required environment variables are set"))
-      (if (and psql-database psql-user psql-host psql-port)
-          (reg "psql" #'emacsql-psql psql-database
-               :username psql-user
-               :hostname psql-host
-               :port psql-port)
-        (message "WARNING: Forgo testing `%s' because %s" 'emacsql-psql
-                 "not all required environment variables are set"))
-      (if (and pg-database pg-user pg-password pg-host pg-port
-               (fboundp 'emacsql-pg))
-          (reg "pg" #'emacsql-pg pg-database pg-user
-               :host pg-host
-               :password pg-password
-               :port pg-port)
-        (message "WARNING: Forgo testing `%s' because %s" 'emacsql-pg
-                 "not all required environment variables are set")))
-    (nreverse factories))
+  (unless byte-compile-current-file
+    (let ((factories ())
+          (mysql-database (getenv "MYSQL_DATABASE"))
+          (mysql-user     (getenv "MYSQL_USER"))
+          (mysql-password (getenv "MYSQL_PASSWORD"))
+          (mysql-host     (getenv "MYSQL_HOST"))
+          (mysql-port     (getenv "MYSQL_PORT"))
+          (psql-database  (getenv "PSQL_DATABASE"))
+          (psql-user      (getenv "PSQL_USER"))
+          (psql-host      (getenv "PSQL_HOST"))
+          (psql-port      (getenv "PSQL_PORT"))
+          (pg-database    (getenv "PG_DATABASE"))
+          (pg-user        (getenv "PG_USER"))
+          (pg-password    (getenv "PG_PASSWORD"))
+          (pg-host        (getenv "PG_HOST"))
+          (pg-port        (getenv "PG_PORT")))
+      (cl-labels ((reg (name &rest args)
+                    (push (cons name (apply #'apply-partially args)) factories)))
+        (when (and (featurep 'emacsql-sqlite-builtin)
+                   (fboundp 'sqlite-available-p)
+                   (sqlite-available-p))
+          (reg "sqlite-builtin" 'emacsql-sqlite-builtin nil))
+        (when (and (featurep 'emacsql-sqlite-module)
+                   (boundp 'module-file-suffix)
+                   module-file-suffix)
+          (reg "sqlite-module" 'emacsql-sqlite-module nil))
+        (if (and mysql-database mysql-user mysql-host mysql-password mysql-port)
+            (reg "mysql" #'emacsql-mysql mysql-database
+                 :user mysql-user
+                 :host mysql-host
+                 :password mysql-password
+                 :port mysql-port)
+          (message "WARNING: Forgo testing `%s' because %s" 'emacsql-mysql
+                   "not all required environment variables are set"))
+        (if (and psql-database psql-user psql-host psql-port)
+            (reg "psql" #'emacsql-psql psql-database
+                 :username psql-user
+                 :hostname psql-host
+                 :port psql-port)
+          (message "WARNING: Forgo testing `%s' because %s" 'emacsql-psql
+                   "not all required environment variables are set"))
+        (if (and pg-database pg-user pg-password pg-host pg-port
+                 (fboundp 'emacsql-pg))
+            (reg "pg" #'emacsql-pg pg-database pg-user
+                 :host pg-host
+                 :password pg-password
+                 :port pg-port)
+          (message "WARNING: Forgo testing `%s' because %s" 'emacsql-pg
+                   "not all required environment variables are set")))
+      (nreverse factories)))
   "List of connection factories to use in unit tests.")
 
 (cl-eval-when (load eval)
