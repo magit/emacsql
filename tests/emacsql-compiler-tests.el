@@ -12,6 +12,7 @@
   (should (string= (emacsql-escape-identifier 'foo) "foo"))
   (should (string= (emacsql-escape-identifier 'a\ b) "\"a\\ b\""))
   (should (string= (emacsql-escape-identifier '$foo) "\"$foo\""))
+  (emacsql-register-reserved '(SELECT))
   (should (string= (emacsql-escape-identifier 'select) "\"select\""))
   (should-error (emacsql-escape-identifier 10))
   (should-error (emacsql-escape-identifier nil))
@@ -251,7 +252,5 @@
      "SELECT (x <= y) + 1 AND y >= x;")
     ([:select (or (& (<= x (+ y 1) (- z)) 1) (>= x z y))] '()
      "SELECT (y + 1 BETWEEN x AND -z) & 1 OR z BETWEEN y AND x;")))
-
-(provide 'emacsql-compiler-tests)
 
 ;;; emacsql-tests.el ends here

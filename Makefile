@@ -15,7 +15,6 @@ ELCS  = $(ELS:.el=.elc)
 
 TEST_ELS  = tests/emacsql-compiler-tests.el
 TEST_ELS += tests/emacsql-external-tests.el
-TEST_ELS += tests/emacsql-tests.el
 TEST_ELCS = $(TEST_ELS:.el=.elc)
 
 DEPS  = pg
@@ -94,8 +93,12 @@ $(PKG)-autoloads.el: $(ELS)
 	2>&1 | sed "/^Package autoload is deprecated$$/d"
 
 test: all $(TEST_ELCS)
-	@$(EMACS) -Q --batch $(EMACS_ARGS) $(LOAD_PATH) \
-	-L tests -l tests/emacsql-tests.elc -f ert-run-tests-batch-and-exit
+	@printf "Running compiler tests...\n"
+	@$(EMACS) -Q --batch $(EMACS_ARGS) $(LOAD_PATH) -L tests \
+	-l tests/emacsql-compiler-tests.elc -f ert-run-tests-batch-and-exit
+	@printf "Running connector tests...\n"
+	@$(EMACS) -Q --batch $(EMACS_ARGS) $(LOAD_PATH) -L tests \
+	-l tests/emacsql-external-tests.elc -f ert-run-tests-batch-and-exit
 
 ifeq ($(CI), true)
 override GITSTATS = gitstats/gitstats

@@ -79,6 +79,11 @@
     (nreverse factories))
   "List of connection factories to use in unit tests.")
 
+(cl-eval-when (load eval)
+  (princ (format "Testing %d connector(s): %s\n"
+                 (length emacsql-tests-connection-factories)
+                 (mapcar #'car emacsql-tests-connection-factories))))
+
 (ert-deftest emacsql-basic ()
   "A short test that fully interacts with SQLite."
   (let ((emacsql-global-timeout emacsql-tests-timeout))
@@ -152,7 +157,5 @@
           (should (emacsql-live-p db)))
         (should (equal (emacsql db [:select * :from test-table])
                        '(("") (\))))))))
-
-(provide 'emacsql-external-tests)
 
 ;;; emacsql-external-tests.el ends here
