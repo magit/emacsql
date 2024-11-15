@@ -106,9 +106,8 @@ jobs:
           PSQL_USER: postgres
           PSQL_HOST: 127.0.0.1
           PSQL_PORT: 5432
-          # FIXME(CI) Fix pg.
-          # PG_DATABASE: postgres
-          # PG_USER: postgres
-          # PG_PASSWORD: postgres
-          # PG_HOST: 127.0.0.1
-          # PG_PORT: 5432
+          PG_DATABASE: postgres
+          PG_USER: postgres
+          PG_PASSWORD: postgres
+          PG_HOST: 127.0.0.1
+          PG_PORT: 5432

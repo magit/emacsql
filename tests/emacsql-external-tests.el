@@ -8,93 +8,76 @@
 (require 'ert)
 (require 'emacsql)
 
-(if (require 'sqlite nil t)
-    (require 'emacsql-sqlite-builtin)
-  (message "WARNING: Forgo testing `%s' because `%s' is unavailable"
-           'emacsql-sqlite-builtin 'sqlite))
-(if (require 'sqlite3 nil t)
-    (require 'emacsql-sqlite-module)
-  (message "WARNING: Forgo testing `%s' because `%s' is unavailable"
-           'emacsql-sqlite-module 'sqlite3))
-(require 'emacsql-mysql)
-(require 'emacsql-psql)
-;; FIXME(CI) Broken and thus disabled in test.yml.
-(cond
- ((< emacs-major-version 28)
-  (message "WARNING: Forgo testing `%s' because it is unsupported on Emacs %s"
-           'emacsql-pg emacs-version))
- ((require 'pg nil t)
-  (require 'emacsql-pg))
- ((not byte-compile-current-file)
-  (message "WARNING: Forgo testing `%s' because `%s' is unavailable"
-           'emacsql-pg 'pg)))
-
 (defvar emacsql-tests-timeout 4
   "Be aggressive about not waiting on subprocesses in unit tests.")
 
-(defvar emacsql-tests-connection-factories
-  (unless byte-compile-current-file
-    (let ((factories ())
-          (mysql-database (getenv "MYSQL_DATABASE"))
-          (mysql-user     (getenv "MYSQL_USER"))
-          (mysql-password (getenv "MYSQL_PASSWORD"))
-          (mysql-host     (getenv "MYSQL_HOST"))
-          (mysql-port     (getenv "MYSQL_PORT"))
-          (psql-database  (getenv "PSQL_DATABASE"))
-          (psql-user      (getenv "PSQL_USER"))
-          (psql-host      (getenv "PSQL_HOST"))
-          (psql-port      (getenv "PSQL_PORT"))
-          (pg-database    (getenv "PG_DATABASE"))
-          (pg-user        (getenv "PG_USER"))
-          (pg-password    (getenv "PG_PASSWORD"))
-          (pg-host        (getenv "PG_HOST"))
-          (pg-port        (getenv "PG_PORT")))
-      (cl-labels ((reg (name &rest args)
-                    (push (cons name (apply #'apply-partially args)) factories)))
-        (when (and (featurep 'emacsql-sqlite-builtin)
-                   (fboundp 'sqlite-available-p)
-                   (sqlite-available-p))
-          (reg "sqlite-builtin" 'emacsql-sqlite-builtin nil))
-        (when (and (featurep 'emacsql-sqlite-module)
-                   (boundp 'module-file-suffix)
-                   module-file-suffix)
-          (reg "sqlite-module" 'emacsql-sqlite-module nil))
-        (if (and mysql-database mysql-user mysql-host mysql-password mysql-port)
-            (reg "mysql" #'emacsql-mysql mysql-database
-                 :user mysql-user
-                 :host mysql-host
-                 :password mysql-password
-                 :port mysql-port)
-          (message "WARNING: Forgo testing `%s' because %s" 'emacsql-mysql
-                   "not all required environment variables are set"))
-        (if (and psql-database psql-user psql-host psql-port)
-            (reg "psql" #'emacsql-psql psql-database
-                 :username psql-user
-                 :hostname psql-host
-                 :port psql-port)
-          (message "WARNING: Forgo testing `%s' because %s" 'emacsql-psql
-                   "not all required environment variables are set"))
-        (if (and pg-database pg-user pg-password pg-host pg-port
-                 (fboundp 'emacsql-pg))
-            (reg "pg" #'emacsql-pg pg-database pg-user
-                 :host pg-host
-                 :password pg-password
-                 :port pg-port)
-          (message "WARNING: Forgo testing `%s' because %s" 'emacsql-pg
-                   "not all required environment variables are set")))
-      (nreverse factories)))
+(defvar emacsql-tests-connection-factories nil
   "List of connection factories to use in unit tests.")
 
+(defun emacsql-tests-add-connection-factory
+    (connector &optional dep min pred envvars)
+  (declare (indent defun))
+  (cond
+   ((and min (version< emacs-version min))
+    (message " ! skip `%s'; requires Emacs >= %s" connector min))
+   ((and dep (not (with-demoted-errors "%S" (require dep nil t))))
+    (message " ! skip `%s'; library `%s' not available" connector dep))
+   ((and pred (not (funcall pred)))
+    (message " ! skip `%s'; sanity check failed" connector))
+   ((not (with-demoted-errors "%S" (require connector nil t)))
+    (message " ! skip `%s'; failed to load library" connector))
+   ((let* ((unset ())
+           (args (if envvars
+                     (cl-mapcan (lambda (var)
+                                  (let* ((envvar (car var))
+                                         (keyword (cadr var))
+                                         (value (and envvar (getenv envvar))))
+                                    (cond ((not value) (push envvar unset) nil)
+                                          (keyword (list keyword value))
+                                          ((list value)))))
+                                envvars)
+                   (list nil))))
+      (if unset
+          (message " ! skip `%s'; required envvars not set" connector)
+        (message "   test `%s' connector" connector)
+        (push (apply #'apply-partially connector args)
+              emacsql-tests-connection-factories))))))
+
 (cl-eval-when (load eval)
-  (princ (format "Testing %d connector(s): %s\n"
-                 (length emacsql-tests-connection-factories)
-                 (mapcar #'car emacsql-tests-connection-factories))))
+  (emacsql-tests-add-connection-factory 'emacsql-sqlite-builtin 'sqlite "29.1"
+    'sqlite-available-p)
+
+  (emacsql-tests-add-connection-factory 'emacsql-sqlite-module 'sqlite3 nil
+    (lambda () (boundp 'module-file-suffix)))
+
+  (emacsql-tests-add-connection-factory 'emacsql-mysql nil nil nil
+    '(("MYSQL_DATABASE")
+      ("MYSQL_USER" :user)
+      ("MYSQL_PASSWORD" :password)
+      ("MYSQL_HOST" :host)
+      ("MYSQL_PORT" :port)))
+
+  (emacsql-tests-add-connection-factory 'emacsql-psql nil nil nil
+    '(("PSQL_DATABASE")
+      ("PSQL_USER" :username)
+      ("PSQL_HOST" :hostname)
+      ("PSQL_PORT" :port)))
+
+  (message " ! skip `emacsql-pg' connector; known to be broken")
+  ;; FIXME Fix broken `emacsql-pg'.
+  ;; (emacsql-tests-add-connection-factory 'emacsql-pg 'pg "28.1" nil
+  ;;   '(("PG_DATABASE")
+  ;;     ("PG_USER")
+  ;;     ("PG_PASSWORD" :password)
+  ;;     ("PG_HOST" :host)
+  ;;     ("PG_PORT" :port)))
+  )
 
 (ert-deftest emacsql-basic ()
   "A short test that fully interacts with SQLite."
   (let ((emacsql-global-timeout emacsql-tests-timeout))
     (dolist (factory emacsql-tests-connection-factories)
-      (emacsql-with-connection (db (funcall (cdr factory)))
+      (emacsql-with-connection (db (funcall factory))
         (emacsql db [:create-temporary-table foo ([x])])
         (should-error (emacsql db [:create-temporary-table foo ([x])]))
         (emacsql db [:insert :into foo :values ([1] [2] [3])])
@@ -105,7 +88,7 @@
   "Try inserting and retrieving strings with a NUL byte."
   (let ((emacsql-global-timeout emacsql-tests-timeout))
     (dolist (factory emacsql-tests-connection-factories)
-      (emacsql-with-connection (db (funcall (cdr factory)))
+      (emacsql-with-connection (db (funcall factory))
         (emacsql db [:create-temporary-table foo ([x])])
         (emacsql db [:insert :into foo :values (["a\0bc"])])
         (should (equal (emacsql db [:select * :from foo])
@@ -115,7 +98,7 @@
   "Tests that foreign keys work properly through EmacSQL."
   (let ((emacsql-global-timeout emacsql-tests-timeout))
     (dolist (factory emacsql-tests-connection-factories)
-      (emacsql-with-connection (db (funcall (cdr factory)))
+      (emacsql-with-connection (db (funcall factory))
         (unwind-protect
             (progn
               (emacsql-thread db
@@ -145,7 +128,7 @@
                 :type 'emacsql-syntax)
   (let ((emacsql-global-timeout emacsql-tests-timeout))
     (dolist (factory emacsql-tests-connection-factories)
-      (emacsql-with-connection (db (funcall (cdr factory)))
+      (emacsql-with-connection (db (funcall factory))
         (emacsql db [:create-temporary-table foo ([x])])
         (should-error (emacsql db [:create-temporary-table foo ([x])])
                       :type 'emacsql-error)))))
@@ -154,7 +137,7 @@
   "A short test that interacts with SQLite with special characters."
   (let ((emacsql-global-timeout 4))
     (dolist (factory emacsql-tests-connection-factories)
-      (emacsql-with-connection (db (funcall (cdr factory)))
+      (emacsql-with-connection (db (funcall factory))
         (emacsql db [:create-temporary-table test-table ([x])])
         (emacsql db [:insert-into test-table :values ([""] [\])])
         (when (cl-typep db 'process)
