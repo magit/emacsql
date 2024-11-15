@@ -11,7 +11,7 @@ closures. EmacSQL has no concept of "TEXT" values; it's all just lisp
 objects. The lisp object `nil` corresponds 1:1 with `NULL` in the
 database.
 
-Requires Emacs 25 or later.
+Requires Emacs 26 or later.
 
 [![Compile](https://github.com/magit/emacsql/actions/workflows/compile.yml/badge.svg)](https://github.com/magit/emacsql/actions/workflows/compile.yml)
 [![Test](https://github.com/magit/emacsql/actions/workflows/test.yml/badge.svg)](https://github.com/magit/emacsql/actions/workflows/test.yml)
