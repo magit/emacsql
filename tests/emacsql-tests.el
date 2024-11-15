@@ -1,4 +1,4 @@
-;;; emacsql-tests.el --- test suite for EmacSQL  -*- lexical-binding:t -*-
+;;; emacsql-tests.el --- Test suite for EmacSQL  -*- lexical-binding:t -*-
 
 ;; This is free and unencumbered software released into the public domain.
 

@@ -1,4 +1,4 @@
-;;; emacsql-external-tests.el --- subprocess tests  -*- lexical-binding:t -*-
+;;; emacsql-external-tests.el --- Subprocess tests  -*- lexical-binding:t -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
