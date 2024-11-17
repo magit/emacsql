@@ -97,7 +97,7 @@ See https://www.sqlite.org/c3ref/busy_timeout.html.")
 
 ;;; Utilities
 
-(defun emacsql-sqlite-open (file &optional debug)
+(defun emacsql-sqlite-open (file &optional debug setup)
   "Open a connection to the database stored in FILE using an SQLite back-end.
 
 Automatically use the best available back-end, as returned by
@@ -105,12 +105,18 @@ Automatically use the best available back-end, as returned by
 
 If FILE is nil, use an in-memory database.  If optional DEBUG is
 non-nil, log all SQLite commands to a log buffer, for debugging
-purposes.  Always enable support for foreign key constrains."
+purposes.  Always enable support for foreign key constrains.
+
+If optional SETUP is non-nil, it must be a function, which takes the
+connection as only argument.  This function can be used to initialize
+tables, for example."
   (let* ((class (emacsql-sqlite-default-connection))
          (connection (make-instance class :file file)))
     (when debug
       (emacsql-enable-debugging connection))
     (emacsql connection [:pragma (= foreign-keys on)])
+    (when setup
+      (funcall setup connection))
     connection))
 
 (defun emacsql-sqlite-default-connection ()
