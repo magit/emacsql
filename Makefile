@@ -4,6 +4,7 @@ PKG = emacsql
 
 ELS   = $(PKG)-compiler.el
 ELS  += $(PKG).el
+ELS  += $(PKG)-sqlite.el
 ELS  += $(PKG)-sqlite-common.el
 ELS  += $(PKG)-sqlite-builtin.el
 ELS  += $(PKG)-sqlite-module.el
