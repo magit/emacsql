@@ -97,6 +97,21 @@ See https://www.sqlite.org/c3ref/busy_timeout.html.")
 
 ;;; Utilities
 
+(defun emacsql-sqlite-connection (variable file &optional setup)
+  "Return the connection stored in VARIABLE to the database in FILE.
+
+If the value of VARIABLE is a live database connection, return that.
+
+Otherwise open a new connection to the database in FILE and store the
+connection in VARIABLE, before returning it.  If FILE is nil, use an
+in-memory database.  Always enable support for foreign key constrains.
+If optional SETUP is non-nil, it must be a function, which takes the
+connection as only argument.  This function can be used to initialize
+tables, for example."
+  (or (let ((connection (symbol-value variable)))
+        (and connection (emacsql-live-p connection) connection))
+      (set variable (emacsql-sqlite-open file nil setup))))
+
 (defun emacsql-sqlite-open (file &optional debug setup)
   "Open a connection to the database stored in FILE using an SQLite back-end.
 
