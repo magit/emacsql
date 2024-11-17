@@ -110,6 +110,8 @@ purposes.  Always enable support for foreign key constrains.
 If optional SETUP is non-nil, it must be a function, which takes the
 connection as only argument.  This function can be used to initialize
 tables, for example."
+  (when file
+    (make-directory (file-name-directory file) t))
   (let* ((class (emacsql-sqlite-default-connection))
          (connection (make-instance class :file file)))
     (when debug
