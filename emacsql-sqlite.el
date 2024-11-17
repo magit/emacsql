@@ -98,7 +98,7 @@ See https://www.sqlite.org/c3ref/busy_timeout.html.")
 ;;; Utilities
 
 (defun emacsql-sqlite-open (file &optional debug)
-  "Open a connected to the database stored in FILE using an SQLite back-end.
+  "Open a connection to the database stored in FILE using an SQLite back-end.
 
 Automatically use the best available back-end, as returned by
 `emacsql-sqlite-default-connection'.
