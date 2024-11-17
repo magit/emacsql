@@ -1,4 +1,4 @@
-;;; emacsql-sqlite-common.el --- Code used by multiple SQLite back-ends  -*- lexical-binding:t -*-
+;;; emacsql-sqlite.el --- Code used by multiple SQLite back-ends  -*- lexical-binding:t -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -242,6 +242,6 @@ database is created."
                                  (format ".read %s" dump)))
       (error "Failed to read %s: %s" dump (buffer-string)))))
 
-(provide 'emacsql-sqlite-common)
+(provide 'emacsql-sqlite)
 
-;;; emacsql-sqlite-common.el ends here
+;;; emacsql-sqlite.el ends here

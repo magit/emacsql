@@ -14,8 +14,7 @@
 
 ;;; Code:
 
-(require 'emacsql)
-(require 'emacsql-sqlite-common)
+(require 'emacsql-sqlite)
 
 (require 'sqlite nil t)
 (declare-function sqlite-open "sqlite")
