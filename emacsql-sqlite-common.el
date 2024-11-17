@@ -108,8 +108,6 @@ non-nil, log all SQLite commands to a log buffer, for debugging
 purposes."
   (let* ((class (emacsql-sqlite-default-connection))
          (connection (make-instance class :file file)))
-    (when (eq class 'emacsql-sqlite-connection)
-      (set-process-query-on-exit-flag (oref connection handle) nil))
     (when debug
       (emacsql-enable-debugging connection))
     connection))
