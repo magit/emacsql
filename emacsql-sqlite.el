@@ -105,11 +105,12 @@ Automatically use the best available back-end, as returned by
 
 If FILE is nil, use an in-memory database.  If optional DEBUG is
 non-nil, log all SQLite commands to a log buffer, for debugging
-purposes."
+purposes.  Always enable support for foreign key constrains."
   (let* ((class (emacsql-sqlite-default-connection))
          (connection (make-instance class :file file)))
     (when debug
       (emacsql-enable-debugging connection))
+    (emacsql connection [:pragma (= foreign-keys on)])
     connection))
 
 (defun emacsql-sqlite-default-connection ()
