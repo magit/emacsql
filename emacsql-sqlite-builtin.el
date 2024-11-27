@@ -59,12 +59,12 @@ buffer. This is for debugging purposes."
   (condition-case err
       (let ((include-header emacsql-include-header))
         (mapcar (lambda (row)
-                  (prog1 (mapcar (lambda (col)
-                                   (cond (include-header col)
-                                         ((null col) nil)
-                                         ((equal col "") "")
-                                         ((numberp col) col)
-                                         (t (read col))))
+                  (prog1 (mapcan (lambda (col)
+                                   (cond (include-header (list col))
+                                         ((null col)     (list nil))
+                                         ((equal col "") (list ""))
+                                         ((numberp col)  (list col))
+                                         ((emacsql-sqlite-read-column col))))
                                  row)
                     (setq include-header nil)))
                 (sqlite-select (oref connection handle) message nil

@@ -69,10 +69,11 @@ buffer. This is for debugging purposes."
                         (when include-header
                           (push header rows)
                           (setq include-header nil))
-                        (push (mapcar (lambda (col)
-                                        (cond ((null col) nil)
-                                              ((equal col "") "")
-                                              (t (read col))))
+                        (push (mapcan (lambda (col)
+                                        (cond
+                                         ((null col)     (list nil))
+                                         ((equal col "") (list ""))
+                                         ((emacsql-sqlite-read-column col))))
                                       row)
                               rows)))
         (nreverse rows))

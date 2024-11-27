@@ -188,6 +188,16 @@ been remove, so we can no longer fall back to that.
     (emacsql connection [:pragma (= busy-timeout $s1)]
              (* emacsql-sqlite-busy-timeout 1000))))
 
+(defun emacsql-sqlite-read-column (string)
+  (let ((value nil)
+        (beg 0)
+        (end (length string)))
+    (while (< beg end)
+      (let ((v (read-from-string string beg)))
+        (push (car v) value)
+        (setq beg (cdr v))))
+    (nreverse value)))
+
 (defun emacsql-sqlite-list-tables (connection)
   "Return a list of the names of all tables in CONNECTION.
 Tables whose names begin with \"sqlite_\", are not included
