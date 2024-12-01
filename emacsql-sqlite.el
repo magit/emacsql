@@ -97,7 +97,7 @@ See https://www.sqlite.org/c3ref/busy_timeout.html.")
 
 ;;; Utilities
 
-(defun emacsql-sqlite-connection (variable file &optional setup)
+(defun emacsql-sqlite-connection (variable file &optional setup use-module)
   "Return the connection stored in VARIABLE to the database in FILE.
 
 If the value of VARIABLE is a live database connection, return that.
@@ -107,12 +107,16 @@ connection in VARIABLE, before returning it.  If FILE is nil, use an
 in-memory database.  Always enable support for foreign key constrains.
 If optional SETUP is non-nil, it must be a function, which takes the
 connection as only argument.  This function can be used to initialize
-tables, for example."
+tables, for example.
+
+If optional USE-MODULE is non-nil, then use the external module even
+when Emacs was built with SQLite support.  This is intended for testing
+purposes."
   (or (let ((connection (symbol-value variable)))
         (and connection (emacsql-live-p connection) connection))
-      (set variable (emacsql-sqlite-open file nil setup))))
+      (set variable (emacsql-sqlite-open file nil setup use-module))))
 
-(defun emacsql-sqlite-open (file &optional debug setup)
+(defun emacsql-sqlite-open (file &optional debug setup use-module)
   "Open a connection to the database stored in FILE using an SQLite back-end.
 
 Automatically use the best available back-end, as returned by
@@ -124,10 +128,14 @@ purposes.  Always enable support for foreign key constrains.
 
 If optional SETUP is non-nil, it must be a function, which takes the
 connection as only argument.  This function can be used to initialize
-tables, for example."
+tables, for example.
+
+If optional USE-MODULE is non-nil, then use the external module even
+when Emacs was built with SQLite support.  This is intended for testing
+purposes."
   (when file
     (make-directory (file-name-directory file) t))
-  (let* ((class (emacsql-sqlite-default-connection))
+  (let* ((class (emacsql-sqlite-default-connection use-module))
          (connection (make-instance class :file file)))
     (when debug
       (emacsql-enable-debugging connection))
@@ -136,10 +144,16 @@ tables, for example."
       (funcall setup connection))
     connection))
 
-(defun emacsql-sqlite-default-connection ()
+(defun emacsql-sqlite-default-connection (&optional use-module)
   "Determine and return the best SQLite connection class.
-Signal an error if none of the connection classes can be used."
-  (or (and (fboundp 'sqlite-available-p)
+
+Signal an error if none of the connection classes can be used.
+
+If optional USE-MODULE is non-nil, then use the external module even
+when Emacs was built with SQLite support.  This is intended for testing
+purposes."
+  (or (and (not use-module)
+           (fboundp 'sqlite-available-p)
            (sqlite-available-p)
            (require 'emacsql-sqlite-builtin)
            'emacsql-sqlite-builtin-connection)
