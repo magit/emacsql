@@ -7,6 +7,10 @@
 
 ;; SPDX-License-Identifier: Unlicense
 
+;;; Commentary:
+
+;; This library provides support for compiling S-expressions to SQL.
+
 ;;; Code:
 
 (require 'cl-lib)
