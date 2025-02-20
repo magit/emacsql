@@ -1,4 +1,4 @@
-;;; emacsql-compile.el --- S-expression SQL compiler  -*- lexical-binding:t -*-
+;;; emacsql-compiler.el --- S-expression SQL compiler  -*- lexical-binding:t -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -539,4 +539,4 @@ Only use within `emacsql-with-params'!"
 
 (provide 'emacsql-compiler)
 
-;;; emacsql-compile.el ends here
+;;; emacsql-compiler.el ends here
