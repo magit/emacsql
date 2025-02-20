@@ -307,7 +307,7 @@ Each column must be a plain symbol, no expressions allowed here."
     (cl-assert (eq :select (elt sql 0)))
     (let ((vars (elt sql 1)))
       (when (eq '* vars)
-        (error "Must explicitly list columns in `emacsql-with-bind'."))
+        (error "Must explicitly list columns in `emacsql-with-bind'"))
       (cl-assert (cl-every #'symbolp vars))
       `(let ((emacsql--results (emacsql ,connection ,sql ,@args))
              (emacsql--final nil))
