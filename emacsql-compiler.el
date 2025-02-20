@@ -291,7 +291,7 @@ expanded into an SQL expression (there are two defaults, one for
 :unary and one for :binary operators).
 
 An example for OPERATOR-PRECEDENCE-GROUPS:
-(((+ :unary (\"+\" :operand)) (- :unary (\"-\" :operand)))
+\(((+ :unary (\"+\" :operand)) (- :unary (\"-\" :operand)))
  ((+ :binary) (- :binary)))"
   `(defun ,name (operator-name operator-argument-count)
      "Look up predefined SQL operator metadata.
