@@ -40,7 +40,7 @@
 If FILE is nil use an in-memory database.
 
 :debug LOG -- When non-nil, log all SQLite commands to a log
-buffer. This is for debugging purposes."
+buffer.  This is for debugging purposes."
   (let ((connection (make-instance #'emacsql-sqlite-builtin-connection
                                    :file file)))
     (when debug

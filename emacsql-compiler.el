@@ -225,7 +225,7 @@ vector (v), raw string (r), schema (S)."
 (defmacro emacsql-with-params (prefix &rest body)
   "Evaluate BODY, collecting parameters.
 Provided local functions: `param', `identifier', `scalar', `raw',
-`svector', `expr', `subsql', and `combine'. BODY should return a
+`svector', `expr', `subsql', and `combine'.  BODY should return a
 string, which will be combined with variable definitions."
   (declare (indent 1))
   `(let ((emacsql--vars ()))
@@ -283,9 +283,9 @@ The generated function is bound to NAME and accepts two
 arguments, OPERATOR-NAME and OPERATOR-ARGUMENT-COUNT.
 OPERATOR-PRECEDENCE-GROUPS should be a number of lists containing
 operators grouped by operator precedence (in order of precedence
-from highest to lowest). A single operator is represented by a
+from highest to lowest).  A single operator is represented by a
 list of at least two elements: operator name (symbol) and
-operator arity (:unary or :binary). Optionally a custom
+operator arity (:unary or :binary).  Optionally a custom
 expression can be included, which defines how the operator is
 expanded into an SQL expression (there are two defaults, one for
 :unary and one for :binary operators).
@@ -366,7 +366,7 @@ to create an SQL expression."
   "Lookup SQL operator information for generating an SQL expression.
 Returns the following multiple values when an operator can be
 identified: a format string (see `emacsql--expand-format-string')
-and a precedence value. If PARENT-PRECEDENCE-VALUE is greater or
+and a precedence value.  If PARENT-PRECEDENCE-VALUE is greater or
 equal to the identified operator's precedence, then the format
 string returned is wrapped with parentheses."
   (cl-destructuring-bind (format-string arity precedence-value)

@@ -78,8 +78,8 @@ may return `process', `user-ptr' or `sqlite' for this value.")
   "Return an alist mapping EmacSQL types to database types.
 This will mask `emacsql-type-map' during expression compilation.
 This alist should have four key symbols: integer, float, object,
-nil (default type). The values are strings to be inserted into a
-SQL expression.")
+nil (default type).  The values are strings to be inserted into
+a SQL expression.")
 
 (cl-defmethod emacsql-buffer ((connection emacsql-connection))
   "Get process buffer for CONNECTION."
@@ -177,9 +177,9 @@ misnamed and obsolete accessor function."
 
 (defclass emacsql-protocol-mixin () ()
   "A mixin for back-ends following the EmacSQL protocol.
-The back-end prompt must be a single \"]\" character. This prompt
-value was chosen because it is unreadable. Output must have
-exactly one row per line, fields separated by whitespace. NULL
+The back-end prompt must be a single \"]\" character.  This prompt
+value was chosen because it is unreadable.  Output must have
+exactly one row per line, fields separated by whitespace.  NULL
 must display as \"nil\"."
   :abstract t)
 
@@ -246,7 +246,7 @@ This macro can be nested indefinitely, wrapping everything in a
 single transaction at the lowest level.
 
 Warning: BODY should *not* have any side effects besides making
-changes to the database behind CONNECTION. Body may be evaluated
+changes to the database behind CONNECTION.  Body may be evaluated
 multiple times before the changes are committed."
   (declare (indent 1))
   `(let ((emacsql--connection ,connection)
@@ -288,8 +288,8 @@ A statement can be a list, containing a statement with its arguments."
 Returns the result of the last evaluated BODY.
 
 All column names must be provided in the query ($ and * are not
-allowed). Hint: all of the bound identifiers must be known at
-compile time. For example, in the expression below the variables
+allowed).  Hint: all of the bound identifiers must be known at
+compile time.  For example, in the expression below the variables
 `name' and `phone' will be bound for the body.
 
   (emacsql-with-bind db [:select [name phone] :from people]
