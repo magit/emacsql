@@ -150,7 +150,7 @@
     (upcase (replace-regexp-in-string "-" " " name))))
 
 (defun emacsql--prepare-constraints (constraints)
-  "Compile CONSTRAINTS into a partial SQL expresson."
+  "Compile CONSTRAINTS into a partial SQL expression."
   (mapconcat
    #'identity
    (cl-loop for constraint in constraints collect

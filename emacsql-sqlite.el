@@ -213,7 +213,7 @@ been remove, so we can no longer fall back to that.
     (nreverse value)))
 
 (defun emacsql-sqlite-list-tables (connection)
-  "Return a list of symbols identifing tables in CONNECTION.
+  "Return a list of symbols identifying tables in CONNECTION.
 Tables whose names begin with \"sqlite_\", are not included
 in the returned value."
   (mapcar #'car
