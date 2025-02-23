@@ -213,18 +213,19 @@ been remove, so we can no longer fall back to that.
     (nreverse value)))
 
 (defun emacsql-sqlite-list-tables (connection)
-  "Return a list of the names of all tables in CONNECTION.
+  "Return a list of symbols identifing tables in CONNECTION.
 Tables whose names begin with \"sqlite_\", are not included
 in the returned value."
-  (emacsql connection
-           [:select name
-            ;; The new name is `sqlite-schema', but this name
-            ;; is supported by old and new SQLite versions.
-            ;; See https://www.sqlite.org/schematab.html.
-            :from sqlite-master
-            :where (and (= type 'table)
-                        (not-like name "sqlite_%"))
-            :order-by [(asc name)]]))
+  (mapcar #'car
+          (emacsql connection
+                   [:select name
+                    ;; The new name is `sqlite-schema', but this name
+                    ;; is supported by old and new SQLite versions.
+                    ;; See https://www.sqlite.org/schematab.html.
+                    :from sqlite-master
+                    :where (and (= type 'table)
+                                (not-like name "sqlite_%"))
+                    :order-by [(asc name)]])))
 
 (defun emacsql-sqlite-dump-database (connection &optional versionp)
   "Dump the database specified by CONNECTION to a file.
