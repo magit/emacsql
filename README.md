@@ -146,6 +146,16 @@ For function-like "operators" like `count` and `max` use the `funcall`
 [:select (funcall max age) :from people]
 ```
 
+With `glob` and `like` SQL operators keep in mind that they're
+matching the *printed* representations of these values, even if the
+value is a string.
+
+The `||` concatenation operator is unsupported because concatenating
+printed representations breaks an important constraint: all values must
+remain readable within SQLite.
+
+## Quoting
+
 Inside expressions, EmacSQL cannot tell the difference between symbol
 literals and column references. If you're talking about the symbol
 itself, just quote it as you would in normal Elisp. Note that this
@@ -168,14 +178,6 @@ returned as results.
 
 Since template parameters include their type they never need to be
 quoted.
-
-With `glob` and `like` SQL operators keep in mind that they're
-matching the *printed* representations of these values, even if the
-value is a string.
-
-The `||` concatenation operator is unsupported because concatenating
-printed representations breaks an important constraint: all values must
-remain readable within SQLite.
 
 ## Prepared Statements
 
