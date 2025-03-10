@@ -60,6 +60,17 @@
   "Returns non-nil if string NAME is a SQL keyword."
   (gethash (upcase name) emacsql-reserved))
 
+(defun emacsql-quote-scalar-dangerous (string)
+  "Single-quote (scalar) STRING for use in a SQL expression."
+  (erase-buffer)
+  (insert "'" string)
+  (goto-char 2)
+  (while (search-forward "'" nil t)
+    (insert "'"))
+  (goto-char (point-max))
+  (insert "'")
+  (buffer-string))
+
 (defun emacsql-quote-scalar (string)
   "Single-quote (scalar) STRING for use in a SQL expression."
   (with-temp-buffer
@@ -109,6 +120,14 @@
 
 (defvar print-escape-control-characters)
 
+(defun emacsql-escape-scalar-dangerous (value)
+  "Escape VALUE for sending to SQLite."
+  (let ((print-escape-newlines t)
+        (print-escape-control-characters t))
+    (cond ((null value) "NULL")
+          ((numberp value) (prin1-to-string value))
+          ((emacsql-quote-scalar-dangerous (prin1-to-string value))))))
+
 (defun emacsql-escape-scalar (value)
   "Escape VALUE for sending to SQLite."
   (let ((print-escape-newlines t)
@@ -128,7 +147,7 @@
   (cl-typecase vector
     (null   (emacsql-error "Empty SQL vector expression"))
     (list   (mapconcat #'emacsql-escape-vector vector ", "))
-    (vector (concat "(" (mapconcat #'emacsql-escape-scalar vector ", ") ")"))
+    (vector (concat "(" (mapconcat #'emacsql-escape-scalar-dangerous vector ", ") ")"))
     (otherwise (emacsql-error "Invalid vector %S" vector))))
 
 (defun emacsql-escape-format (thing)
@@ -529,17 +548,18 @@ Only use within `emacsql-with-params'!"
   (cl-destructuring-bind (format . vars) expansion
     (let ((print-level nil)
           (print-length nil))
-      (apply #'format format
-             (cl-loop for (i . kind) in vars collect
-                      (let ((thing (nth i args)))
-                        (cl-case kind
-                          (:identifier (emacsql-escape-identifier thing))
-                          (:scalar (emacsql-escape-scalar thing))
-                          (:vector (emacsql-escape-vector thing))
-                          (:raw (emacsql-escape-raw thing))
-                          (:schema (emacsql-prepare-schema thing))
-                          (otherwise
-                           (emacsql-error "Invalid var type %S" kind)))))))))
+      (with-temp-buffer
+        (apply #'format format
+               (cl-loop for (i . kind) in vars collect
+                        (let ((thing (nth i args)))
+                          (cl-case kind
+                            (:identifier (emacsql-escape-identifier thing))
+                            (:scalar (emacsql-escape-scalar thing))
+                            (:vector (emacsql-escape-vector thing))
+                            (:raw (emacsql-escape-raw thing))
+                            (:schema (emacsql-prepare-schema thing))
+                            (otherwise
+                             (emacsql-error "Invalid var type %S" kind))))))))))
 
 (provide 'emacsql-compiler)
 
