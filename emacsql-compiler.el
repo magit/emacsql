@@ -60,8 +60,10 @@
   "Returns non-nil if string NAME is a SQL keyword."
   (gethash (upcase name) emacsql-reserved))
 
+(defvar emacsql-work-buffer nil)
 (defun emacsql-quote-scalar-dangerous (string)
   "Single-quote (scalar) STRING for use in a SQL expression."
+  (cl-assert (eq (current-buffer) emacsql-work-buffer))
   (erase-buffer)
   (insert "'" string)
   (goto-char 2)
@@ -548,7 +550,8 @@ Only use within `emacsql-with-params'!"
   (cl-destructuring-bind (format . vars) expansion
     (let ((print-level nil)
           (print-length nil))
-      (with-temp-buffer
+      (with-current-buffer (setq emacsql-work-buffer
+                                 (get-buffer-create " *emacsql-throwaway*" t))
         (apply #'format format
                (cl-loop for (i . kind) in vars collect
                         (let ((thing (nth i args)))
