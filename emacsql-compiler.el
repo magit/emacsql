@@ -551,7 +551,7 @@ Only use within `emacsql-with-params'!"
     (let ((print-level nil)
           (print-length nil))
       (with-current-buffer (setq emacsql-work-buffer
-                                 (get-buffer-create " *emacsql-throwaway*" t))
+                                 (get-buffer-create " *emacsql-throwaway*"))
         (apply #'format format
                (cl-loop for (i . kind) in vars collect
                         (let ((thing (nth i args)))
