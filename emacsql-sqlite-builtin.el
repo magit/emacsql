@@ -17,9 +17,9 @@
 (require 'emacsql-sqlite)
 
 (require 'sqlite nil t)
-(declare-function sqlite-open "sqlite")
-(declare-function sqlite-select "sqlite")
-(declare-function sqlite-close "sqlite")
+(declare-function sqlite-open "sqlite.c")
+(declare-function sqlite-select "sqlite.c")
+(declare-function sqlite-close "sqlite.c")
 
 (emacsql-register-reserved emacsql-sqlite-reserved)
 
