@@ -132,8 +132,8 @@ MESSAGE should not have a newline on the end."
 
 (defun emacsql-compile (connection sql &rest args)
   "Compile s-expression SQL for CONNECTION into a string."
-  (let* ((mask (and connection (emacsql-types connection)))
-         (emacsql-type-map (or mask emacsql-type-map)))
+  (let ((emacsql-type-map (or (and connection (emacsql-types connection))
+                              emacsql-type-map)))
     (concat (apply #'emacsql-format (emacsql-prepare sql) args) ";")))
 
 (cl-defgeneric emacsql (connection sql &rest args)
@@ -178,10 +178,10 @@ specific error conditions."
     (goto-char (point-min))
     (let* ((standard-input (current-buffer))
            (value (read)))
-      (if (eql value 'error)
+      (if (eq value 'error)
           (emacsql-handle connection (read) (read))
         (prog1 value
-          (unless (eq 'success (read))
+          (unless (eq (read) 'success)
             (emacsql-handle connection (read) (read))))))))
 
 (provide 'emacsql) ; end of generic function declarations
@@ -279,7 +279,7 @@ Each column must be a plain symbol, no expressions allowed here."
         (args (and (not (vectorp sql-and-args)) (cdr sql-and-args))))
     (cl-assert (eq :select (elt sql 0)))
     (let ((vars (elt sql 1)))
-      (when (eq '* vars)
+      (when (eq vars '*)
         (error "Must explicitly list columns in `emacsql-with-bind'"))
       (cl-assert (cl-every #'symbolp vars))
       `(let ((emacsql--results (emacsql ,connection ,sql ,@args))
