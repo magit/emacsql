@@ -97,29 +97,6 @@ MESSAGE should not have a newline on the end."
         (goto-char (point-max))
         (princ (concat message "\n") buffer)))))
 
-(cl-defgeneric emacsql-process (this)
-  "Access internal `handle' slot directly, which you shouldn't do.
-Using this function to do it anyway, means additionally using a
-misnamed and obsolete accessor function."
-  (and (slot-boundp this 'handle)
-       (oref this handle)))
-(cl-defmethod (setf emacsql-process) (value (this emacsql-connection))
-  (oset this handle value))
-(make-obsolete 'emacsql-process "underlying slot is for internal use only."
-               "EmacSQL 4.0.0")
-
-(cl-defmethod slot-missing ((connection emacsql-connection)
-                            slot-name operation &optional new-value)
-  "Treat removed `process' slot-name as an alias for internal `handle' slot."
-  (pcase (list operation slot-name)
-    ('(oref process)
-     (message "EmacSQL: Slot `process' is obsolete")
-     (oref connection handle))
-    ('(oset process)
-     (message "EmacSQL: Slot `process' is obsolete")
-     (oset connection handle new-value))
-    (_ (cl-call-next-method))))
-
 ;;; Sending and receiving
 
 (cl-defgeneric emacsql-send-message (connection message)
