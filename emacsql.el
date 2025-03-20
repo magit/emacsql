@@ -36,9 +36,9 @@
 
 (defvar emacsql-global-timeout 30
   "Maximum number of seconds to wait before bailing out on a SQL command.
-If nil, wait forever.  This is used by the `mysql', `pg', `psql' and
-`sqlite' back-ends.  It is not being used by the `sqlite-builtin' and
-`sqlite-module' back-ends, which only use `emacsql-sqlite-busy-timeout'.")
+If nil, wait forever.  This is used by the `mysql', `pg' and `psql'.  It
+is not being used by the `sqlite-builtin' and `sqlite-module' back-ends,
+which respect `emacsql-sqlite-busy-timeout' instead.")
 
 (defvar emacsql-data-root
   (file-name-directory (or load-file-name buffer-file-name))
