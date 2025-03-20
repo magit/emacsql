@@ -16,7 +16,6 @@
 
 (require 'emacsql-sqlite)
 
-(require 'sqlite nil t)
 (declare-function sqlite-open "sqlite.c")
 (declare-function sqlite-select "sqlite.c")
 (declare-function sqlite-close "sqlite.c")
@@ -28,7 +27,6 @@
 
 (cl-defmethod initialize-instance :after
   ((connection emacsql-sqlite-builtin-connection) &rest _)
-  (require (quote sqlite))
   (oset connection handle
         (sqlite-open (oref connection file)))
   (emacsql-sqlite-set-busy-timeout connection)
