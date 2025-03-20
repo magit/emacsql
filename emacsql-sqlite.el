@@ -1,4 +1,4 @@
-;;; emacsql-sqlite.el --- Code used by multiple SQLite back-ends  -*- lexical-binding:t -*-
+;;; emacsql-sqlite.el --- Code used by both SQLite back-ends  -*- lexical-binding:t -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -9,7 +9,7 @@
 
 ;;; Commentary:
 
-;; This library contains code that is used by multiple SQLite back-ends.
+;; This library contains code that is used by both SQLite back-ends.
 
 ;;; Code:
 
