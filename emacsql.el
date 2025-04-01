@@ -184,8 +184,6 @@ specific error conditions."
           (unless (eq (read) 'success)
             (emacsql-handle connection (read) (read))))))))
 
-(provide 'emacsql) ; end of generic function declarations
-
 ;;; Automatic connection cleanup
 
 (defun emacsql-register (connection)
@@ -374,5 +372,7 @@ Once activated, vector contents no longer indent like lists."
   (interactive)
   (advice-add 'calculate-lisp-indent :around
               #'emacsql--calculate-vector-indent))
+
+(provide 'emacsql)
 
 ;;; emacsql.el ends here
