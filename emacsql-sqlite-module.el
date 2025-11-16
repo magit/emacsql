@@ -55,8 +55,9 @@ buffer.  This is for debugging purposes."
   (and (oref connection handle) t))
 
 (cl-defmethod emacsql-close ((connection emacsql-sqlite-module-connection))
-  (sqlite3-close (oref connection handle))
-  (oset connection handle nil))
+  (when (oref connection handle)
+    (sqlite3-close (oref connection handle))
+    (oset connection handle nil)))
 
 (cl-defmethod emacsql-send-message
   ((connection emacsql-sqlite-module-connection) message)
