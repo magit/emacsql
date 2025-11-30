@@ -22,12 +22,12 @@
 (if (>= emacs-major-version 28)
     (require 'pg nil t)
   (message "emacsql-pg.el requires Emacs 28.1 or later"))
-(declare-function pg-connect "pg"
+(declare-function pg-connect "ext:pg"
                   ( dbname user &optional
                     (password "") (host "localhost") (port 5432) (tls nil)))
-(declare-function pg-disconnect "pg" (con))
-(declare-function pg-exec "pg" (connection &rest args))
-(declare-function pg-result "pg" (result what &rest arg))
+(declare-function pg-disconnect "ext:pg" (con))
+(declare-function pg-exec "ext:pg" (connection &rest args))
+(declare-function pg-result "ext:pg" (result what &rest arg))
 
 (defclass emacsql-pg-connection (emacsql-connection)
   ((pgcon :reader emacsql-pg-pgcon :initarg :pgcon)

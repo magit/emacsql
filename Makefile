@@ -48,7 +48,7 @@ help:
 	@printf "\n"
 
 redo: clean lisp
-lisp: $(ELCS) autoloads
+lisp: $(ELCS) autoloads check-declare
 
 autoloads: $(PKG)-autoloads.el
 
