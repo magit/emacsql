@@ -20,7 +20,13 @@ DEPS  = pg
 DEPS += peg
 DEPS += sqlite3
 
-EMACS      ?= emacs
+LOAD_PATH ?= $(addprefix -L ../,$(DEPS))
+LOAD_PATH += -L .
+LOAD_PATH += -L ./tests
+
+ifdef NIX_PATH
+export SQLITE3_API_BUILD_COMMAND = nix-shell -p sqlite.dev --run "make all"
+endif
 
 ifeq ($(CI), true)
 # Workaround for bug#58252 on Emacs 28.x.
@@ -29,13 +35,9 @@ else
 EMACS_ARGS ?=
 endif
 
-ifdef NIX_PATH
-export SQLITE3_API_BUILD_COMMAND = nix-shell -p sqlite.dev --run "make all"
-endif
-
-LOAD_PATH  ?= $(addprefix -L ../,$(DEPS))
-LOAD_PATH  += -L .
-LOAD_PATH  += -L ./tests
+EMACS       ?= emacs
+EMACS_Q_ARG ?= -Q
+EMACS_BATCH ?= $(EMACS) $(EMACS_Q_ARG) --batch $(EMACS_ARGS) $(LOAD_PATH)
 
 all: lisp
 
@@ -54,12 +56,11 @@ autoloads: $(PKG)-autoloads.el
 
 %.elc: %.el
 	@printf "Compiling $<\n"
-	@$(EMACS) -Q --batch $(EMACS_ARGS) $(LOAD_PATH) -f batch-byte-compile $<
+	@$(EMACS_BATCH) --funcall batch-byte-compile $<
 
 check-declare:
 	@printf " Checking function declarations\n"
-	@$(EMACS) -Q --batch $(EMACS_ARGS) $(LOAD_PATH) \
-	--eval "(check-declare-directory default-directory)"
+	@$(EMACS_BATCH) --eval "(check-declare-directory default-directory)"
 
 CLEAN = $(ELCS) $(TEST_ELCS) $(PKG)-autoloads.el
 
@@ -69,7 +70,7 @@ clean:
 
 $(PKG)-autoloads.el: $(ELS)
 	@printf " Creating $@\n"
-	@$(EMACS) -Q --batch -l autoload --eval "\
+	@$(EMACS_BATCH) --load autoload --eval "\
 (let* ((file (expand-file-name \"$@\"))\
        (generated-autoload-file file)\
        (coding-system-for-write 'utf-8-emacs-unix)\
@@ -82,10 +83,10 @@ $(PKG)-autoloads.el: $(ELS)
 
 test: all $(TEST_ELCS)
 	@printf "Running compiler tests...\n"
-	@$(EMACS) -Q --batch $(EMACS_ARGS) $(LOAD_PATH) -L tests \
+	@$(EMACS_BATCH) -L tests \
 	-l tests/emacsql-compiler-tests.elc -f ert-run-tests-batch-and-exit
 	@printf "Running connector tests...\n"
-	@$(EMACS) -Q --batch $(EMACS_ARGS) $(LOAD_PATH) -L tests \
+	@$(EMACS_BATCH) -L tests \
 	-l tests/emacsql-external-tests.elc -f ert-run-tests-batch-and-exit
 
 ifeq ($(CI), true)
