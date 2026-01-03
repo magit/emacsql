@@ -1,7 +1,7 @@
 -include config.mk
 include default.mk
 
-.PHONY: test stats
+.PHONY: test
 
 all: lisp
 
@@ -30,7 +30,8 @@ clean: clean-lisp clean-docs clean-test
 clean-lisp:
 	@printf " Cleaning *...\n"
 	@rm -rf $(ELCS) $(PKG)-autoloads.el
-clean-docs: ;
+clean-docs:
+	@$(MAKE) -C docs clean
 clean-test:
 	@printf " Cleaning test/*...\n"
 	@rm -rf $(TEST_ELCS)
@@ -57,13 +58,6 @@ test: all $(TEST_ELCS)
 	-l test/emacsql-external-tests.elc -f ert-run-tests-batch-and-exit
 
 stats:
-	@printf "Generating statistics\n"
-	@$(GITSTATS) $(GITSTATS_ARGS) . $(GITSTATS_DIR)
-
+	@$(MAKE) -C docs stats
 stats-upload:
-	@printf "Uploading statistics...\n"
-	@aws s3 sync $(GITSTATS_DIR) $(S3_BUCKET)/stats/$(PKG)
-	@printf "Uploaded to $(S3_BUCKET)/stats/$(PKG)\n"
-	@printf "Generating CDN invalidation\n"
-	@aws cloudfront create-invalidation \
-	--distribution-id $(CFRONT_DIST) --paths "/stats/*" > /dev/null
+	@$(MAKE) -C docs stats-upload
