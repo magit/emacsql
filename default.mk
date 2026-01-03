@@ -34,15 +34,12 @@ EMACS_Q_ARG ?= -Q
 EMACS_BATCH ?= $(EMACS) $(EMACS_Q_ARG) --batch $(EMACS_ARGS) $(LOAD_PATH)
 EMACS_INTR  ?= $(EMACS) $(EMACS_Q_ARG) $(EMACS_ARGS) $(LOAD_PATH)
 
-ifeq ($(CI), true)
-override GITSTATS = ../_gitstats/gitstats
-endif
 GITSTATS      ?= gitstats
 GITSTATS_DIR  ?= stats
 GITSTATS_ARGS ?= -c style=https://magit.vc/assets/stats.css -c max_authors=999
 
-CFRONT_DIST ?= E2LUHBKU1FBV02
-S3_BUCKET   ?= s3://$(DOMAIN)
+RCLONE      ?= rclone
+RCLONE_ARGS ?= -v
 
 ifdef NIX_PATH
 export SQLITE3_API_BUILD_COMMAND = nix-shell -p sqlite.dev --run "make all"
