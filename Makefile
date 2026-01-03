@@ -33,8 +33,7 @@ clean-lisp:
 clean-docs:
 	@$(MAKE) -C docs clean
 clean-test:
-	@printf " Cleaning test/*...\n"
-	@rm -rf $(TEST_ELCS)
+	@$(MAKE) -C test clean
 
 $(PKG)-autoloads.el: $(ELS)
 	@printf " Creating $@\n"
@@ -49,15 +48,13 @@ $(PKG)-autoloads.el: $(ELS)
   (update-directory-autoloads default-directory))" \
 	2>&1 | sed "/^Package autoload is deprecated$$/d"
 
-test: all $(TEST_ELCS)
-	@printf "Running compiler tests...\n"
-	@$(EMACS_BATCH) -L tests \
-	-l test/emacsql-compiler-tests.elc -f ert-run-tests-batch-and-exit
-	@printf "Running connector tests...\n"
-	@$(EMACS_BATCH) -L tests \
-	-l test/emacsql-external-tests.elc -f ert-run-tests-batch-and-exit
-
 stats:
 	@$(MAKE) -C docs stats
 stats-upload:
 	@$(MAKE) -C docs stats-upload
+
+test: lisp
+	@$(MAKE) -C test test
+
+test-interactive:
+	@$(MAKE) -C test test-interactive

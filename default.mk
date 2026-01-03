@@ -14,10 +14,6 @@ ELS  += $(PKG)-psql.el
 ELS  += $(PKG)-pg.el
 ELCS  = $(ELS:.el=.elc)
 
-TEST_ELS  = test/emacsql-compiler-tests.el
-TEST_ELS += test/emacsql-external-tests.el
-TEST_ELCS = $(TEST_ELS:.el=.elc)
-
 DEPS  = pg
 DEPS += peg
 DEPS += sqlite3
@@ -36,6 +32,7 @@ endif
 EMACS       ?= emacs
 EMACS_Q_ARG ?= -Q
 EMACS_BATCH ?= $(EMACS) $(EMACS_Q_ARG) --batch $(EMACS_ARGS) $(LOAD_PATH)
+EMACS_INTR  ?= $(EMACS) $(EMACS_Q_ARG) $(EMACS_ARGS) $(LOAD_PATH)
 
 ifeq ($(CI), true)
 override GITSTATS = ../_gitstats/gitstats
