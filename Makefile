@@ -6,15 +6,37 @@ include default.mk
 all: lisp
 
 help:
-	$(info make all      -- Build lisp)
-	$(info make lisp     -- Build lisp)
-	$(info make redo     -- Build lisp from scratch)
-	$(info make test     -- Run tests)
-	$(info make clean    -- Remove built files)
+	$(info make all              -- Generate lisp and manual)
+	$(info make lisp             -- Generate byte-code and autoloads)
+	$(info make redo             -- Re-generate byte-code and autoloads)
+	$(info make stats            -- Generate statistics)
+	$(info make stats-upload     -- Publish statistics)
+	$(info make test             -- Run tests)
+	$(info make test-interactive -- Run tests interactively)
+	$(info make clean            -- Remove most generated files)
 	@printf "\n"
 
-redo: clean lisp
 lisp: $(ELCS) autoloads check-declare
+redo: clean lisp
+
+stats:
+	@$(MAKE) -C docs stats
+stats-upload:
+	@$(MAKE) -C docs stats-upload
+
+test: lisp
+	@$(MAKE) -C test test
+test-interactive:
+	@$(MAKE) -C test test-interactive
+
+clean: clean-lisp clean-docs clean-test
+clean-lisp:
+	@printf " Cleaning *...\n"
+	@rm -rf $(ELCS) $(PKG)-autoloads.el
+clean-docs:
+	@$(MAKE) -C docs clean
+clean-test:
+	@$(MAKE) -C test clean
 
 autoloads: $(PKG)-autoloads.el
 
@@ -25,15 +47,6 @@ autoloads: $(PKG)-autoloads.el
 check-declare:
 	@printf " Checking function declarations\n"
 	@$(EMACS_BATCH) --eval "(check-declare-directory default-directory)"
-
-clean: clean-lisp clean-docs clean-test
-clean-lisp:
-	@printf " Cleaning *...\n"
-	@rm -rf $(ELCS) $(PKG)-autoloads.el
-clean-docs:
-	@$(MAKE) -C docs clean
-clean-test:
-	@$(MAKE) -C test clean
 
 $(PKG)-autoloads.el: $(ELS)
 	@printf " Creating $@\n"
@@ -47,14 +60,3 @@ $(PKG)-autoloads.el: $(ELS)
   (write-region (autoload-rubric file \"package\" t) nil file)\
   (update-directory-autoloads default-directory))" \
 	2>&1 | sed "/^Package autoload is deprecated$$/d"
-
-stats:
-	@$(MAKE) -C docs stats
-stats-upload:
-	@$(MAKE) -C docs stats-upload
-
-test: lisp
-	@$(MAKE) -C test test
-
-test-interactive:
-	@$(MAKE) -C test test-interactive
