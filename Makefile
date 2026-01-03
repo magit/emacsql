@@ -26,11 +26,14 @@ check-declare:
 	@printf " Checking function declarations\n"
 	@$(EMACS_BATCH) --eval "(check-declare-directory default-directory)"
 
-CLEAN = $(ELCS) $(TEST_ELCS) $(PKG)-autoloads.el
-
-clean:
-	@printf " Cleaning...\n"
-	@rm -rf $(CLEAN)
+clean: clean-lisp clean-docs clean-test
+clean-lisp:
+	@printf " Cleaning *...\n"
+	@rm -rf $(ELCS) $(PKG)-autoloads.el
+clean-docs: ;
+clean-test:
+	@printf " Cleaning test/*...\n"
+	@rm -rf $(TEST_ELCS)
 
 $(PKG)-autoloads.el: $(ELS)
 	@printf " Creating $@\n"
