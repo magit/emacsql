@@ -14,7 +14,7 @@ stats-upload:
 	@printf "Uploading statistics...\n"
 	@$(RCLONE) sync $(RCLONE_ARGS) stats $(STAT_TARGET)
 
-CLEAN = stats
+CLEAN = $(GITSTATS_DIR)
 
 clean:
 	@printf " Cleaning docs/*...\n"
