@@ -29,9 +29,11 @@ jobs:
       - name: 'Get matrix'
         id: matrix
         working-directory: ${{ env.pwd }}
+        env:
+          WORKFLOW_REF: ${{ inputs.workflow_ref }}
         run: |
           ../_scripts/bin/get-matrix >> $GITHUB_OUTPUT
-          echo "• get-matrix: emacscollective/workflows@${{ inputs.workflow_ref }}"
+          echo "• get-matrix: emacscollective/workflows@${WORKFLOW_REF}"
   main:
     name: 'Test using Emacs ${{ matrix.emacs }}'
     runs-on: ubuntu-24.04
