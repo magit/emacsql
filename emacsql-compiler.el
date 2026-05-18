@@ -81,7 +81,7 @@
 
 (defun emacsql-quote-identifier (string)
   "Double-quote (identifier) STRING for use in a SQL expression."
-  (format "\"%s\"" (replace-regexp-in-string "\"" "\"\"" string)))
+  (format "\"%s\"" (string-replace "\"" "\"\"" string)))
 
 (defun emacsql-escape-identifier (identifier)
   "Escape an identifier, if needed, for SQL."
@@ -99,7 +99,7 @@
       (if (string-match-p ":" name)
           (mapconcat #'emacsql-escape-identifier
                      (mapcar #'intern (split-string name ":")) ".")
-        (let ((print (replace-regexp-in-string "-" "_" (format "%S" identifier)))
+        (let ((print (string-replace "-" "_" (format "%S" identifier)))
               (special "[]-\000-\040!\"#%&'()*+,./:;<=>?@[\\^`{|}~\177]"))
           (if (or (string-match-p special print)
                   (string-match-p "^[0-9$]" print)
@@ -133,7 +133,7 @@
 
 (defun emacsql-escape-format (thing)
   "Escape THING for use as a `format' spec."
-  (replace-regexp-in-string "%" "%%" thing))
+  (string-replace "%" "%%" thing))
 
 ;;; Schema compiler
 
@@ -146,8 +146,7 @@
 
 (defun emacsql--from-keyword (keyword)
   "Convert KEYWORD into SQL."
-  (let ((name (substring (symbol-name keyword) 1)))
-    (upcase (replace-regexp-in-string "-" " " name))))
+  (upcase (string-replace "-" " " (substring (symbol-name keyword) 1))))
 
 (defun emacsql--prepare-constraints (constraints)
   "Compile CONSTRAINTS into a partial SQL expression."
