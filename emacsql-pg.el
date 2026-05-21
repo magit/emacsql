@@ -10,8 +10,7 @@
 ;;; Commentary:
 
 ;; This library provides an EmacSQL back-end for PostgreSQL, which
-;; uses the `pg' package to directly speak to the database.  This
-;; library requires at least Emacs 28.1.
+;; uses the `pg' package to directly speak to the database.
 
 ;; (For an alternative back-end for PostgreSQL, see `emacsql-psql'.)
 
@@ -19,9 +18,7 @@
 
 (require 'emacsql)
 
-(if (>= emacs-major-version 28)
-    (require 'pg nil t)
-  (message "emacsql-pg.el requires Emacs 28.1 or later"))
+(require 'pg nil t)
 (declare-function pg-connect "ext:pg"
                   ( dbname user &optional
                     (password "") (host "localhost") (port 5432) (tls nil)))
