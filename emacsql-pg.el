@@ -19,12 +19,9 @@
 (require 'emacsql)
 
 (require 'pg nil t)
-(declare-function pg-connect-plist "ext:pg"
-                  ( dbname user &key (password nil) (host "localhost")
-                    (port 5432) (tls-options nil) (direct-tls nil)
-                    (server-variant nil) (protocol-version (cons 3 0))))
+(declare-function pg-connect-plist "ext:pg")
 (declare-function pg-disconnect "ext:pg" (con))
-(declare-function pg-exec "ext:pg" (connection &rest args))
+(declare-function pg-exec "ext:pg" (con &rest args))
 (declare-function pg-result "ext:pg" (result what &rest arg))
 
 (defclass emacsql-pg-connection (emacsql-connection)
