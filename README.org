@@ -12,12 +12,6 @@ object ~nil~ corresponds 1:1 with ~NULL~ in the database.
 
 Requires Emacs 28 or later.
 
-#+html: <a href="https://github.com/magit/emacsql/actions/workflows/compile.yml"><img alt="Compile" src="https://github.com/magit/emacsql/actions/workflows/compile.yml/badge.svg"/></a>
-#+html: <a href="https://github.com/magit/emacsql/actions/workflows/test.yml"><img alt="Test" src="https://github.com/magit/emacsql/actions/workflows/test.yml/badge.svg"/></a>
-#+html: <a href="https://elpa.nongnu.org/nongnu/emacsql.html"><img alt="NonGNU ELPA" src="https://emacsair.me/assets/badges/nongnu-elpa.svg"/></a>
-#+html: <a href="https://melpa.org/#/forge"><img alt="MELPA" src="https://melpa.org/packages/forge-badge.svg"/></a>
-#+html: <a href="https://stable.melpa.org/#/forge"><img alt="MELPA Stable" src="https://stable.melpa.org/packages/forge-badge.svg"/></a>
-
 *** FAQ
 **** Why are all values stored as strings?
 
@@ -428,6 +422,13 @@ the emacsql-protocol-mixin class to do most of the work.
 ** See Also
 
 - [[https://www.sqlite.org/docs.html][SQLite Documentation]]
+
+#+html: <br><br>
+#+html: <a href="https://github.com/magit/emacsql/actions/workflows/compile.yml"><img alt="Compile" src="https://github.com/magit/emacsql/actions/workflows/compile.yml/badge.svg"/></a>
+#+html: <a href="https://github.com/magit/emacsql/actions/workflows/test.yml"><img alt="Test" src="https://github.com/magit/emacsql/actions/workflows/test.yml/badge.svg"/></a>
+#+html: <a href="https://snapshots.melpa.org/#/emacsql"><img alt="MELPA Snapshots" src="https://snapshots.melpa.org/packages/emacsql-badge.svg"/></a>
+#+html: <a href="https://releases.melpa.org/#/emacsql"><img alt="MELPA Releases" src="https://releases.melpa.org/packages/emacsql-badge.svg"/></a>
+#+html: <a href="https://elpa.nongnu.org/nongnu/emacsql.html"><img alt="NonGNU ELPA" src="https://emacsair.me/assets/badges/nongnu-elpa.svg"/></a>
 
 # LocalWords: EIEIO Elisp EmacSQL MELPA Makefile NOCASE RTRIM
 # LocalWords: SQL's autocommit el emacsql unprinted whitespace
