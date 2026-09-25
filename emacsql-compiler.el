@@ -14,8 +14,7 @@
 ;;; Code:
 
 (require 'cl-lib)
-
-(eval-when-compile (require 'subr-x))
+(require 'subr-x) ;for string-join when using Emacs 28
 
 ;;; Error symbols
 
