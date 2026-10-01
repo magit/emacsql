@@ -7,7 +7,7 @@ is not recommended.
 
 Any [[https://nullprogram.com/blog/2013/12/30/#almost_everything_prints_readably][readable lisp value]] can be stored as a value in EmacSQL, including
 numbers, strings, symbols, lists, vectors, and closures. EmacSQL has
-no concept of "TEXT" values; it's all just lisp objects. The lisp
+no concept of "TEXT" values; it's all just Lisp objects. The Lisp
 object ~nil~ corresponds 1:1 with ~NULL~ in the database.
 
 Requires Emacs 28 or later.
@@ -84,7 +84,7 @@ A table schema is a list whose first element is a vector of column
 specifications. The rest of the list specifies table constraints. A
 column identifier is a symbol and a column's specification can either
 be just this symbol or it can include constraints as a list. Because
-EmacSQL stores entire lisp objects as values, the only relevant (and
+EmacSQL stores entire Lisp objects as values, the only relevant (and
 allowed) types are ~integer~, ~float~, and ~object~ (default).
 
 #+begin_src
@@ -92,7 +92,7 @@ allowed) types are ~integer~, ~float~, and ~object~ (default).
 #+end_src
 
 Dashes in identifiers are converted into underscores when compiled
-into SQL. This allows for lisp-style identifiers to be used in SQL.
+into SQL. This allows for Lisp-style identifiers to be used in SQL.
 Constraints follow the compilation rules below.
 
 #+begin_src emacs-lisp
@@ -124,7 +124,7 @@ Foreign key constraints are enabled by default in EmacSQL.
 
 ** Operators
 
-Expressions are written lisp-style, with the operator first. If it
+Expressions are written Lisp-style, with the operator first. If it
 looks like an operator EmacSQL treats it like an operator. However,
 several operators are special.
 
@@ -181,7 +181,7 @@ The database is interacted with via prepared SQL s-expression
 statements. You shouldn't normally be concatenating strings on your
 own. (And it leaves out any possibility of a SQL injection!) See the
 "Usage" section above for examples. A statement is a vector of
-keywords and other lisp object.
+keywords and other Lisp object.
 
 Prepared EmacSQL s-expression statements are compiled into SQL
 statements. The statement compiler is memorized so that using the same
@@ -192,7 +192,7 @@ Elisp ~format~ function.
 *** Compilation Rules
 
 Rather than the typical uppercase SQL keywords, keywords in a prepared
-EmacSQL statement are literally just that: lisp keywords. EmacSQL only
+EmacSQL statement are literally just that: Lisp keywords. EmacSQL only
 understands a very small amount of SQL's syntax. The compiler follows
 some simple rules to convert an s-expression into SQL.
 
