@@ -429,6 +429,7 @@ the emacsql-protocol-mixin class to do most of the work.
 #+html: <a href="https://snapshots.melpa.org/#/emacsql"><img alt="MELPA Snapshots" src="https://snapshots.melpa.org/packages/emacsql-badge.svg"/></a>
 #+html: <a href="https://releases.melpa.org/#/emacsql"><img alt="MELPA Releases" src="https://releases.melpa.org/packages/emacsql-badge.svg"/></a>
 #+html: <a href="https://elpa.nongnu.org/nongnu/emacsql.html"><img alt="NonGNU ELPA" src="https://emacsair.me/assets/badges/nongnu-elpa.svg"/></a>
+#+html: <a href="https://emacsair.me/human"><img alt="human made" src="https://emacsair.me/assets/badges/human.svg"/></a>
 
 # LocalWords: EIEIO Elisp EmacSQL MELPA Makefile NOCASE RTRIM
 # LocalWords: SQL's autocommit el emacsql unprinted whitespace
